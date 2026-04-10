@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   doc,
   setDoc,
   getDoc,
@@ -26,8 +27,18 @@ window.register = async function () {
 
   error.textContent = "";
 
+  if (!firstName || !surname || !email || !password || !confirmPassword) {
+    error.textContent = "All fields are required!";
+    return;
+  }
+
   if (password !== confirmPassword) {
     error.textContent = "Passwords do not match!";
+    return;
+  }
+
+  if (password.length < 6) {
+    error.textContent = "Password must be at least 6 characters.";
     return;
   }
 
@@ -50,11 +61,20 @@ window.register = async function () {
 window.login = async function () {
   const email = document.getElementById("loginEmail").value;
   const password = document.getElementById("loginPassword").value;
+  const error = document.getElementById("error");
+
+  error.textContent = "";
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (err) {
-    document.getElementById("error").textContent = err.message;
+    if (err.code === "auth/user-not-found") {
+      error.textContent = "User not found.";
+    } else if (err.code === "auth/wrong-password") {
+      error.textContent = "Incorrect password.";
+    } else {
+      error.textContent = err.message;
+    }
   }
 };
 
@@ -63,7 +83,24 @@ window.logout = function () {
   signOut(auth);
 };
 
-// SESSION FIX (NO MORE AUTO LOGOUT)
+// RESET PASSWORD
+window.resetPassword = async function () {
+  const email = document.getElementById("loginEmail").value;
+
+  if (!email) {
+    alert("Enter your email first.");
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert("Password reset link sent!");
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// SESSION (NO AUTO LOGOUT)
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     document.getElementById("auth").style.display = "none";
@@ -93,6 +130,11 @@ window.sendMessage = async function () {
   const msg = document.getElementById("message").value;
   const user = auth.currentUser;
 
+  if (!msg) {
+    alert("Message cannot be empty");
+    return;
+  }
+
   await addDoc(collection(db, "messages"), {
     text: msg,
     email: user.email,
@@ -102,7 +144,7 @@ window.sendMessage = async function () {
   alert("Message sent!");
 };
 
-// ADMIN LOAD MESSAGES
+// LOAD MESSAGES (ADMIN)
 window.loadMessages = async function () {
   const box = document.getElementById("messages");
   box.innerHTML = "";
