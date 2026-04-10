@@ -11,7 +11,9 @@ import {
   db
 } from "./firebase.js";
 
-/* POPUP */
+/* ======================
+   POPUP MESSAGE SYSTEM
+====================== */
 function show(msg){
   const p = document.getElementById("popup");
   p.innerText = msg;
@@ -19,12 +21,16 @@ function show(msg){
   setTimeout(()=>p.style.display="none",3000);
 }
 
-/* MODALS */
+/* ======================
+   MODALS
+====================== */
 window.openRegister=()=>document.getElementById("registerModal").style.display="block";
 window.openLogin=()=>document.getElementById("loginModal").style.display="block";
 window.closeModal=(id)=>document.getElementById(id).style.display="none";
 
-/* REGISTER */
+/* ======================
+   REGISTER (FIXED)
+====================== */
 window.register = async ()=>{
   const email = document.getElementById("regEmail").value;
   const pass = document.getElementById("regPassword").value;
@@ -36,25 +42,39 @@ window.register = async ()=>{
   }
 
   try{
-    const user = await createUserWithEmailAndPassword(auth,email,pass);
-    await sendEmailVerification(user.user);
-    show("Account created! Check your email.");
+    const userCred = await createUserWithEmailAndPassword(auth,email,pass);
+
+    // Send verification email properly
+    await sendEmailVerification(userCred.user);
+
+    show("Account created! Check your email (spam folder too)");
+
   }catch(e){
     show(e.message);
   }
 };
 
-/* LOGIN (FIXED) */
+/* ======================
+   LOGIN (FIXED FINAL)
+====================== */
 window.login = async ()=>{
   try{
-    const user = await signInWithEmailAndPassword(
+    const userCred = await signInWithEmailAndPassword(
       auth,
       document.getElementById("loginEmail").value,
       document.getElementById("loginPassword").value
     );
 
-    if(!user.user.emailVerified){
-      show("Email not verified (you can still continue)");
+    const user = userCred.user;
+
+    // 🔥 FORCE REFRESH EMAIL STATUS
+    await user.reload();
+
+    // We DO NOT block dashboard anymore (important fix)
+    if(!user.emailVerified){
+      show("⚠ Email not verified (but login allowed)");
+    } else {
+      show("Login successful");
     }
 
   }catch(e){
@@ -62,52 +82,79 @@ window.login = async ()=>{
   }
 };
 
-/* SESSION */
+/* ======================
+   SESSION CONTROL
+====================== */
 onAuthStateChanged(auth,(user)=>{
   if(user){
+    document.getElementById("auth")?.style && (document.getElementById("auth").style.display="none");
     document.getElementById("dashboard").style.display="block";
   } else {
     document.getElementById("dashboard").style.display="none";
   }
 });
 
-/* LOGOUT */
+/* ======================
+   LOGOUT
+====================== */
 window.logout = ()=>signOut(auth);
 
-/* RESET */
+/* ======================
+   RESET PASSWORD
+====================== */
 window.resetPassword = async ()=>{
   const email = document.getElementById("loginEmail").value;
-  await sendPasswordResetEmail(auth,email);
-  show("Reset email sent");
-};
 
-/* RESEND */
-window.resendVerification = async ()=>{
-  const user = auth.currentUser;
-  if(user){
-    await sendEmailVerification(user);
-    show("Verification email sent again!");
-  } else {
-    show("Login first");
+  try{
+    await sendPasswordResetEmail(auth,email);
+    show("Password reset email sent");
+  }catch(e){
+    show(e.message);
   }
 };
 
-/* LINKS */
+/* ======================
+   RESEND EMAIL (FIXED)
+====================== */
+window.resendVerification = async ()=>{
+  try{
+    const user = auth.currentUser;
+
+    if(!user){
+      show("Login first");
+      return;
+    }
+
+    await sendEmailVerification(user);
+
+    show("Verification email sent (check inbox/spam)");
+
+  }catch(e){
+    show("Failed to send verification");
+  }
+};
+
+/* ======================
+   LINKS
+====================== */
 window.openLink = (type)=>{
   if(type==="earn"){
     window.open("https://forfans.me/chichiguy","_blank");
   }
+
   if(type==="float"){
     window.open("https://ff.io/?ref=s1nep47a","_blank");
   }
 };
 
-/* MESSAGE */
+/* ======================
+   MESSAGES
+====================== */
 window.sendMessage = async ()=>{
   const msg = document.getElementById("message");
 
   if(!msg.value){
-    show("Empty message");
+    show("Message is empty");
     return;
   }
 
@@ -116,22 +163,33 @@ window.sendMessage = async ()=>{
     time: new Date()
   });
 
-  msg.value="";
+  msg.value = "";
   show("Message sent!");
 };
 
-/* IMAGE PREVIEW */
+/* ======================
+   IMAGE UPLOAD (LOCAL ONLY)
+====================== */
 window.uploadImage = ()=>{
   const file = document.getElementById("imgUpload").files[0];
-  if(!file) return;
+  if(!file){
+    show("No image selected");
+    return;
+  }
 
   const img = document.createElement("img");
   img.src = URL.createObjectURL(file);
   img.style.width = "100px";
-  img.style.margin="5px";
+  img.style.margin = "5px";
 
   document.getElementById("gallery").appendChild(img);
+
+  show("Image uploaded");
 };
 
-/* PREMIUM */
-window.premium = ()=>alert("Coming soon 🚧");
+/* ======================
+   PREMIUM
+====================== */
+window.premium = ()=>{
+  alert("Premium coming soon 🚧");
+};
