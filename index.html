@@ -113,12 +113,20 @@
   <h2>Dashboard</h2>
   <p>You are logged in 👋</p>
 
+  <!-- 💱 CRYPTO TOOL -->
   <div class="card">
     <h3>Crypto Tool</h3>
     <p>Basic exchange access</p>
-    <a href="#" onclick="alert('Use your affiliate link')" class="pay-btn">
-      Open Tool
+
+    <a href="https://ff.io/?ref=s1nep47a"
+       target="_blank"
+       class="pay-btn">
+      🚀 Start Crypto Exchange
     </a>
+
+    <p style="font-size:12px;opacity:0.7;margin-top:5px;">
+      Earn commission when users trade via this link
+    </p>
   </div>
 
   <!-- 📸 PROOF SECTION -->
@@ -136,10 +144,14 @@
   <div class="card">
 
     <h3>💳 Upgrade to Premium</h3>
+
+    <p><b>Price:</b> ~$15.66</p>
+    <p><b>Crypto:</b> 19.68 USDT / TRX</p>
+
     <p>Unlock AI tools, strategies & full trading proof.</p>
 
     <button class="pay-btn" onclick="openPaymentPopup()">
-      🚀 Upgrade Now ($2 USDT)
+      🚀 Upgrade Now
     </button>
 
   </div>
@@ -167,7 +179,7 @@
 
 </div>
 
-<!-- ⚠️ DISCLAIMER POPUP -->
+<!-- ⚠️ DISCLAIMER -->
 <div class="modal" id="disclaimerModal">
   <div class="modal-content">
     <h3>⚠️ Disclaimer</h3>
@@ -188,7 +200,9 @@
   <div class="modal-content">
     <h3>💳 Confirm Premium Upgrade</h3>
 
-    <p><b>Price:</b> $2 USDT (BSC)</p>
+    <p><b>Price:</b> ~$15.66</p>
+    <p><b>Crypto:</b> 19.68 USDT / TRX</p>
+
     <p>You will unlock:</p>
     <ul style="text-align:left;">
       <li>✔ Premium dashboard</li>
@@ -218,7 +232,6 @@ function showDashboard() {
   document.getElementById("auth").style.display = "none";
   document.getElementById("dashboard").style.display = "block";
 
-  // show disclaimer on login
   document.getElementById("disclaimerModal").style.display = "block";
 }
 
@@ -247,9 +260,8 @@ function showPremiumContent() {
 }
 </script>
 
-<!-- Firebase -->
 <script type="module" src="firebase.js"></script>
 <script src="app.js"></script>
 
 </body>
-        </html>
+</html>
