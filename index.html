@@ -32,6 +32,7 @@ body{
   color:black;
   padding:4px 8px;
   border-radius:6px;
+  font-size:12px;
 }
 
 .logo{
@@ -47,7 +48,7 @@ body{
   font-weight:bold;
 }
 
-/* TITLE */
+/* RAINBOW TITLE */
 .hero h1{
   font-size:26px;
   background:linear-gradient(to right,red,orange,yellow,green,blue,indigo,violet);
@@ -65,6 +66,15 @@ button{
   border-radius:6px;
   font-weight:bold;
   cursor:pointer;
+}
+
+/* FORMS */
+input{
+  width:80%;
+  padding:10px;
+  margin:5px;
+  border-radius:6px;
+  border:none;
 }
 
 /* DASHBOARD */
@@ -85,12 +95,24 @@ button{
 
 <body>
 
+<!-- HEADER -->
 <div class="hero">
   <div class="beta">BETA</div>
+
   <div class="logo">MXM</div>
+
   <h1>MXM Crypto Empire</h1>
 
-  <button onclick="register()">Register</button>
+  <!-- SIGNUP -->
+  <h3>Register</h3>
+  <input id="signupEmail" placeholder="Email">
+  <input id="signupPass" type="password" placeholder="Password">
+  <button onclick="signup()">Sign Up</button>
+
+  <!-- LOGIN -->
+  <h3>Login</h3>
+  <input id="loginEmail" placeholder="Email">
+  <input id="loginPass" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
 </div>
 
@@ -105,11 +127,6 @@ button{
 <div class="card">
 <h3>FixedFloat Exchange</h3>
 <button onclick="trackClick('fixedfloat')">Open</button>
-</div>
-
-<div class="card">
-<h3>Settings</h3>
-<button onclick="alert('Settings coming next phase')">Open</button>
 </div>
 
 <button onclick="logout()" style="background:red;color:white;">Logout</button>
