@@ -14,53 +14,57 @@ body {
   padding:20px;
 }
 
-/* HEADER */
+/* HERO */
 .hero {
-  background:#1c2541;
-  padding:20px;
-  border-radius:12px;
   max-width:520px;
   margin:auto;
+  padding:25px;
+  background:#1c2541;
+  border-radius:14px;
+  position:relative;
 }
 
-.logo {
-  width:70px;
-  height:70px;
-  margin:auto;
-  background:gold;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
-  color:black;
-  font-size:20px;
-}
-
-.hero h2 {
-  margin-top:10px;
-  background: linear-gradient(to right, gold, white);
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-/* BETA */
+/* BETA LEFT */
 .beta {
   position:absolute;
   left:10px;
   top:10px;
-  background:gold;
+  background:#00c853;
   color:black;
   padding:4px 8px;
   border-radius:6px;
+  font-size:12px;
+}
+
+/* LOGO */
+.logo {
+  width:70px;
+  height:70px;
+  margin:auto;
+  border-radius:50%;
+  background:gold;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:black;
+  font-weight:bold;
+}
+
+/* TITLE */
+.hero h1 {
+  margin-top:10px;
+  font-size:26px;
+  background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 /* BUTTONS */
 button {
   padding:12px;
   margin:8px;
-  border:none;
   border-radius:6px;
+  border:none;
   background:gold;
   color:black;
   font-weight:bold;
@@ -70,11 +74,12 @@ button {
 /* DASHBOARD */
 #dashboard { display:none; }
 
+/* CARDS */
 .card {
   background:#1c2541;
-  padding:15px;
+  padding:18px;
   margin:15px auto;
-  border-radius:10px;
+  border-radius:12px;
   max-width:520px;
 }
 
@@ -89,7 +94,7 @@ button {
 .modal-content {
   background:#1c2541;
   padding:20px;
-  border-radius:10px;
+  border-radius:12px;
   max-width:400px;
   margin:10% auto;
 }
@@ -113,42 +118,48 @@ input, textarea {
   background:red;
   padding:15px;
   border-radius:8px;
+  z-index:999;
 }
 </style>
 </head>
 
 <body>
 
-<div class="beta">BETA</div>
-
+<!-- HERO -->
 <div class="hero">
+  <span class="beta">BETA</span>
+
   <div class="logo">MXM</div>
-  <h2>MXM Crypto Empire</h2>
+
+  <h1>MXM Crypto Empire</h1>
 
   <button onclick="openRegister()">Register</button>
   <button onclick="openLogin()">Login</button>
 </div>
 
-<!-- REGISTER MODAL -->
+<!-- REGISTER -->
 <div class="modal" id="registerModal">
 <div class="modal-content">
-<h3>Register</h3>
+<h3>Create Account</h3>
 <input id="regEmail" placeholder="Email">
 <input id="regPassword" type="password" placeholder="Password">
 <input id="regConfirm" type="password" placeholder="Confirm Password">
-<button onclick="register()">Create Account</button>
+
+<button onclick="register()">Register</button>
 <button onclick="closeModal('registerModal')">Close</button>
 </div>
 </div>
 
-<!-- LOGIN MODAL -->
+<!-- LOGIN -->
 <div class="modal" id="loginModal">
 <div class="modal-content">
 <h3>Login</h3>
 <input id="loginEmail" placeholder="Email">
 <input id="loginPassword" type="password" placeholder="Password">
+
 <button onclick="login()">Login</button>
 <button onclick="resetPassword()">Forgot Password</button>
+<button onclick="resendVerification()">Resend Verification</button>
 <button onclick="closeModal('loginModal')">Close</button>
 </div>
 </div>
@@ -159,29 +170,34 @@ input, textarea {
 <h2>Dashboard</h2>
 
 <div class="card">
-<h3>Free Earning Platform</h3>
-<button onclick="openLink('earn')">Open</button>
+<h3>💰 Free Earning Platform</h3>
+<button onclick="openLink('earn')">Start</button>
 </div>
 
 <div class="card">
-<h3>FixedFloat Exchange</h3>
+<h3>💱 FixedFloat Exchange</h3>
 <button onclick="openLink('float')">Open</button>
 </div>
 
 <div class="card">
-<h3>Upload Proof Images</h3>
+<h3>📸 Proof Images</h3>
 <input type="file" id="imgUpload">
 <button onclick="uploadImage()">Upload</button>
 <div id="gallery"></div>
 </div>
 
 <div class="card">
-<h3>Contact Admin</h3>
-<textarea id="message"></textarea>
+<h3>📩 Contact Admin</h3>
+<textarea id="message"></textarea><br>
 <button onclick="sendMessage()">Send</button>
 </div>
 
-<button onclick="logout()">Logout</button>
+<div class="card">
+<h3>🔒 Premium</h3>
+<button onclick="premium()">Open</button>
+</div>
+
+<button onclick="logout()" style="background:red;color:white;">Logout</button>
 
 </div>
 
