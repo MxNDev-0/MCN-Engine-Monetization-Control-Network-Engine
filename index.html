@@ -14,10 +14,19 @@ body {
   padding:20px;
 }
 
+/* HERO */
 .hero {
+  max-width:520px;
+  margin:auto;
+  padding:25px;
   background:#1c2541;
-  padding:20px;
-  border-radius:12px;
+  border-radius:14px;
+}
+
+/* AUTH */
+.authBox {
+  max-width:520px;
+  margin:20px auto;
 }
 
 input, button {
@@ -27,18 +36,87 @@ input, button {
   border:none;
 }
 
-.loginBtn { background:#2196f3; color:white; width:90%; }
-.signupBtn { background:#00c853; color:black; width:90%; }
+.loginBtn {
+  background:#2196f3;
+  color:white;
+  width:90%;
+}
 
+.signupBtn {
+  background:#00c853;
+  color:black;
+  width:90%;
+}
+
+/* DASHBOARD */
 #dashboard { display:none; }
 
 .card {
   background:#1c2541;
-  padding:15px;
-  margin:15px;
-  border-radius:10px;
+  padding:18px;
+  margin:15px auto;
+  border-radius:12px;
+  max-width:520px;
 }
 
+.pay-btn {
+  background:green;
+  color:white;
+  padding:12px;
+  border-radius:6px;
+}
+
+/* MODALS */
+.modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+}
+
+.modal-content {
+  position:absolute;
+  top:8%;
+  left:50%;
+  transform:translateX(-50%);
+  width:90%;
+  max-width:420px;
+  background:#1c2541;
+  padding:18px;
+  border-radius:12px;
+  max-height:75vh;
+  overflow-y:auto;
+}
+
+.close {
+  position:absolute;
+  right:10px;
+  cursor:pointer;
+}
+
+/* WARNING */
+.warning {
+  background:#b71c1c;
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px;
+}
+
+/* PRICE */
+.priceBox {
+  background:#00c853;
+  color:black;
+  padding:10px;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+/* FOOTER */
+footer {
+  margin-top:30px;
+  font-size:12px;
+  opacity:0.6;
+}
 </style>
 </head>
 
@@ -46,10 +124,12 @@ input, button {
 
 <div class="hero">
 <h2>AI SaaS Business</h2>
-<p>Secure AI crypto dashboard</p>
+<p>AI-powered crypto tools</p>
 </div>
 
-<div id="auth">
+<!-- AUTH -->
+<div id="auth" class="authBox">
+
 <input id="email" placeholder="Email"><br>
 <input id="password" type="password" placeholder="Password"><br>
 
@@ -57,16 +137,36 @@ input, button {
 <input type="checkbox" id="rememberMe"> Remember Me
 </label><br>
 
-<!-- SIMPLE CAPTCHA -->
 <p id="captchaQ"></p>
 <input id="captchaA" placeholder="Answer captcha"><br>
 
 <button class="loginBtn" onclick="login()">Login</button><br>
-<button class="signupBtn" onclick="signup()">Sign Up</button>
+<button class="signupBtn" onclick="signup()">Create Account</button>
+
 </div>
 
+<!-- DASHBOARD -->
 <div id="dashboard">
+
 <h2>Dashboard</h2>
+<p>You are logged in 👋</p>
+
+<div class="card">
+<h3>Crypto Tool</h3>
+<button class="pay-btn" onclick="openExchange()">Open FixedFloat</button>
+</div>
+
+<div class="card">
+<h3>Trading Proof</h3>
+<img src="https://via.placeholder.com/400x180"
+style="filter:blur(6px);width:100%;border-radius:10px;">
+</div>
+
+<div class="card">
+<h3>Premium Access</h3>
+<p>$15.66</p>
+<button class="pay-btn" onclick="openPremium()">Upgrade</button>
+</div>
 
 <div class="card">
 <button onclick="logout()">Logout</button>
@@ -74,132 +174,12 @@ input, button {
 
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getAuth,
-  setPersistence,
-  browserLocalPersistence,
-  browserSessionPersistence,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<!-- EXCHANGE MODAL -->
+<div class="modal" id="exchangeModal">
+<div class="modal-content">
+<span class="close" onclick="closeExchange()">✖</span>
+<h3>FixedFloat Exchange</h3>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAu8BaL9NV6NU_oKSy-pxh89TuVrovZzaE",
-  authDomain: "ai-saas-business-ecfab.firebaseapp.com",
-  projectId: "ai-saas-business-ecfab",
-};
+<p>Fast crypto swaps with automation.</p>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-/* CAPTCHA */
-let num1 = Math.floor(Math.random()*10);
-let num2 = Math.floor(Math.random()*10);
-document.getElementById("captchaQ").innerText = `Solve: ${num1} + ${num2}`;
-
-/* SIGNUP */
-window.signup = async function () {
-  let email = emailInput();
-  let password = passInput();
-
-  if(!checkCaptcha()) return;
-
-  try {
-    await createUserWithEmailAndPassword(auth, email, password);
-    alert("Account created");
-  } catch(e) {
-    alert(e.message);
-  }
-};
-
-/* LOGIN */
-window.login = async function () {
-  let email = emailInput();
-  let password = passInput();
-
-  if(!checkCaptcha()) return;
-
-  try {
-    const remember = document.getElementById("rememberMe").checked;
-
-    await setPersistence(auth,
-      remember ? browserLocalPersistence : browserSessionPersistence
-    );
-
-    await signInWithEmailAndPassword(auth, email, password);
-
-  } catch(e) {
-    alert("Login error: " + e.message);
-  }
-};
-
-/* AUTH STATE */
-onAuthStateChanged(auth, (user) => {
-  if(user){
-    showDashboard();
-    startInactivityTimer();
-  } else {
-    showAuth();
-  }
-});
-
-/* LOGOUT */
-window.logout = async function () {
-  await signOut(auth);
-};
-
-/* UI SWITCH */
-function showDashboard(){
-  document.getElementById("auth").style.display="none";
-  document.getElementById("dashboard").style.display="block";
-}
-
-function showAuth(){
-  document.getElementById("auth").style.display="block";
-  document.getElementById("dashboard").style.display="none";
-}
-
-/* HELPERS */
-function emailInput(){
-  return document.getElementById("email").value;
-}
-function passInput(){
-  return document.getElementById("password").value;
-}
-
-/* CAPTCHA CHECK */
-function checkCaptcha(){
-  let ans = document.getElementById("captchaA").value;
-  if(parseInt(ans) !== (num1+num2)){
-    alert("Captcha incorrect");
-    return false;
-  }
-  return true;
-}
-
-/* INACTIVITY LOGOUT */
-let timeout;
-
-function startInactivityTimer(){
-  resetTimer();
-
-  document.onmousemove = resetTimer;
-  document.onkeypress = resetTimer;
-  document.onclick = resetTimer;
-}
-
-function resetTimer(){
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    alert("Session expired due to inactivity");
-    logout();
-  }, 10 * 60 * 1000); // 10 minutes
-}
-</script>
-
-</body>
-</html>
+<div class="
