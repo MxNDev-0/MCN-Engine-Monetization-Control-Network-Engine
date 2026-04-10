@@ -5,21 +5,48 @@
 <title>AI SaaS Business</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
 <style>
-body { font-family: Arial; background:#0b132b; color:white; text-align:center; padding:20px; }
-.hero { max-width:520px; margin:auto; padding:20px; background:#1c2541; border-radius:14px; }
-input, button { padding:10px; margin:6px; border-radius:6px; border:none; }
+body {
+  font-family: Arial;
+  background:#0b132b;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
+
+.hero {
+  max-width:520px;
+  margin:auto;
+  padding:20px;
+  background:#1c2541;
+  border-radius:14px;
+}
+
+input, button, textarea {
+  padding:10px;
+  margin:6px;
+  border-radius:6px;
+  border:none;
+}
+
 button { cursor:pointer; }
 
 #dashboard { display:none; }
-#adminPanel { display:none; background:#ff9800; padding:10px; border-radius:10px; margin-top:10px; }
-.card { background:#1c2541; padding:15px; margin:10px auto; border-radius:10px; max-width:520px; }
 
-textarea { width:90%; height:80px; }
+.card {
+  background:#1c2541;
+  padding:15px;
+  margin:10px auto;
+  border-radius:10px;
+  max-width:520px;
+}
+
+#adminPanel {
+  display:none;
+  background:#ff9800;
+  padding:10px;
+  border-radius:10px;
+}
 </style>
 </head>
 
@@ -33,20 +60,24 @@ textarea { width:90%; height:80px; }
 <!-- AUTH -->
 <div id="auth">
 
-<h3>Register</h3>
+<h3>Create Account</h3>
 <input id="firstName" placeholder="First Name"><br>
 <input id="surname" placeholder="Surname"><br>
 <input id="email" placeholder="Email"><br>
 <input id="password" type="password" placeholder="Password"><br>
 <input id="confirmPassword" type="password" placeholder="Confirm Password"><br>
 
-<button onclick="register()">Create Account</button>
+<button onclick="register()">Register</button>
 
 <h3>Login</h3>
 <input id="loginEmail" placeholder="Email"><br>
 <input id="loginPassword" type="password" placeholder="Password"><br>
 
 <button onclick="login()">Login</button>
+
+<p>
+  <a href="#" onclick="resetPassword()">Forgot Password?</a>
+</p>
 
 <p id="error" style="color:red;"></p>
 
@@ -68,14 +99,12 @@ textarea { width:90%; height:80px; }
 <a href="#" target="_blank">Start Earning</a>
 </div>
 
-<!-- SUPPORT -->
 <div class="card">
 <h3>Contact Admin</h3>
-<textarea id="message"></textarea><br>
-<button onclick="sendMessage()">Send Message</button>
+<textarea id="message" placeholder="Write message..."></textarea><br>
+<button onclick="sendMessage()">Send</button>
 </div>
 
-<!-- ADMIN PANEL -->
 <div id="adminPanel">
 <h3>ADMIN PANEL</h3>
 <button onclick="loadMessages()">View Messages</button>
@@ -86,8 +115,7 @@ textarea { width:90%; height:80px; }
 
 </div>
 
-<script src="firebase.js"></script>
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
