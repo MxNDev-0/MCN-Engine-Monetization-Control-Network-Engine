@@ -6,203 +6,258 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* General Styles */
 body {
-  font-family: Arial, sans-serif;
-  background: #0b132b;
-  color: white;
-  text-align: center;
-  padding: 20px;
+  font-family: Arial;
+  background:#0b132b;
+  color:white;
+  text-align:center;
+  padding:20px;
 }
 
-/* Header Styles */
+/* HERO */
 .hero {
-  max-width: 520px;
-  margin: auto;
-  padding: 20px;
-  background: #1c2541;
-  border-radius: 14px;
+  max-width:520px;
+  margin:auto;
+  padding:20px;
+  background:#1c2541;
+  border-radius:14px;
 }
 
-/* MXM Crypto Empire Title with Rainbow Color */
+/* TITLE */
 .hero h2 {
-  font-size: 40px;
+  font-size:32px;
   background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
   -webkit-background-clip: text;
   color: transparent;
 }
 
-/* Icon for MXM Crypto Empire */
-.hero img {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  margin-top: 10px;
+/* BETA BADGE */
+.beta {
+  color:black;
+  background:gold;
+  padding:3px 8px;
+  border-radius:6px;
+  font-size:12px;
+  margin-right:6px;
 }
 
-/* Button Styles */
+/* BUTTONS */
 button {
-  padding: 12px;
-  margin: 8px;
-  border-radius: 6px;
-  background-color: gold;
-  color: black;
-  font-size: 16px;
-  cursor: pointer;
+  padding:12px;
+  margin:8px;
+  border-radius:6px;
+  border:none;
+  background:gold;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 button:hover {
-  background-color: #f7b500;
+  background:#f7b500;
 }
 
-/* Input fields */
-input {
-  padding: 12px;
-  margin: 8px;
-  border-radius: 6px;
-  width: 80%;
+/* CARD */
+.card {
+  background:#1c2541;
+  padding:15px;
+  margin:15px auto;
+  border-radius:10px;
+  max-width:520px;
 }
 
-textarea {
-  width: 80%;
-  padding: 12px;
-  margin: 8px;
-  border-radius: 6px;
-  resize: none;
-}
-
-#error {
-  color: red;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-/* Footer Styles */
-footer {
-  margin-top: 30px;
-  font-size: 12px;
-  opacity: 0.6;
-}
-
-/* Pop-Up Modal Styles */
+/* MODAL */
 .modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.75);
-  z-index: 100;
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
 }
 
 .modal-content {
-  background: #1c2541;
-  border-radius: 14px;
-  padding: 20px;
-  max-width: 90%;
-  margin: 10% auto;
-  color: white;
-  text-align: left;
-  line-height: 1.5;
+  background:#1c2541;
+  padding:20px;
+  border-radius:10px;
+  max-width:400px;
+  margin:10% auto;
+  text-align:left;
 }
 
-/* Locked Content Emoji */
-.locked {
-  font-size: 30px;
-  color: red;
+/* ERROR POPUP */
+#errorPopup {
+  display:none;
+  position:fixed;
+  top:40%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:red;
+  padding:15px;
+  border-radius:8px;
+  z-index:999;
 }
 
+/* NAV */
+nav button {
+  margin:5px;
+}
+
+/* FOOTER */
+footer {
+  margin-top:30px;
+  font-size:12px;
+  opacity:0.6;
+}
 </style>
 </head>
 
 <body>
 
-<!-- Hero Section -->
+<!-- HERO -->
 <div class="hero">
-  <img src="https://via.placeholder.com/60" alt="MXM Crypto Empire Icon"> <!-- Placeholder icon -->
+  <span class="beta">BETA</span>
   <h2>MXM Crypto Empire</h2>
-  <p>Your guide to finding legitimate platforms for earning and trading crypto easily.</p>
+  <p>Discover legit platforms to earn and use crypto tools.</p>
 </div>
 
-<!-- Navigation Buttons -->
-<div>
-  <button onclick="window.location.href='#home'">Home</button>
-  <button onclick="window.location.href='#about'">About</button>
-  <button onclick="window.location.href='#contact'">Contact</button>
-  <button onclick="window.location.href='#faq'">FAQ</button>
+<!-- NAV -->
+<nav>
+  <button onclick="scrollToSection('home')">Home</button>
+  <button onclick="scrollToSection('about')">About</button>
+  <button onclick="scrollToSection('faq')">FAQ</button>
+  <button onclick="scrollToSection('contact')">Support</button>
+</nav>
+
+<!-- HOME -->
+<div id="home">
+
+<div class="card">
+<h3>💰 Free Earning Platform</h3>
+<p>Earn money online without investment.</p>
+<button onclick="openModal('earn')">Start Earning</button>
 </div>
 
-<!-- About Section -->
-<div id="about">
-  <h3>About MXM Crypto Empire</h3>
-  <p>
-    MXM Crypto Empire is your trusted platform to discover legitimate websites where you can earn money for free and trade cryptocurrency securely. We focus on connecting you with trusted, real-time platforms like FixedFloat for instant crypto exchanges and more.
-  </p>
+<div class="card">
+<h3>💱 FixedFloat Exchange</h3>
+<p>Instant crypto exchange (no account required).</p>
+<button onclick="openModal('float')">Open Exchange</button>
 </div>
 
-<!-- Free Earning Platform Link -->
-<div>
-  <button onclick="openLinkModal('https://forfans.me/chichiguy', 'Free Earning Platform')">Start Earning with Free Platforms</button>
+<div class="card">
+<h3>🔒 Premium</h3>
+<button onclick="openPremium()">Go to Premium</button>
 </div>
 
-<!-- Crypto Tool and Premium Sections -->
-<div id="dashboard">
-  <h2>Dashboard</h2>
-  <div class="card">
-    <h3>FixedFloat Tool</h3>
-    <a href="https://ff.io/?ref=s1nep47a" target="_blank">Go to FixedFloat Exchange</a>
-  </div>
-
-  <div class="card">
-    <h3>Premium Content</h3>
-    <button onclick="openPremiumModal()">Unlock Premium Content</button>
-  </div>
-
-  <div class="card">
-    <h3>Contact Admin</h3>
-    <textarea id="message" placeholder="Send your message..."></textarea><br>
-    <button onclick="sendMessage()">Send</button>
-  </div>
 </div>
 
-<!-- Pop-up Modal -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <h2 id="linkTitle"></h2>
-    <p id="linkDescription"></p>
-    <button onclick="window.open(document.getElementById('modal').getAttribute('data-link'), '_blank')">Go to Link</button>
-  </div>
+<!-- ABOUT -->
+<div id="about" class="card">
+<h3>About</h3>
+<p>
+This website is created to help users discover legitimate platforms that can be used
+to earn money online and perform crypto transactions like instant exchanges.
+
+All platforms listed here are tools and services we have tested or researched.
+</p>
 </div>
 
-<!-- Footer -->
+<!-- FAQ -->
+<div id="faq" class="card">
+<h3>FAQ</h3>
+<p><b>Is this free?</b> — Yes, most platforms are free.</p>
+<p><b>Do you guarantee earnings?</b> — No.</p>
+</div>
+
+<!-- CONTACT -->
+<div id="contact" class="card">
+<h3>Contact Admin</h3>
+<textarea id="message"></textarea><br>
+<button onclick="sendMessage()">Send</button>
+</div>
+
+<!-- POPUP -->
+<div class="modal" id="modal">
+<div class="modal-content">
+<h3 id="modalTitle"></h3>
+<p id="modalText"></p>
+<button onclick="goLink()">Continue</button>
+<button onclick="closeModal()" style="background:red;color:white;">Cancel</button>
+</div>
+</div>
+
+<!-- ERROR -->
+<div id="errorPopup"></div>
+
+<!-- FOOTER -->
 <footer>
-  <p>© <span id="year"></span> MXM Crypto Empire. All rights reserved.</p>
-  <p><a href="#">Disclaimer</a> - This platform provides links to trusted earning platforms and crypto exchanges. It is not an investment platform.</p>
+© <span id="year"></span> MXM Crypto Empire <br><br>
+
+⚠ Disclaimer:  
+This website does not own or control any external platforms listed.  
+We are not responsible for your actions or results.  
+This content is for educational purposes only and not financial advice.
 </footer>
 
 <script>
-// Dynamic Year
 document.getElementById("year").innerText = new Date().getFullYear();
 
-// Pop-up Modal for Link Descriptions
-function openLinkModal(link, title) {
-  document.getElementById("modal").style.display = "block";
-  document.getElementById("linkTitle").innerText = title;
-  document.getElementById("linkDescription").innerText = "This platform allows you to earn money for free. You can use the platform to exchange cryptocurrency instantly and access additional tools. Please make sure to review their terms of service before proceeding.";
-  document.getElementById("modal").setAttribute('data-link', link);
+function scrollToSection(id){
+  document.getElementById(id).scrollIntoView({behavior:"smooth"});
 }
 
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
+let currentLink = "";
+
+function openModal(type){
+  const modal = document.getElementById("modal");
+
+  if(type === "earn"){
+    document.getElementById("modalTitle").innerText = "Free Earning Platform";
+    document.getElementById("modalText").innerText =
+    "This platform allows users to earn money online through available opportunities. It does not involve crypto trading. Make sure to follow instructions carefully on the platform.";
+    currentLink = "https://forfans.me/chichiguy";
+  }
+
+  if(type === "float"){
+    document.getElementById("modalTitle").innerText = "FixedFloat Exchange";
+    document.getElementById("modalText").innerText =
+    "FixedFloat is an instant cryptocurrency exchange. You can swap coins quickly without creating an account. Always double-check wallet addresses before confirming transactions.";
+    currentLink = "https://ff.io/?ref=s1nep47a";
+  }
+
+  modal.style.display = "block";
 }
 
-// Send Message to Admin
-function sendMessage() {
-  alert("Your message has been sent to the admin.");
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+
+function goLink(){
+  window.open(currentLink,"_blank");
+}
+
+function openPremium(){
+  alert("Premium page coming soon 🚧");
+}
+
+function sendMessage(){
+  const msg = document.getElementById("message");
+
+  if(!msg.value){
+    showError("Message cannot be empty");
+    return;
+  }
+
+  alert("Message sent!");
+  msg.value = ""; // CLEAR TEXT ✅
+}
+
+function showError(text){
+  const box = document.getElementById("errorPopup");
+  box.innerText = text;
+  box.style.display="block";
+
+  setTimeout(()=>{ box.style.display="none"; },3000);
 }
 </script>
 
 </body>
-  </html>
+</html>
