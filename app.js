@@ -5,101 +5,77 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  sendEmailVerification,
-  sendPasswordResetEmail,
-  updateProfile,
-  collection,
   addDoc,
-  doc,
-  setDoc,
-  onSnapshot
+  collection
 } from "./firebase.js";
 
-let currentLink = "";
+let currentUser = null;
 
-/* NAV */
-window.showPage = (page)=>{
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(page).classList.add("active");
+/* AUTH */
+window.register = async ()=>{
+  const email = prompt("Email");
+  const pass = prompt("Password");
+
+  const user = await createUserWithEmailAndPassword(auth,email,pass);
+
+  // create user profile in database
+  await addDoc(collection(db,"users"),{
+    uid:user.user.uid,
+    email:user.user.email,
+    role:"user",
+    createdAt:new Date()
+  });
+
+  alert("Registered");
 };
 
-/* AUTH MODAL */
-window.openAuth = (type)=>{
-  alert(type + " modal placeholder (keep simple for now)");
+window.login = async ()=>{
+  const email = prompt("Email");
+  const pass = prompt("Password");
+
+  await signInWithEmailAndPassword(auth,email,pass);
+
+  alert("Logged in");
 };
 
-/* DASHBOARD CONTROL */
+/* SESSION */
 onAuthStateChanged(auth,(user)=>{
+  currentUser = user;
+
   if(user){
-    document.getElementById("dashboard").classList.add("active");
-  } else {
-    document.getElementById("dashboard").classList.remove("active");
+    document.getElementById("dashboard").style.display="block";
+  }else{
+    document.getElementById("dashboard").style.display="none";
   }
 });
 
-/* PLATFORM POPUP */
-window.openPlatform = (type)=>{
-  currentLink = type;
-
-  let text = "";
-
-  if(type==="earn"){
-    text = "This platform helps users explore verified earning systems. Read carefully before proceeding.";
+/* AFFILIATE TRACKING */
+window.trackClick = async (type)=>{
+  if(!currentUser){
+    alert("Login required");
+    return;
   }
 
-  if(type==="float"){
-    text = "FixedFloat is an instant crypto exchange used for fast swaps between currencies.";
+  let link = "";
+
+  if(type==="forfans"){
+    link = "https://forfans.me/chichiguy";
   }
 
-  document.getElementById("modalText").innerText = text;
-  document.getElementById("modal").style.display="block";
-};
+  if(type==="fixedfloat"){
+    link = "https://ff.io/?ref=s1nep47a";
+  }
 
-window.confirmGo = ()=>{
-  if(currentLink==="earn") window.open("https://forfans.me/chichiguy","_blank");
-  if(currentLink==="float") window.open("https://ff.io/?ref=s1nep47a","_blank");
-  closeModal();
-};
-
-window.closeModal = ()=>{
-  document.getElementById("modal").style.display="none";
-};
-
-/* SUPPORT */
-window.sendMsg = async ()=>{
-  const msg = document.getElementById("msg");
-
-  await addDoc(collection(db,"messages"),{
-    text:msg.value,
-    time:new Date()
+  // log click to Firestore
+  await addDoc(collection(db,"clicks"),{
+    uid: currentUser.uid,
+    type,
+    link,
+    time: new Date()
   });
 
-  msg.value="";
-  alert("Message sent");
-};
-
-/* SETTINGS */
-window.changeName = async ()=>{
-  const user = auth.currentUser;
-  await updateProfile(user,{displayName:document.getElementById("newName").value});
-  alert("Updated");
-};
-
-window.resetPass = async ()=>{
-  const email = auth.currentUser.email;
-  await sendPasswordResetEmail(auth,email);
-  alert("Reset email sent");
-};
-
-/* PORTFOLIO */
-window.openPortfolio = ()=>{
-  alert("Portfolio gallery coming soon (admin upload system next step)");
+  window.open(link,"_blank");
 };
 
 /* LOGOUT */
 window.logout = ()=>signOut(auth);
-
-/* ONLINE USERS (basic simulation ready for upgrade) */
-onSnapshot(collection(db,"messages"),(snap)=>{
-  document.getElementById("onlineCount").innerText = snap.size;
-});
