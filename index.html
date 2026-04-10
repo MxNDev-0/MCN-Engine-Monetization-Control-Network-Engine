@@ -2,7 +2,48 @@
 <html>
 <head>
   <title>AI SaaS Business</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #0b132b;
+      color: white;
+      padding: 20px;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    #dashboard {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .premium {
+      margin-top: 20px;
+      padding: 15px;
+      background: #1c2541;
+      border-radius: 10px;
+    }
+
+    .pay-btn {
+      background: green;
+      color: white;
+      padding: 12px;
+      border-radius: 5px;
+      display: inline-block;
+      text-decoration: none;
+    }
+  </style>
 </head>
 
 <body>
@@ -10,31 +51,57 @@
 <h1>🚀 AI SaaS Business</h1>
 <p>Welcome to your AI-powered crypto platform.</p>
 
-<!-- 🔐 AUTH SECTION -->
-<section id="authSection">
-  <h2>🔐 Login / Signup</h2>
+<!-- 🔐 AUTH -->
+<div id="auth">
+  <h2>Login / Signup</h2>
 
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Password"><br>
 
   <button onclick="signup()">Sign Up</button>
   <button onclick="login()">Login</button>
-</section>
+</div>
 
 <!-- 📊 DASHBOARD -->
-<section id="dashboard" style="display:none;">
-  <h2>📊 Dashboard</h2>
+<div id="dashboard">
+  <h2>Dashboard</h2>
+  <p>You are logged in 👋</p>
 
-  <p>Welcome 👋 You are logged in.</p>
-
-  <!-- 📈 TOOLS -->
-  <h3>📈 Crypto Tools</h3>
+  <h3>Crypto Tool</h3>
   <a href="https://ff.io/?ref=s1nep47a" target="_blank">
     FixedFloat Exchange
   </a>
 
-  <!-- 💳 PREMIUM (ONLY ONE) -->
-  <div id="premiumBox">
+  <!-- 💳 ONLY ONE PREMIUM -->
+  <div class="premium" id="premiumBox">
+    <h3>Upgrade to Premium</h3>
+    <p>Unlock premium tools and features.</p>
+
+    <a href="https://nowpayments.io/payment/?iid=5153003613" target="_blank" class="pay-btn">
+      Pay with Crypto (USDT BSC)
+    </a>
+  </div>
+</div>
+
+<script>
+function signup() {
+  // your Firebase signup here
+  showDashboard();
+}
+
+function login() {
+  // your Firebase login here
+  showDashboard();
+}
+
+function showDashboard() {
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+}
+</script>
+
+</body>
+</html>  <div id="premiumBox">
     <h3>💳 Upgrade to Premium</h3>
     <p>Unlock premium tools, AI features, and advanced crypto insights.</p>
 
