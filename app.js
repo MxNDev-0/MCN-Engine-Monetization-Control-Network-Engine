@@ -1,100 +1,97 @@
 import {
   auth,
-  db,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  doc,
-  setDoc,
-  getDoc,
-  addDoc,
-  collection
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  collection,
+  addDoc
 } from "./firebase.js";
 
 // POPUP
 function show(msg){
-  const p = document.getElementById("popup");
-  p.innerText = msg;
+  const p=document.getElementById("popup");
+  p.innerText=msg;
   p.style.display="block";
   setTimeout(()=>p.style.display="none",3000);
 }
 
-// REGISTER
-window.register = async () => {
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
-  const confirm = document.getElementById("confirmPassword").value;
+// MODALS
+window.openRegister=()=>document.getElementById("registerModal").style.display="block";
+window.openLogin=()=>document.getElementById("loginModal").style.display="block";
+window.closeModal=(id)=>document.getElementById(id).style.display="none";
 
-  if(pass !== confirm){
+// REGISTER
+window.register = async ()=>{
+  const email=document.getElementById("regEmail").value;
+  const pass=document.getElementById("regPassword").value;
+  const confirm=document.getElementById("regConfirm").value;
+
+  if(pass!==confirm){
     show("Passwords do not match");
     return;
   }
 
-  try {
-    const user = await createUserWithEmailAndPassword(auth,email,pass);
-    await setDoc(doc(db,"users",user.user.uid),{
-      email
-    });
-    show("Account created!");
-  } catch(e){
+  try{
+    const user=await createUserWithEmailAndPassword(auth,email,pass);
+    await sendEmailVerification(user.user);
+    show("Verification email sent!");
+  }catch(e){
     show(e.message);
   }
 };
 
 // LOGIN
-window.login = async () => {
-  try {
-    await signInWithEmailAndPassword(
+window.login = async ()=>{
+  try{
+    const user=await signInWithEmailAndPassword(
       auth,
       document.getElementById("loginEmail").value,
       document.getElementById("loginPassword").value
     );
-  } catch(e){
-    show("Wrong login details");
+
+    if(!user.user.emailVerified){
+      show("Verify your email first");
+      return;
+    }
+
+  }catch(e){
+    show("Invalid login");
   }
 };
 
 // SESSION
 onAuthStateChanged(auth,(user)=>{
-  if(user){
-    document.getElementById("auth").style.display="none";
+  if(user && user.emailVerified){
     document.getElementById("dashboard").style.display="block";
-  } else {
-    document.getElementById("auth").style.display="block";
-    document.getElementById("dashboard").style.display="none";
   }
 });
 
 // LOGOUT
-window.logout = ()=> signOut(auth);
+window.logout=()=>signOut(auth);
 
-// MODAL
-let link="";
-window.openModal = (type)=>{
-  const m = document.getElementById("modal");
-
-  if(type==="earn"){
-    document.getElementById("modalTitle").innerText="Free Earning Platform";
-    document.getElementById("modalText").innerText="Earn money without investment.";
-    link="https://forfans.me/chichiguy";
-  }
-
-  if(type==="float"){
-    document.getElementById("modalTitle").innerText="FixedFloat";
-    document.getElementById("modalText").innerText="Instant crypto exchange.";
-    link="https://ff.io/?ref=s1nep47a";
-  }
-
-  m.style.display="block";
+// RESET
+window.resetPassword=async ()=>{
+  const email=document.getElementById("loginEmail").value;
+  await sendPasswordResetEmail(auth,email);
+  show("Reset email sent");
 };
 
-window.closeModal = ()=> document.getElementById("modal").style.display="none";
-window.goLink = ()=> window.open(link,"_blank");
+// LINKS
+window.openLink=(type)=>{
+  if(type==="earn"){
+    window.open("https://forfans.me/chichiguy");
+  }
+  if(type==="float"){
+    window.open("https://ff.io/?ref=s1nep47a");
+  }
+};
 
 // MESSAGE
-window.sendMessage = async ()=>{
-  const msg = document.getElementById("message");
+window.sendMessage=async ()=>{
+  const msg=document.getElementById("message");
 
   if(!msg.value){
     show("Empty message");
@@ -102,13 +99,18 @@ window.sendMessage = async ()=>{
   }
 
   await addDoc(collection(db,"messages"),{
-    text:msg.value,
-    time:new Date()
+    text:msg.value
   });
 
   msg.value="";
   show("Message sent!");
 };
 
-// PREMIUM
-window.premium = ()=> alert("Coming soon 🚧");
+// IMAGE (LOCAL PREVIEW)
+window.uploadImage=()=>{
+  const file=document.getElementById("imgUpload").files[0];
+  const img=document.createElement("img");
+  img.src=URL.createObjectURL(file);
+  img.style.width="100px";
+  document.getElementById("gallery").appendChild(img);
+};
