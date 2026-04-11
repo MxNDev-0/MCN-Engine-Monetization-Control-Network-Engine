@@ -1,41 +1,75 @@
 import { auth, db } from "./firebase.js";
 import {
-  addDoc,
   collection,
+  addDoc,
+  query,
+  orderBy,
   onSnapshot,
-  query
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// LOAD MESSAGES LIVE
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 const chatBox = document.getElementById("chatBox");
 
-const q = query(collection(db, "chats"));
+// ================= CHECK LOGIN =================
+let currentUser = null;
 
-onSnapshot(q, (snapshot) => {
-  chatBox.innerHTML = "";
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
 
-  snapshot.forEach(doc => {
-    const m = doc.data();
-
-    chatBox.innerHTML += `
-      <div class="msg">
-        <b>${m.user}</b>: ${m.text}
-      </div>
-    `;
-  });
+  currentUser = user;
+  loadMessages();
 });
 
-// SEND MESSAGE
+// ================= SEND MESSAGE =================
 window.sendMsg = async function () {
-  const text = document.getElementById("msg").value;
+  const msg = document.getElementById("msg").value;
 
-  if (!text) return;
+  if (!msg.trim()) return;
 
-  await addDoc(collection(db, "chats"), {
-    text,
-    user: auth.currentUser.email,
-    time: Date.now()
+  await addDoc(collection(db, "messages"), {
+    text: msg,
+    user: currentUser.email,
+    uid: currentUser.uid,
+    time: serverTimestamp()
   });
 
   document.getElementById("msg").value = "";
 };
+
+// ================= LOAD REALTIME CHAT =================
+function loadMessages() {
+  const q = query(collection(db, "messages"), orderBy("time"));
+
+  onSnapshot(q, (snapshot) => {
+    chatBox.innerHTML = "";
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+
+      const isMe = data.uid === currentUser.uid;
+
+      chatBox.innerHTML += `
+        <div style="
+          margin:10px;
+          padding:10px;
+          border-radius:10px;
+          max-width:70%;
+          ${isMe ? "margin-left:auto;background:#5bc0be;color:black;" : "background:#0b132b;"}
+        ">
+          <b>${data.user}</b><br>
+          ${data.text}
+        </div>
+      `;
+    });
+
+    // auto scroll
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+}
