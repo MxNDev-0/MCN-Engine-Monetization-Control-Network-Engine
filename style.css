@@ -87,6 +87,8 @@ button {
 .post a {
   color: #5bc0be;
 }
+
+/* PREMIUM BADGE */
 .premium-badge {
   background: gold;
   color: black;
@@ -97,22 +99,16 @@ button {
   font-weight: bold;
 }
 
-.locked {
-  filter: blur(4px);
-  user-select: none;
-}
-
-.unlock-btn {
-  background: orange;
-  margin-top: 5px;
-}
+/* LOCKED CONTENT */
 .locked {
   filter: blur(5px);
   user-select: none;
 }
 
+/* UNLOCK BUTTON */
 .unlock-btn {
   background: gold;
   color: black;
   font-weight: bold;
-}
+  margin-top: 5px;
+    }
