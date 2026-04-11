@@ -33,8 +33,10 @@ body{
   padding:4px 8px;
   border-radius:6px;
   font-size:12px;
+  font-weight:bold;
 }
 
+/* LOGO */
 .logo{
   width:70px;
   height:70px;
@@ -46,42 +48,49 @@ body{
   justify-content:center;
   color:black;
   font-weight:bold;
+  font-size:18px;
 }
 
-/* RAINBOW TITLE */
+/* TITLE */
 .hero h1{
   font-size:26px;
+  margin:10px 0;
   background:linear-gradient(to right,red,orange,yellow,green,blue,indigo,violet);
   -webkit-background-clip:text;
   color:transparent;
+}
+
+/* FORMS */
+input{
+  width:85%;
+  padding:10px;
+  margin:6px;
+  border-radius:6px;
+  border:none;
+  outline:none;
 }
 
 /* BUTTONS */
 button{
   background:gold;
   color:black;
-  padding:10px;
-  margin:5px;
+  padding:10px 15px;
+  margin:6px;
   border:none;
   border-radius:6px;
   font-weight:bold;
   cursor:pointer;
 }
 
-/* FORMS */
-input{
-  width:80%;
-  padding:10px;
-  margin:5px;
-  border-radius:6px;
-  border:none;
+button:hover{
+  opacity:0.9;
 }
 
 /* DASHBOARD */
 #dashboard{
   display:none;
   max-width:520px;
-  margin:auto;
+  margin:20px auto;
 }
 
 .card{
@@ -90,6 +99,11 @@ input{
   margin:10px 0;
   border-radius:10px;
 }
+
+.logout{
+  background:red;
+  color:white;
+}
 </style>
 </head>
 
@@ -97,42 +111,56 @@ input{
 
 <!-- HEADER -->
 <div class="hero">
+
   <div class="beta">BETA</div>
 
   <div class="logo">MXM</div>
 
   <h1>MXM Crypto Empire</h1>
 
+  <p>Welcome — Register or Login to continue</p>
+
   <!-- SIGNUP -->
-  <h3>Register</h3>
+  <h3>Sign Up</h3>
   <input id="signupEmail" placeholder="Email">
   <input id="signupPass" type="password" placeholder="Password">
-  <button onclick="signup()">Sign Up</button>
+  <button id="signupBtn">Create Account</button>
 
   <!-- LOGIN -->
   <h3>Login</h3>
   <input id="loginEmail" placeholder="Email">
   <input id="loginPass" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
+  <button id="loginBtn">Login</button>
+
 </div>
 
-<!-- DASHBOARD -->
+<!-- DASHBOARD (HIDDEN UNTIL LOGIN) -->
 <div id="dashboard">
 
-<div class="card">
-<h3>Free Earning Platform</h3>
-<button onclick="trackClick('forfans')">Open</button>
+  <div class="card">
+    <h3>Free Earning Platform</h3>
+    <button onclick="window.open('https://forfans.me/chichiguy','_blank')">
+      Open
+    </button>
+  </div>
+
+  <div class="card">
+    <h3>FixedFloat Exchange</h3>
+    <button onclick="window.open('https://ff.io/?ref=s1nep47a','_blank')">
+      Open
+    </button>
+  </div>
+
+  <div class="card">
+    <h3>Portfolio / Proof</h3>
+    <p>Coming soon (admin uploads screenshots)</p>
+  </div>
+
+  <button class="logout" onclick="logout()">Logout</button>
+
 </div>
 
-<div class="card">
-<h3>FixedFloat Exchange</h3>
-<button onclick="trackClick('fixedfloat')">Open</button>
-</div>
-
-<button onclick="logout()" style="background:red;color:white;">Logout</button>
-
-</div>
-
+<!-- FIREBASE APP -->
 <script type="module" src="app.js"></script>
 
 </body>
