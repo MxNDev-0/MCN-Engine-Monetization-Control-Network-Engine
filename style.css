@@ -18,18 +18,10 @@ body {
   font-size: 18px;
 }
 
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.nav-links span {
-  cursor: pointer;
-}
-
+/* NAV BUTTONS */
 .nav-links button {
-  padding: 6px 10px;
+  margin-left: 10px;
+  padding: 6px 12px;
   background: #5bc0be;
   border: none;
   border-radius: 5px;
@@ -45,10 +37,18 @@ body {
   margin-left: 5px;
 }
 
-/* MAIN CONTAINER */
+/* CONTAINER */
 .container {
   max-width: 600px;
   margin: 20px auto;
+}
+
+/* ANALYTICS */
+.analytics {
+  background: #1c2541;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
 
 /* POST BOX */
@@ -84,15 +84,6 @@ button {
   border-radius: 10px;
 }
 
-.post h4 {
-  margin: 0 0 5px 0;
-}
-
 .post a {
   color: #5bc0be;
-  text-decoration: none;
-}
-
-.post a:hover {
-  text-decoration: underline;
 }
