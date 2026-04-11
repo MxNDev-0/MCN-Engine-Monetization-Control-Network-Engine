@@ -1,5 +1,8 @@
 import { auth, db } from "./firebase.js";
-import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
   collection,
@@ -7,72 +10,187 @@ import {
   getDocs,
   updateDoc,
   doc,
-  increment
+  increment,
+  arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const postsDiv = document.getElementById("posts");
+// ==========================
+// CONFIG
+// ==========================
+const ADMIN_EMAIL = "nc.maxiboro@gmail.com";
 
-// CHECK LOGIN
+// ==========================
+// ELEMENTS
+// ==========================
+const postsDiv = document.getElementById("posts");
+const adminPanel = document.getElementById("adminPanel");
+
+// ==========================
+// AUTH CHECK
+// ==========================
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
   } else {
     loadPosts();
+
+    // SHOW ADMIN PANEL
+    if (user.email === ADMIN_EMAIL) {
+      adminPanel.style.display = "block";
+    }
   }
 });
 
+// ==========================
 // LOGOUT
+// ==========================
 window.logout = function () {
   signOut(auth);
 };
 
+// ==========================
 // CREATE POST
+// ==========================
 window.createPost = async function () {
-  const text = document.getElementById("postText").value;
-  const link = document.getElementById("postLink").value;
+  const text = document.getElementById("postText").value.trim();
+  const link = document.getElementById("postLink").value.trim();
 
   if (!text || !link) {
     alert("Fill all fields");
     return;
   }
 
-  await addDoc(collection(db, "posts"), {
-    text,
-    link,
-    user: auth.currentUser.email,
-    clicks: 0,
-    createdAt: new Date()
-  });
+  try {
+    await addDoc(collection(db, "posts"), {
+      text: text,
+      link: link,
+      user: auth.currentUser.email,
+      clicks: 0,
+      likes: 0,
+      comments: [],
+      createdAt: new Date()
+    });
 
-  loadPosts();
+    // CLEAR INPUT
+    document.getElementById("postText").value = "";
+    document.getElementById("postLink").value = "";
+
+    loadPosts();
+  } catch (err) {
+    console.error(err);
+    alert("Error creating post");
+  }
 };
 
+// ==========================
 // LOAD POSTS
+// ==========================
 async function loadPosts() {
-  postsDiv.innerHTML = "";
+  postsDiv.innerHTML = "<p>Loading...</p>";
 
-  const querySnapshot = await getDocs(collection(db, "posts"));
+  try {
+    const snapshot = await getDocs(collection(db, "posts"));
 
-  querySnapshot.forEach((docSnap) => {
-    const post = docSnap.data();
-    const id = docSnap.id;
+    postsDiv.innerHTML = "";
 
-    postsDiv.innerHTML += `
-      <div class="post">
-        <h4>${post.user}</h4>
-        <p>${post.text}</p>
-        <a href="${post.link}" target="_blank" onclick="trackClick('${id}')">Visit Link</a>
-        <p>Clicks: ${post.clicks}</p>
-      </div>
-    `;
-  });
+    snapshot.forEach((docSnap) => {
+      const post = docSnap.data();
+      const id = docSnap.id;
+
+      let commentsHTML = "";
+
+      if (post.comments && post.comments.length > 0) {
+        post.comments.forEach((c) => {
+          commentsHTML += `
+            <p><b>${c.user}:</b> ${c.text}</p>
+          `;
+        });
+      }
+
+      postsDiv.innerHTML += `
+        <div class="post">
+          <h4>${post.user}</h4>
+          <p>${post.text}</p>
+
+          <a href="${post.link}" target="_blank" onclick="trackClick('${id}')">
+            Visit Link
+          </a>
+
+          <p>Clicks: ${post.clicks || 0}</p>
+          <p>Likes: ${post.likes || 0}</p>
+
+          <button onclick="likePost('${id}')">Like ❤️</button>
+
+          <div style="margin-top:10px;">
+            <input id="comment-${id}" placeholder="Write a comment">
+            <button onclick="addComment('${id}')">Comment</button>
+          </div>
+
+          <div style="margin-top:10px;">
+            ${commentsHTML}
+          </div>
+        </div>
+      `;
+    });
+
+  } catch (err) {
+    console.error(err);
+    postsDiv.innerHTML = "<p>Error loading posts</p>";
+  }
 }
 
+// ==========================
 // TRACK CLICKS 💰
+// ==========================
 window.trackClick = async function (id) {
-  const postRef = doc(db, "posts", id);
+  try {
+    const ref = doc(db, "posts", id);
+    await updateDoc(ref, {
+      clicks: increment(1)
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-  await updateDoc(postRef, {
-    clicks: increment(1)
-  });
+// ==========================
+// LIKE POST ❤️
+// ==========================
+window.likePost = async function (id) {
+  try {
+    const ref = doc(db, "posts", id);
+    await updateDoc(ref, {
+      likes: increment(1)
+    });
+
+    loadPosts();
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// ==========================
+// ADD COMMENT 💬
+// ==========================
+window.addComment = async function (id) {
+  const input = document.getElementById(`comment-${id}`);
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  try {
+    const ref = doc(db, "posts", id);
+
+    await updateDoc(ref, {
+      comments: arrayUnion({
+        user: auth.currentUser.email,
+        text: text
+      })
+    });
+
+    input.value = "";
+    loadPosts();
+  } catch (err) {
+    console.error(err);
+  }
 };
