@@ -2,104 +2,38 @@ import {
   auth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut,
   onAuthStateChanged
 } from "./firebase.js";
 
-/* GLOBAL LOGIN STATE */
-window.isLoggedIn = false;
-
-/* WAIT FOR PAGE LOAD */
-window.addEventListener("DOMContentLoaded", () => {
-
-  /* SIGNUP */
-  const signupBtn = document.getElementById("signupBtn");
-  if (signupBtn) {
-    signupBtn.addEventListener("click", async () => {
-      const email = document.getElementById("signupEmail").value;
-      const pass = document.getElementById("signupPass").value;
-
-      if (!email || !pass) {
-        alert("Fill all fields");
-        return;
-      }
-
-      try {
-        await createUserWithEmailAndPassword(auth, email, pass);
-        alert("Account created successfully");
-        document.getElementById("signupModal").style.display = "none";
-      } catch (e) {
-        alert(e.message);
-      }
-    });
-  }
-
-  /* LOGIN */
-  const loginBtn = document.getElementById("loginBtn");
-  if (loginBtn) {
-    loginBtn.addEventListener("click", async () => {
-      const email = document.getElementById("loginEmail").value;
-      const pass = document.getElementById("loginPass").value;
-
-      if (!email || !pass) {
-        alert("Fill all fields");
-        return;
-      }
-
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-        alert("Login successful");
-        document.getElementById("loginModal").style.display = "none";
-      } catch (e) {
-        alert("Login failed: " + e.message);
-      }
-    });
-  }
-
-});
-
-/* AUTH STATE CONTROL */
+// 🔥 AUTO REDIRECT IF ALREADY LOGGED IN
 onAuthStateChanged(auth, (user) => {
-
-  const dashboard = document.getElementById("dashboard");
-
   if (user) {
-    window.isLoggedIn = true;
-
-    if (dashboard) {
-      dashboard.style.display = "block";
-    }
-
-  } else {
-    window.isLoggedIn = false;
-
-    if (dashboard) {
-      dashboard.style.display = "none";
-    }
+    window.location.href = "dashboard.html";
   }
-
 });
 
-/* LOGOUT */
-window.logout = async () => {
-  await signOut(auth);
-  alert("Logged out");
-};
-
-/* RESET PASSWORD */
-window.resetPassword = async () => {
-  const email = document.getElementById("loginEmail").value;
-
-  if (!email) {
-    alert("Enter your email first");
-    return;
-  }
+// LOGIN
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("pass").value;
 
   try {
-    const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent");
+    await signInWithEmailAndPassword(auth, email, pass);
+    window.location.href = "dashboard.html";
   } catch (e) {
     alert(e.message);
   }
-};
+});
+
+// SIGNUP
+document.getElementById("signupBtn").addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("pass").value;
+
+  try {
+    await createUserWithEmailAndPassword(auth, email, pass);
+    alert("Account created. Now login.");
+  } catch (e) {
+    alert(e.message);
+  }
+});
