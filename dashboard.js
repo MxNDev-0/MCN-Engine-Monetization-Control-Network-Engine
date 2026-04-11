@@ -16,13 +16,9 @@ import {
 
 const ADMIN_EMAIL = "nc.maxiboro@gmail.com";
 
-// ELEMENTS
 const postsDiv = document.getElementById("posts");
 
-const totalPostsEl = document.getElementById("totalPosts");
-const totalClicksEl = document.getElementById("totalClicks");
-const totalLikesEl = document.getElementById("totalLikes");
-const topPostEl = document.getElementById("topPost");
+let isPremiumUser = false;
 
 // AUTH
 onAuthStateChanged(auth, (user) => {
@@ -30,31 +26,21 @@ onAuthStateChanged(auth, (user) => {
     window.location.href = "index.html";
   } else {
     loadPosts();
-
-    if (user.email === ADMIN_EMAIL) {
-      document.getElementById("adminPanel").style.display = "block";
-    }
   }
 });
 
-// NAVIGATION
-window.goHome = function () {
-  window.location.reload();
-};
-
-window.goProfile = function () {
-  alert("Profile page coming soon 👀");
-};
-
 // LOGOUT
-window.logout = function () {
-  signOut(auth);
-};
+window.logout = () => signOut(auth);
 
-// CREATE POST
+// NAV
+window.goHome = () => location.reload();
+window.goProfile = () => alert("Profile coming soon");
+
+// CREATE POST (NOW HAS PREMIUM OPTION)
 window.createPost = async function () {
-  const text = document.getElementById("postText").value.trim();
-  const link = document.getElementById("postLink").value.trim();
+  const text = document.getElementById("postText").value;
+  const link = document.getElementById("postLink").value;
+  const premium = document.getElementById("isPremium").checked;
 
   if (!text || !link) return alert("Fill all fields");
 
@@ -65,54 +51,45 @@ window.createPost = async function () {
     clicks: 0,
     likes: 0,
     comments: [],
+    premium: premium,
     createdAt: new Date()
   });
-
-  document.getElementById("postText").value = "";
-  document.getElementById("postLink").value = "";
 
   loadPosts();
 };
 
-// LOAD POSTS + ANALYTICS
+// LOAD POSTS
 async function loadPosts() {
-  postsDiv.innerHTML = "Loading...";
-
-  let totalPosts = 0;
-  let totalClicks = 0;
-  let totalLikes = 0;
-
-  let topPost = { clicks: 0, text: "None" };
+  postsDiv.innerHTML = "";
 
   const snapshot = await getDocs(collection(db, "posts"));
-
-  postsDiv.innerHTML = "";
 
   snapshot.forEach((docSnap) => {
     const post = docSnap.data();
     const id = docSnap.id;
 
-    totalPosts++;
-    totalClicks += post.clicks || 0;
-    totalLikes += post.likes || 0;
-
-    if ((post.clicks || 0) > topPost.clicks) {
-      topPost = { clicks: post.clicks || 0, text: post.text };
-    }
-
-    let commentsHTML = "";
-    post.comments.forEach(c => {
-      commentsHTML += `<p><b>${c.user}:</b> ${c.text}</p>`;
-    });
+    const isLocked = post.premium && !isPremiumUser;
 
     postsDiv.innerHTML += `
       <div class="post">
-        <h4>${post.user}</h4>
-        <p>${post.text}</p>
+        <h4>
+          ${post.user}
+          ${post.premium ? `<span class="premium-badge">PREMIUM</span>` : ""}
+        </h4>
 
-        <a href="${post.link}" target="_blank" onclick="trackClick('${id}')">
-          Visit Link
-        </a>
+        <div class="${isLocked ? "locked" : ""}">
+          <p>${post.text}</p>
+        </div>
+
+        ${isLocked ? `
+          <button class="unlock-btn" onclick="unlockPremium()">
+            Unlock Premium 💎
+          </button>
+        ` : `
+          <a href="${post.link}" target="_blank" onclick="trackClick('${id}')">
+            Visit Link
+          </a>
+        `}
 
         <p>Clicks: ${post.clicks}</p>
         <p>Likes: ${post.likes}</p>
@@ -121,17 +98,23 @@ async function loadPosts() {
 
         <input id="comment-${id}" placeholder="Comment">
         <button onclick="addComment('${id}')">Send</button>
-
-        ${commentsHTML}
       </div>
     `;
   });
-
-  totalPostsEl.innerText = totalPosts;
-  totalClicksEl.innerText = totalClicks;
-  totalLikesEl.innerText = totalLikes;
-  topPostEl.innerText = topPost.text;
 }
+
+// FAKE PREMIUM UNLOCK (we will connect payment later)
+window.unlockPremium = function () {
+  const code = prompt("Enter Premium Code:");
+
+  if (code === "MXM2026") {
+    isPremiumUser = true;
+    alert("Premium Activated 💎");
+    loadPosts();
+  } else {
+    alert("Invalid code");
+  }
+};
 
 // CLICK TRACK
 window.trackClick = async function (id) {
@@ -149,9 +132,7 @@ window.likePost = async function (id) {
 // COMMENT
 window.addComment = async function (id) {
   const input = document.getElementById(`comment-${id}`);
-  const text = input.value.trim();
-
-  if (!text) return;
+  const text = input.value;
 
   const ref = doc(db, "posts", id);
 
