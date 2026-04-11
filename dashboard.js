@@ -11,36 +11,64 @@ import {
   updateDoc,
   doc,
   increment,
-  arrayUnion
+  arrayUnion,
+  setDoc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const ADMIN_EMAIL = "nc.maxiboro@gmail.com";
-
 const postsDiv = document.getElementById("posts");
 
-let isPremiumUser = false;
-
-// AUTH
-onAuthStateChanged(auth, (user) => {
+// ========================
+// AUTH CHECK + CREATE USER
+// ========================
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "index.html";
-  } else {
-    loadPosts();
+    return;
   }
+
+  // CREATE USER IF NOT EXISTS
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      email: user.email,
+      premium: false,
+      createdAt: new Date()
+    });
+  }
+
+  loadPosts();
 });
 
-// LOGOUT
+// ========================
+// NAV FUNCTIONS
+// ========================
 window.logout = () => signOut(auth);
 
-// NAV
-window.goHome = () => location.reload();
-window.goProfile = () => alert("Profile coming soon");
+window.goHome = () => loadPosts();
 
-// CREATE POST (NOW HAS PREMIUM OPTION)
+window.goProfile = () => alert("Profile coming soon 👀");
+
+// ========================
+// PREMIUM PAGE (NOWPAYMENTS LINK)
+// ========================
+window.goPremium = function () {
+  alert("Premium is $15 USDT (TRC20). Redirecting...");
+
+  const url = "https://nowpayments.io/payment/?iid=MXM_PREMIUM_15";
+
+  window.open(url, "_blank");
+};
+
+// ========================
+// CREATE POST
+// ========================
 window.createPost = async function () {
   const text = document.getElementById("postText").value;
   const link = document.getElementById("postLink").value;
-  const premium = document.getElementById("isPremium").checked;
 
   if (!text || !link) return alert("Fill all fields");
 
@@ -51,38 +79,43 @@ window.createPost = async function () {
     clicks: 0,
     likes: 0,
     comments: [],
-    premium: premium,
+    premium: false,
     createdAt: new Date()
   });
 
   loadPosts();
 };
 
+// ========================
 // LOAD POSTS
+// ========================
 async function loadPosts() {
-  postsDiv.innerHTML = "";
+  postsDiv.innerHTML = "Loading...";
+
+  const userRef = doc(db, "users", auth.currentUser.uid);
+  const userSnap = await getDoc(userRef);
+  const isPremium = userSnap.data()?.premium || false;
 
   const snapshot = await getDocs(collection(db, "posts"));
+
+  postsDiv.innerHTML = "";
 
   snapshot.forEach((docSnap) => {
     const post = docSnap.data();
     const id = docSnap.id;
 
-    const isLocked = post.premium && !isPremiumUser;
+    const locked = post.premium && !isPremium;
 
     postsDiv.innerHTML += `
       <div class="post">
-        <h4>
-          ${post.user}
-          ${post.premium ? `<span class="premium-badge">PREMIUM</span>` : ""}
-        </h4>
+        <h4>${post.user} ${post.premium ? "💎" : ""}</h4>
 
-        <div class="${isLocked ? "locked" : ""}">
-          <p>${post.text}</p>
-        </div>
+        <p class="${locked ? "locked" : ""}">
+          ${post.text}
+        </p>
 
-        ${isLocked ? `
-          <button class="unlock-btn" onclick="unlockPremium()">
+        ${locked ? `
+          <button onclick="goPremium()" class="unlock-btn">
             Unlock Premium 💎
           </button>
         ` : `
@@ -103,33 +136,26 @@ async function loadPosts() {
   });
 }
 
-// FAKE PREMIUM UNLOCK (we will connect payment later)
-window.unlockPremium = function () {
-  const code = prompt("Enter Premium Code:");
-
-  if (code === "MXM2026") {
-    isPremiumUser = true;
-    alert("Premium Activated 💎");
-    loadPosts();
-  } else {
-    alert("Invalid code");
-  }
-};
-
-// CLICK TRACK
+// ========================
+// TRACK CLICK
+// ========================
 window.trackClick = async function (id) {
   const ref = doc(db, "posts", id);
   await updateDoc(ref, { clicks: increment(1) });
 };
 
+// ========================
 // LIKE
+// ========================
 window.likePost = async function (id) {
   const ref = doc(db, "posts", id);
   await updateDoc(ref, { likes: increment(1) });
   loadPosts();
 };
 
+// ========================
 // COMMENT
+// ========================
 window.addComment = async function (id) {
   const input = document.getElementById(`comment-${id}`);
   const text = input.value;
