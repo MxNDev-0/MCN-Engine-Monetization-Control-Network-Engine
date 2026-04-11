@@ -1,79 +1,64 @@
 import { auth, db } from "./firebase.js";
-
 import {
-  doc,
-  setDoc,
   collection,
   addDoc,
+  onSnapshot,
   query,
   orderBy,
-  onSnapshot,
-  getDoc
+  doc,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+const usersList = document.getElementById("usersList");
 const chatBox = document.getElementById("chatBox");
 
-// GET USER ID FROM URL
-const urlParams = new URLSearchParams(window.location.search);
-const otherUserId = urlParams.get("uid");
+let selectedUserId = null;
 
-let chatId = "";
-
-// AUTH
-onAuthStateChanged(auth, async (user) => {
+// ================= AUTH =================
+onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
-    return;
+  } else {
+    loadUsers();
   }
-
-  if (!otherUserId) {
-    alert("No user selected");
-    return;
-  }
-
-  // CREATE UNIQUE CHAT ID
-  chatId = user.uid < otherUserId
-    ? user.uid + "_" + otherUserId
-    : otherUserId + "_" + user.uid;
-
-  // CREATE CHAT DOCUMENT IF NOT EXISTS
-  const chatRef = doc(db, "chats", chatId);
-  const chatSnap = await getDoc(chatRef);
-
-  if (!chatSnap.exists()) {
-    await setDoc(chatRef, {
-      participants: [user.uid, otherUserId]
-    });
-  }
-
-  loadMessages();
 });
 
-// SEND MESSAGE
-window.sendMsg = async function () {
-  const input = document.getElementById("msg");
-  const text = input.value;
+// ================= LOAD USERS =================
+async function loadUsers() {
+  const snapshot = await getDocs(collection(db, "users"));
 
-  if (!text) return;
+  usersList.innerHTML = "";
 
-  const user = auth.currentUser;
+  snapshot.forEach((docSnap) => {
+    const user = docSnap.data();
+    const id = docSnap.id;
 
-  await addDoc(collection(db, "chats", chatId, "messages"), {
-    text: text,
-    sender: user.uid,
-    email: user.email,
-    createdAt: Date.now()
+    if (auth.currentUser.uid === id) return;
+
+    usersList.innerHTML += `
+      <div class="user-item" onclick="selectUser('${id}', '${user.email}')">
+        ${user.email}
+      </div>
+    `;
   });
+}
 
-  input.value = "";
+// ================= SELECT USER =================
+window.selectUser = function (userId, email) {
+  selectedUserId = userId;
+  chatBox.innerHTML = `<p>Chatting with ${email}</p>`;
+
+  loadMessages();
 };
 
-// LOAD MESSAGES
+// ================= LOAD MESSAGES =================
 function loadMessages() {
+  const chatId = getChatId(auth.currentUser.uid, selectedUserId);
+
   const q = query(
     collection(db, "chats", chatId, "messages"),
     orderBy("createdAt")
@@ -82,22 +67,39 @@ function loadMessages() {
   onSnapshot(q, (snapshot) => {
     chatBox.innerHTML = "";
 
-    snapshot.forEach(doc => {
+    snapshot.forEach((doc) => {
       const msg = doc.data();
 
-      const isMe = msg.sender === auth.currentUser.uid;
-
       chatBox.innerHTML += `
-        <div class="msg" style="
-          background: ${isMe ? '#5bc0be' : '#0b132b'};
-          text-align: ${isMe ? 'right' : 'left'};
-        ">
-          <small>${msg.email}</small>
-          <p>${msg.text}</p>
+        <div class="msg">
+          <b>${msg.email}</b>: ${msg.text}
         </div>
       `;
     });
 
     chatBox.scrollTop = chatBox.scrollHeight;
   });
+}
+
+// ================= SEND MESSAGE =================
+window.sendMsg = async function () {
+  const input = document.getElementById("msg");
+  const text = input.value;
+
+  if (!text || !selectedUserId) return;
+
+  const chatId = getChatId(auth.currentUser.uid, selectedUserId);
+
+  await addDoc(collection(db, "chats", chatId, "messages"), {
+    text,
+    email: auth.currentUser.email,
+    createdAt: Date.now()
+  });
+
+  input.value = "";
+};
+
+// ================= CHAT ID =================
+function getChatId(a, b) {
+  return a < b ? a + "_" + b : b + "_" + a;
 }
