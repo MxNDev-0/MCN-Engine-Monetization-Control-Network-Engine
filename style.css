@@ -113,6 +113,35 @@ button {
 /* ADMIN */
 #usersList {
   background: #1c2541;
+  /* CHAT */
+.chat-box {
+  height: 70vh;
+  overflow-y: scroll;
+  padding: 10px;
+  background: #1c2541;
+}
+
+.msg {
+  background: #0b132b;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px;
+  background: #1c2541;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+}
+
+.chat-input button {
+  margin-left: 10px;
+}
   padding: 10px;
   border-radius: 10px;
 }
