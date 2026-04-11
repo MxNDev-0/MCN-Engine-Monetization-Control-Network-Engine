@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>MXM Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
+  <title>MXM Blog</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="box">
-  <h2>MXM Crypto Empire</h2>
+<div class="auth-box">
+  <h2>MXM Blog</h2>
 
-  <input id="email" placeholder="Email">
-  <input id="pass" type="password" placeholder="Password">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
 
-  <button id="loginBtn">Login</button>
-  <button id="signupBtn">Sign Up</button>
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="login()">Login</button>
+
+  <p id="message"></p>
 </div>
 
-<script type="module" src="app.js" defer></script>
-
+<script type="module" src="app.js"></script>
 </body>
 </html>
