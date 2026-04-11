@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MXM Chat</title>
+  <title>MXM Live Chat</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div class="navbar">
@@ -11,11 +12,18 @@
   <button onclick="location.href='dashboard.html'">Back</button>
 </div>
 
-<div id="chatBox"></div>
+<div id="chatBox" style="
+  height: 70vh;
+  overflow-y: auto;
+  padding: 10px;
+  background:#1c2541;
+  margin: 10px;
+  border-radius: 10px;
+"></div>
 
-<div class="chat-input">
-  <input id="msg" placeholder="Type message">
-  <button onclick="sendMsg()">Send</button>
+<div class="chat-input" style="display:flex; padding:10px;">
+  <input id="msg" placeholder="Type message..." style="flex:1; padding:10px;">
+  <button onclick="sendMsg()" style="margin-left:10px;">Send</button>
 </div>
 
 <script type="module" src="chat.js"></script>
