@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MXM Chat</title>
+  <title>MXM Chat Pro</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- NAVBAR -->
 <div class="navbar">
-  <h2 class="logo">MXM Chat 💬</h2>
+  <h2 class="logo">MXM Chat Pro 💬</h2>
 
   <div class="nav-links">
     <button onclick="goBack()">⬅ Back</button>
@@ -16,16 +15,27 @@
   </div>
 </div>
 
-<div class="container">
+<div class="container" style="display:flex; gap:10px;">
 
-  <!-- CHAT BOX -->
-  <div id="chatBox" style="height:400px; overflow-y:auto; background:#1c2541; padding:10px; border-radius:10px;">
+  <!-- USERS LIST -->
+  <div style="width:30%; background:#1c2541; padding:10px; border-radius:10px;">
+    <h4>Users</h4>
+    <div id="usersList"></div>
   </div>
 
-  <!-- INPUT -->
-  <div style="margin-top:10px;">
-    <input id="messageInput" placeholder="Type message...">
-    <button onclick="sendMessage()">Send</button>
+  <!-- CHAT AREA -->
+  <div style="width:70%;">
+    
+    <div id="chatHeader">Select a user</div>
+
+    <div id="chatBox" style="height:350px; overflow-y:auto; background:#1c2541; padding:10px; border-radius:10px;">
+    </div>
+
+    <div style="margin-top:10px;">
+      <input id="messageInput" placeholder="Type message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
   </div>
 
 </div>
