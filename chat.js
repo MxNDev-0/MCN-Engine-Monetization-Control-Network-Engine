@@ -1,68 +1,53 @@
 import { auth, db } from "./firebase.js";
+
+import {
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 import {
   collection,
   addDoc,
-  onSnapshot,
   query,
   orderBy,
-  doc,
-  getDocs
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-const usersList = document.getElementById("usersList");
 const chatBox = document.getElementById("chatBox");
-
-let selectedUserId = null;
 
 // ================= AUTH =================
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
-  } else {
-    loadUsers();
+    return;
   }
-});
-
-// ================= LOAD USERS =================
-async function loadUsers() {
-  const snapshot = await getDocs(collection(db, "users"));
-
-  usersList.innerHTML = "";
-
-  snapshot.forEach((docSnap) => {
-    const user = docSnap.data();
-    const id = docSnap.id;
-
-    if (auth.currentUser.uid === id) return;
-
-    usersList.innerHTML += `
-      <div class="user-item" onclick="selectUser('${id}', '${user.email}')">
-        ${user.email}
-      </div>
-    `;
-  });
-}
-
-// ================= SELECT USER =================
-window.selectUser = function (userId, email) {
-  selectedUserId = userId;
-  chatBox.innerHTML = `<p>Chatting with ${email}</p>`;
 
   loadMessages();
+});
+
+// ================= NAV =================
+window.logout = () => signOut(auth);
+window.goBack = () => window.location.href = "dashboard.html";
+
+// ================= SEND MESSAGE =================
+window.sendMessage = async function () {
+  const input = document.getElementById("messageInput");
+  const text = input.value;
+
+  if (!text) return;
+
+  await addDoc(collection(db, "messages"), {
+    text: text,
+    user: auth.currentUser.email,
+    time: Date.now()
+  });
+
+  input.value = "";
 };
 
-// ================= LOAD MESSAGES =================
+// ================= LOAD MESSAGES (REALTIME) =================
 function loadMessages() {
-  const chatId = getChatId(auth.currentUser.uid, selectedUserId);
-
-  const q = query(
-    collection(db, "chats", chatId, "messages"),
-    orderBy("createdAt")
-  );
+  const q = query(collection(db, "messages"), orderBy("time"));
 
   onSnapshot(q, (snapshot) => {
     chatBox.innerHTML = "";
@@ -71,35 +56,13 @@ function loadMessages() {
       const msg = doc.data();
 
       chatBox.innerHTML += `
-        <div class="msg">
-          <b>${msg.email}</b>: ${msg.text}
+        <div style="margin:5px 0; padding:8px; background:#0b132b; border-radius:5px;">
+          <b>${msg.user}</b><br>
+          ${msg.text}
         </div>
       `;
     });
 
     chatBox.scrollTop = chatBox.scrollHeight;
   });
-}
-
-// ================= SEND MESSAGE =================
-window.sendMsg = async function () {
-  const input = document.getElementById("msg");
-  const text = input.value;
-
-  if (!text || !selectedUserId) return;
-
-  const chatId = getChatId(auth.currentUser.uid, selectedUserId);
-
-  await addDoc(collection(db, "chats", chatId, "messages"), {
-    text,
-    email: auth.currentUser.email,
-    createdAt: Date.now()
-  });
-
-  input.value = "";
-};
-
-// ================= CHAT ID =================
-function getChatId(a, b) {
-  return a < b ? a + "_" + b : b + "_" + a;
-}
+    }
