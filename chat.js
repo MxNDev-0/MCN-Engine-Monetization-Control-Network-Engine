@@ -11,7 +11,9 @@ import {
   query,
   orderBy,
   onSnapshot,
-  getDocs
+  getDocs,
+  setDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const usersListDiv = document.getElementById("usersList");
@@ -21,7 +23,7 @@ const chatHeader = document.getElementById("chatHeader");
 let currentChatId = null;
 let currentUser = null;
 
-// ================= AUTH =================
+// AUTH
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "index.html";
@@ -30,18 +32,24 @@ onAuthStateChanged(auth, async (user) => {
 
   currentUser = user;
 
+  // mark online
+  await setDoc(doc(db, "onlineUsers", user.uid), {
+    email: user.email,
+    online: true
+  });
+
   loadUsers();
 });
 
-// ================= NAV =================
+// NAV
 window.logout = () => signOut(auth);
 window.goBack = () => window.location.href = "dashboard.html";
 
-// ================= LOAD USERS =================
+// LOAD USERS + ONLINE COUNT
 async function loadUsers() {
-  const snapshot = await getDocs(collection(db, "users"));
+  const snapshot = await getDocs(collection(db, "onlineUsers"));
 
-  usersListDiv.innerHTML = "";
+  usersListDiv.innerHTML = "<h4>Users Online</h4>";
 
   snapshot.forEach(docSnap => {
     const user = docSnap.data();
@@ -50,19 +58,18 @@ async function loadUsers() {
     if (uid === currentUser.uid) return;
 
     usersListDiv.innerHTML += `
-      <div style="padding:8px; background:#0b132b; margin:5px 0; border-radius:5px; cursor:pointer;"
+      <div class="user-item"
         onclick="openChat('${uid}', '${user.email}')">
-        ${user.email}
+        ${user.email} 🟢
       </div>
     `;
   });
 }
 
-// ================= OPEN CHAT =================
+// OPEN CHAT
 window.openChat = function (userId, email) {
   const myId = currentUser.uid;
 
-  // create unique chat ID
   currentChatId = [myId, userId].sort().join("_");
 
   chatHeader.innerText = "Chat with " + email;
@@ -70,15 +77,18 @@ window.openChat = function (userId, email) {
   loadMessages();
 };
 
-// ================= SEND MESSAGE =================
+// SEND MESSAGE (FIXED)
 window.sendMessage = async function () {
   const input = document.getElementById("messageInput");
-  const text = input.value;
+  const text = input.value.trim();
 
-  if (!text || !currentChatId) return;
+  if (!text || !currentChatId) {
+    alert("Select user first");
+    return;
+  }
 
   await addDoc(collection(db, "chats", currentChatId, "messages"), {
-    text: text,
+    text,
     sender: currentUser.uid,
     email: currentUser.email,
     time: Date.now()
@@ -87,7 +97,7 @@ window.sendMessage = async function () {
   input.value = "";
 };
 
-// ================= LOAD MESSAGES =================
+// LOAD MESSAGES
 function loadMessages() {
   const q = query(
     collection(db, "chats", currentChatId, "messages"),
@@ -99,7 +109,6 @@ function loadMessages() {
 
     snapshot.forEach(doc => {
       const msg = doc.data();
-
       const isMe = msg.sender === currentUser.uid;
 
       chatBox.innerHTML += `
@@ -110,7 +119,6 @@ function loadMessages() {
           background:${isMe ? "#5bc0be" : "#0b132b"};
           text-align:${isMe ? "right" : "left"};
         ">
-          <b>${msg.email}</b><br>
           ${msg.text}
         </div>
       `;
