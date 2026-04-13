@@ -1,27 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MXM Crypto Empire</title>
+  <title>MXM Crypto Empire — Genesis Beta v1</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- LOGO -->
-<div class="header">
-  <h1>MXM Crypto Empire <span class="beta">BETA</span></h1>
+<div class="navbar">
+  <h2 class="logo">
+    MXM Crypto Empire — Genesis Beta v1
+    <span class="beta">BETA</span>
+  </h2>
+
+  <div class="nav-links">
+    <button onclick="goHome()">Home</button>
+    <button onclick="goProfile()">Profile</button>
+    <button onclick="goAdmin()">Admin</button>
+    <button onclick="goPremium()">Upgrade 🚀</button>
+    <button onclick="location.href='chat.html'">Chat 💬</button>
+    <button onclick="support()">Support 💰</button>
+    <button onclick="logout()">Logout</button>
+  </div>
 </div>
 
-<!-- AUTH -->
-<div class="auth-box">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
+<div class="container">
 
-  <button onclick="signup()">Sign Up</button>
-  <button onclick="login()">Login</button>
+  <div class="analytics">
+    <h3>📊 Analytics</h3>
+    <p>Total Posts: <span id="totalPosts">0</span></p>
+    <p>Total Clicks: <span id="totalClicks">0</span></p>
+    <p>Total Likes: <span id="totalLikes">0</span></p>
+    <p>Top Post: <span id="topPost">None</span></p>
+  </div>
 
-  <p id="message"></p>
+  <div id="adminPanel" style="display:none;">
+    <h3>👑 Admin Dashboard</h3>
+    <button onclick="sendNotification()">Send Notification 🔔</button>
+    <div id="usersList"></div>
+  </div>
+
+  <div class="post-box">
+    <textarea id="postText" placeholder="Share something..."></textarea>
+
+    <!-- OPTIONAL LINK -->
+    <input type="text" id="postLink" placeholder="Optional link (v2 only)">
+
+    <button onclick="createPost()">Post</button>
+  </div>
+
+  <div id="posts"></div>
+
 </div>
 
-<script type="module" src="app.js"></script>
+<div class="footer">
+  ⚠️ Disclaimer: Educational platform only. No financial guarantees.
+
+  <br><br>
+
+  💡 Genesis Beta v1: Limited features. Upgrade to unlock more.
+
+  <br><br>
+
+  © 2026 MXM Crypto Empire
+</div>
+
+<script type="module" src="dashboard.js"></script>
+
 </body>
 </html>
