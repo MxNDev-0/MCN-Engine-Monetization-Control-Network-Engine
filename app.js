@@ -1,4 +1,5 @@
 import { auth } from "./firebase.js";
+
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -6,6 +7,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const message = document.getElementById("message");
+
+let authReady = false;
 
 // SIGNUP
 window.signup = async function () {
@@ -33,8 +36,11 @@ window.login = async function () {
   }
 };
 
-// KEEP USER LOGGED IN
+// 🔥 FIXED AUTH CHECK
 onAuthStateChanged(auth, (user) => {
+  if (authReady) return;
+  authReady = true;
+
   if (user) {
     window.location.href = "dashboard.html";
   }
