@@ -20,17 +20,10 @@ const postsDiv = document.getElementById("posts");
 
 let currentUserData = null;
 
-// ✅ THIS STOPS ALL LOOPS COMPLETELY
-let hasInitialized = false;
-
+// ✅ AUTH (CLEAN + NO LOOP)
 onAuthStateChanged(auth, async (user) => {
-
-  // 🔥 STOP MULTIPLE EXECUTION
-  if (hasInitialized) return;
-  hasInitialized = true;
-
   if (!user) {
-    window.location.replace("index.html"); // safer than href
+    window.location.replace("index.html");
     return;
   }
 
@@ -50,15 +43,22 @@ onAuthStateChanged(auth, async (user) => {
   loadPosts();
 });
 
-// ================= LOGOUT =================
+// ================= NAV =================
 window.logout = async () => {
   await signOut(auth);
   window.location.replace("index.html");
 };
 
-// ================= NAV =================
 window.goHome = () => loadPosts();
 window.goProfile = () => window.location.href = "profile.html";
+
+window.goAdmin = () => {
+  if (auth.currentUser.email !== ADMIN_EMAIL) {
+    alert("Not admin");
+    return;
+  }
+  document.getElementById("adminPanel").style.display = "block";
+};
 
 // ================= SUPPORT =================
 window.support = () => {
