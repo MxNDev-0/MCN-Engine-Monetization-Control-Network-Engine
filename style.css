@@ -1,207 +1,178 @@
 /* ================= GLOBAL ================= */
 body {
-margin: 0;
-font-family: Arial;
-background: #0b132b;
-color: white;
+  margin: 0;
+  font-family: Arial;
+  background: #0b132b;
+  color: white;
 }
 
-/* ================= LOGIN (FIXED ALIGNMENT) ================= */
-
-body {
-margin: 0;
-font-family: Arial;
-background: #0b132b;
-color: white;
-}
-
+/* ================= LOGIN ================= */
 .login-wrapper {
-display: flex;
-justify-content: center;
-align-items: center;
-height: 100vh;
-padding: 15px;
-box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 15px;
+  box-sizing: border-box;
 }
 
 .center-box {
-width: 100%;
-max-width: 340px;
-background: #1c2541;
-padding: 25px 20px;
-border-radius: 12px;
-text-align: center;
-box-sizing: border-box;
+  width: 100%;
+  max-width: 340px;
+  background: #1c2541;
+  padding: 25px 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 /* TITLE */
 .center-box h2 {
-margin: 0 0 5px 0;
+  margin: 0 0 5px 0;
 }
 
 /* BADGE */
 .gold-badge {
-display: inline-block;
-margin-bottom: 15px;
-background: blue;
-color: black;
-padding: 4px 10px;
-border-radius: 8px;
-font-size: 12px;
+  display: inline-block;
+  margin-bottom: 15px;
+  background: blue;
+  color: black;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
 }
 
-/* INPUT FIX (KEY PART) /
+/* ================= INPUTS ================= */
+/* FIX INPUT ALIGNMENT */
 input {
-width: 100%;
-display: block;
-padding: 12px;
-margin: 10px 0;
-border-radius: 6px;
-border: none;
-outline: none;
-box-sizing: border-box; / 🔥 fixes left/right misalignment */
-font-size: 14px;
+  width: 100%;
+  display: block;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+  font-size: 14px;
 }
 
-/* BUTTON FIX */
+/* ================= BUTTONS ================= */
 button {
-width: 100%;
-display: block;
-margin: 8px 0;
-padding: 12px;
-border-radius: 6px;
-border: none;
-background: #5bc0be;
-color: black;
-font-weight: bold;
-cursor: pointer;
-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  background: #5bc0be;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 /* extra spacing consistency */
 .center-box button:first-of-type {
-margin-top: 15px;
-}
-
-input {
-width: 100%;
-padding: 10px;
-margin: 8px 0;
-border-radius: 5px;
-border: none;
-outline: none;
-box-sizing: border-box;
-}
-
-button {
-width: 100%;
-margin: 5px 0;
-padding: 10px;
-border-radius: 5px;
-border: none;
-background: #5bc0be;
-color: black;
-font-weight: bold;
-cursor: pointer;
+  margin-top: 15px;
 }
 
 /* ================= NAVBAR ================= */
 .navbar {
-display: flex;
-justify-content: space-between;
-align-items: center;
-background: #1c2541;
-padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1c2541;
+  padding: 10px;
 }
 
 /* SMALL BUTTONS */
 .navbar button {
-width: auto;
-padding: 5px 8px;
-font-size: 13px;
-border-radius: 5px;
-background: #5bc0be;
-border: none;
-cursor: pointer;
+  width: auto;
+  padding: 5px 8px;
+  font-size: 13px;
+  border-radius: 5px;
+  background: #5bc0be;
+  border: none;
+  cursor: pointer;
 }
 
 /* ================= MENU ================= */
 .menu {
-display: none;
-position: absolute;
-top: 50px;
-left: 10px;
-background: #2a2a2a;
-padding: 10px;
-border-radius: 10px;
-width: 160px;
+  display: none;
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  background: #2a2a2a;
+  padding: 10px;
+  border-radius: 10px;
+  width: 160px;
 }
 
 .menu button {
-width: 100%;
-margin: 5px 0;
-padding: 6px;
-font-size: 13px;
+  width: 100%;
+  margin: 5px 0;
+  padding: 6px;
+  font-size: 13px;
 }
 
 /* ================= DASHBOARD TITLE ================= */
 .title-box {
-text-align: center;
-margin: 10px 0;
+  text-align: center;
+  margin: 10px 0;
 }
 
 .title-box h2 {
-margin: 0;
+  margin: 0;
 }
 
 .badge {
-background: gold;
-color: black;
-padding: 3px 8px;
-border-radius: 8px;
-font-size: 12px;
+  background: gold;
+  color: black;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 12px;
 }
 
 /* ================= CARD ================= */
 .card {
-background: #1c2541;
-padding: 12px;
-margin: 10px;
-border-radius: 10px;
+  background: #1c2541;
+  padding: 12px;
+  margin: 10px;
+  border-radius: 10px;
 }
 
 /* ================= CHAT ================= */
 #chatBox {
-height: 220px;
-overflow-y: auto;
-background: #0b132b;
-padding: 10px;
-border-radius: 8px;
+  height: 220px;
+  overflow-y: auto;
+  background: #0b132b;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .row {
-display: flex;
-gap: 6px;
-margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .row input {
-width: 70%;
-padding: 8px;
-border-radius: 5px;
-border: none;
-box-sizing: border-box;
+  width: 70%;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  box-sizing: border-box;
 }
 
 .row button {
-padding: 6px 10px;
-border-radius: 5px;
-background: #5bc0be;
-border: none;
-cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: #5bc0be;
+  border: none;
+  cursor: pointer;
 }
-/* ================= EARN SECTION ================= */
 
+/* ================= EARN SECTION ================= */
 .earn-card {
   border: 1px solid #5bc0be;
   box-shadow: 0 0 8px rgba(91, 192, 190, 0.2);
