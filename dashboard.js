@@ -12,8 +12,7 @@ import {
   query,
   orderBy,
   doc,
-  setDoc,
-  updateDoc
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
@@ -29,7 +28,8 @@ onAuthStateChanged(auth, (u) => {
 
   loadFeed();
   loadWallet();
-  loadCryptoPrices(); // ✅ FIXED (was loadBTCPrice)
+  loadCryptoPrices(); // ✅ FIXED: run immediately
+  loadOnlineUsers();  // ✅ FIXED: USERS NOW WORK
 });
 
 /* ================= FEED ================= */
@@ -96,7 +96,7 @@ function loadWallet() {
   });
 }
 
-/* ================= ✅ FIXED CRYPTO (BTC + ETH + BNB + USDT) ================= */
+/* ================= CRYPTO (FIXED) ================= */
 async function loadCryptoPrices() {
   const el = document.getElementById("btcPrice");
   if (!el) return;
@@ -108,8 +108,6 @@ async function loadCryptoPrices() {
 
     const data = await res.json();
 
-    if (!data.bitcoin) throw new Error("API failed");
-
     el.innerText =
       "BTC: $" + data.bitcoin.usd +
       " | ETH: $" + data.ethereum.usd +
@@ -117,20 +115,45 @@ async function loadCryptoPrices() {
       " | USDT: $" + data.tether.usd;
 
   } catch (err) {
-    el.innerText = "Crypto prices unavailable (API limit)";
+    el.innerText = "Crypto prices unavailable";
   }
 }
 
 /* refresh every 30s */
 setInterval(loadCryptoPrices, 30000);
 
-/* ================= 🚀 UPGRADE FIX ================= */
+/* ================= USERS ONLINE (FIXED) ================= */
+function loadOnlineUsers() {
+  const box = document.getElementById("onlineUsers");
+  if (!box) return;
 
+  const q = query(collection(db, "onlineUsers"));
+
+  onSnapshot(q, (snap) => {
+    box.innerHTML = "";
+
+    let count = 0;
+
+    snap.forEach(docSnap => {
+      const u = docSnap.data();
+
+      count++;
+
+      box.innerHTML += `
+        <div style="padding:5px; margin:3px 0; background:#1c2541; border-radius:5px;">
+          🟢 ${u.email || "Unknown"}
+        </div>
+      `;
+    });
+
+    box.innerHTML = `<b>Online Users: ${count}</b><br><br>` + box.innerHTML;
+  });
+}
+
+/* ================= UPGRADE (WORKING) ================= */
 const UPGRADE_LINK = "https://nowpayments.io/payment/?iid=5153003613";
 
 function handleUpgrade() {
-  alert("Upgrade clicked ✅");
-
   if (!user) {
     alert("Not logged in");
     return;
@@ -142,15 +165,11 @@ function handleUpgrade() {
     uid: user.uid,
     email: user.email,
     status: "pending",
-    source: "NOWPayments",
     createdAt: Date.now()
-  }).catch(err => {
-    console.log("Upgrade save error:", err);
   });
 }
 
 window.goPremium = handleUpgrade;
-window.upgrade = handleUpgrade;
 
 /* ================= MENU ================= */
 window.toggleMenu = () => {
