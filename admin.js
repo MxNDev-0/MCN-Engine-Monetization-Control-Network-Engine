@@ -40,7 +40,7 @@ window.addEarning = async () => {
   alert("Earning added!");
 };
 
-/* ================= USERS LIST ================= */
+/* ================= USERS ================= */
 function loadUsers() {
   const box = document.getElementById("usersList");
   if (!box) return;
@@ -99,12 +99,16 @@ window.deletePost = async (id) => {
 
 /* ================= ✅ FIXED: CLEAR ALL POSTS ================= */
 window.clearAllPosts = async () => {
-  const confirmDelete = confirm("⚠️ Delete ALL posts permanently?");
-
-  if (!confirmDelete) return;
-
   try {
+    const confirmDelete = confirm("⚠️ This will delete ALL posts permanently. Continue?");
+    if (!confirmDelete) return;
+
     const snap = await getDocs(collection(db, "posts"));
+
+    if (snap.empty) {
+      alert("No posts found");
+      return;
+    }
 
     const batch = writeBatch(db);
 
@@ -115,9 +119,10 @@ window.clearAllPosts = async () => {
     await batch.commit();
 
     alert("✅ All posts deleted successfully!");
+
   } catch (err) {
-    console.error(err);
     alert("❌ Failed to delete posts");
+    console.error(err);
   }
 };
 
