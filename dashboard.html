@@ -9,8 +9,24 @@
 <body>
 
 <div class="navbar">
+
+  <button onclick="toggleMenu()">☰</button>
+
   <h3>MXM Dashboard</h3>
+
   <button onclick="logout()">Logout</button>
+
+</div>
+
+<!-- HAMBURGER MENU -->
+<div id="menu" class="menu">
+
+  <button onclick="goHome()">Home</button>
+  <button onclick="goProfile()">Profile</button>
+  <button onclick="goAdmin()">Admin</button>
+  <button onclick="support()">Support</button>
+  <button onclick="goUpgrade()">Upgrade</button>
+
 </div>
 
 <div class="container">
@@ -34,7 +50,7 @@
 
   </div>
 
-  <!-- POSTS (READ ONLY) -->
+  <!-- GLOBAL POSTS -->
   <div class="card">
     <h4>📝 Global Posts</h4>
     <div id="posts"></div>
