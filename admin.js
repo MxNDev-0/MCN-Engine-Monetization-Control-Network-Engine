@@ -10,6 +10,7 @@ import {
   updateDoc,
   query,
   orderBy,
+  getDocs,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -53,7 +54,6 @@ function loadUsers() {
       box.innerHTML += `
         <div style="padding:8px;margin:6px;background:#1c2541;border-radius:6px;">
           <b>${u.email}</b>
-
           <button onclick="toggleBan('${u.uid}', true)">Ban</button>
           <button onclick="toggleBan('${u.uid}', false)">Unban</button>
         </div>
@@ -86,7 +86,6 @@ function loadPosts() {
         <div style="padding:8px;margin:6px;background:#0b132b;border-radius:6px;">
           <b>${p.user}</b>
           <p>${p.text}</p>
-
           <button onclick="deletePost('${d.id}')">Delete</button>
         </div>
       `;
@@ -98,10 +97,9 @@ window.deletePost = async (id) => {
   await deleteDoc(doc(db, "posts", id));
 };
 
-/* ================= DELETE ALL POSTS (SAFE) ================= */
+/* ================= CLEAR ALL POSTS ================= */
 window.clearAllPosts = async () => {
   const ok = confirm("Delete ALL posts? This cannot be undone.");
-
   if (!ok) return;
 
   const snap = await getDocs(collection(db, "posts"));
@@ -131,7 +129,6 @@ function loadUpgrades() {
         <div style="padding:8px;margin:6px;background:#1c2541;border-radius:6px;">
           <b>${u.email}</b>
           <p>Status: ${u.status}</p>
-
           <button onclick="approveUpgrade('${u.uid}')">Approve</button>
         </div>
       `;
@@ -139,7 +136,7 @@ function loadUpgrades() {
   });
 }
 
-/* ================= APPROVE SINGLE ================= */
+/* ================= APPROVE UPGRADE ================= */
 window.approveUpgrade = async (uid) => {
   await updateDoc(doc(db, "users", uid), {
     premium: true
@@ -155,11 +152,12 @@ window.approveUpgrade = async (uid) => {
 /* ================= APPROVE ALL ================= */
 window.approveAllUpgrades = async () => {
   const snap = await getDocs(collection(db, "upgradeRequests"));
-
   const batch = writeBatch(db);
 
   snap.forEach(d => {
-    batch.update(doc(db, "users", d.data().uid), {
+    const data = d.data();
+
+    batch.update(doc(db, "users", data.uid), {
       premium: true
     });
 
