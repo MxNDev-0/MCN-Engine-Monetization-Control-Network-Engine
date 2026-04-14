@@ -13,24 +13,23 @@ import {
   orderBy,
   doc,
   setDoc,
-  updateDoc,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
 
-/* ================= AUTH CHECK ================= */
+/* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
   if (!u) location.href = "index.html";
   user = u;
 
-  // ✅ MARK USER ONLINE
+  // ✅ MARK ONLINE
   await setDoc(doc(db, "onlineUsers", user.uid), {
     email: user.email,
     lastActive: Date.now()
   });
 
-  // ✅ AUTO REMOVE ON TAB CLOSE
+  // ✅ REMOVE WHEN LEAVING
   window.addEventListener("beforeunload", async () => {
     try {
       await deleteDoc(doc(db, "onlineUsers", user.uid));
@@ -39,41 +38,38 @@ onAuthStateChanged(auth, async (u) => {
 
   loadFeed();
   loadWallet();
-  loadBTCPrice();
-  trackOnlineUsers(); // NEW
+  loadCryptoPrices(); // ✅ FIXED
+  trackOnlineUsers(); // ✅ FIXED
 });
 
-/* ================= ONLINE USERS SYSTEM ================= */
+/* ================= USERS (FIXED CLEAN DISPLAY) ================= */
 function trackOnlineUsers() {
   const usersRef = collection(db, "onlineUsers");
 
   onSnapshot(usersRef, (snap) => {
-    const usersDiv = document.getElementById("onlineUsers");
+    const box = document.getElementById("onlineUsers");
+    if (!box) return;
 
-    if (!usersDiv) return;
-
-    usersDiv.innerHTML = "";
-
+    let html = "";
     let count = 0;
 
     snap.forEach(docSnap => {
-      const data = docSnap.data();
+      const u = docSnap.data();
       count++;
 
-      usersDiv.innerHTML += `
-        <div style="margin:4px 0;">
-          🟢 ${data.email}
-        </div>
-      `;
+      html += `<div>🟢 ${u.email}</div>`;
     });
 
-    // ✅ SHOW COUNT IN TITLE
-    usersDiv.innerHTML =
-      `<b>Total Online: ${count}</b><hr>` + usersDiv.innerHTML;
+    box.innerHTML = `
+      <div style="font-weight:bold;margin-bottom:5px;">
+        Total Online: ${count}
+      </div>
+      ${html}
+    `;
   });
 }
 
-/* ================= CHAT SYSTEM ================= */
+/* ================= CHAT ================= */
 window.sendMessage = async () => {
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
@@ -103,7 +99,7 @@ function loadFeed() {
       box.innerHTML += `
         <div style="margin:6px 0;">
           <b style="color:#5bc0be;">${m.user}</b>
-          <div style="color:#fff;">${m.text}</div>
+          <div>${m.text}</div>
         </div>
       `;
     });
@@ -120,22 +116,21 @@ function loadWallet() {
     if (snap.exists()) {
       const data = snap.data();
 
-      const balanceEl = document.getElementById("walletBalance");
-      const updatedEl = document.getElementById("walletUpdated");
+      document.getElementById("walletBalance").innerText = data.balance || 0;
 
-      if (balanceEl) balanceEl.innerText = data.balance || 0;
-
-      if (updatedEl) {
-        updatedEl.innerText = data.lastUpdated
+      document.getElementById("walletUpdated").innerText =
+        data.lastUpdated
           ? new Date(data.lastUpdated).toLocaleString()
           : "-";
-      }
     }
   });
 }
 
-/* ================= CRYPTO PRICES ================= */
-async function loadBTCPrice() {
+/* ================= ✅ FIXED CRYPTO (BTC + ETH + BNB + USDT) ================= */
+async function loadCryptoPrices() {
+  const el = document.getElementById("btcPrice");
+  if (!el) return;
+
   try {
     const res = await fetch(
       "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,tether&vs_currencies=usd"
@@ -143,24 +138,24 @@ async function loadBTCPrice() {
 
     const data = await res.json();
 
-    const btcEl = document.getElementById("btcPrice");
+    if (!data.bitcoin) throw new Error("API failed");
 
-    if (btcEl) {
-      btcEl.innerText =
-        "BTC: $" + data.bitcoin.usd +
-        " | ETH: $" + data.ethereum.usd +
-        " | BNB: $" + data.binancecoin.usd +
-        " | USDT: $" + data.tether.usd;
-    }
+    el.innerText =
+      "BTC: $" + data.bitcoin.usd +
+      " | ETH: $" + data.ethereum.usd +
+      " | BNB: $" + data.binancecoin.usd +
+      " | USDT: $" + data.tether.usd;
+
   } catch (err) {
-    const btcEl = document.getElementById("btcPrice");
-    if (btcEl) btcEl.innerText = "Error loading prices";
+    // ✅ fallback (important)
+    el.innerText = "Crypto prices unavailable (API limit)";
   }
 }
 
-setInterval(loadBTCPrice, 30000);
+/* refresh every 30s */
+setInterval(loadCryptoPrices, 30000);
 
-/* ================= UPGRADE SYSTEM ================= */
+/* ================= UPGRADE ================= */
 const UPGRADE_LINK = "https://nowpayments.io/payment/?iid=5153003613";
 
 window.goPremium = async () => {
@@ -179,14 +174,12 @@ window.goPremium = async () => {
 };
 
 /* FIX BUTTON */
-window.upgrade = function () {
-  window.goPremium();
-};
+window.upgrade = () => window.goPremium();
 
 /* ================= MENU ================= */
 window.toggleMenu = () => {
   const m = document.getElementById("menu");
-  m.style.display = (m.style.display === "block") ? "none" : "block";
+  m.style.display = m.style.display === "block" ? "none" : "block";
 };
 
 function closeMenu() {
