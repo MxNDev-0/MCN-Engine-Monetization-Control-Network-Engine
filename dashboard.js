@@ -11,17 +11,16 @@ import {
   getDocs,
   doc,
   getDoc,
-  setDoc,
-  updateDoc
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+const ADMIN_EMAIL = "nc.maxiboro@gmail.com";
+
 let currentUser = null;
-let currentUserData = null;
+let nickname = "User";
 
 // AUTH
 onAuthStateChanged(auth, async (user) => {
-  document.getElementById("loader").style.display = "none";
-
   if (!user) return window.location.href = "index.html";
 
   currentUser = user;
@@ -31,93 +30,63 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!snap.exists()) {
     await setDoc(ref, {
-      email: user.email,
-      lastPost: 0,
-      premium: false
+      nickname: "User" + Math.floor(Math.random()*1000)
     });
-
-    currentUserData = { lastPost: 0, premium: false };
-  } else {
-    currentUserData = snap.data();
   }
 
-  loadPosts();
+  nickname = (await getDoc(ref)).data().nickname;
+
+  if (user.email === ADMIN_EMAIL) {
+    document.getElementById("adminPanel").style.display = "block";
+  }
+
+  loadMessages();
 });
 
-// NAVIGATION
-window.goHome = () => loadPosts();
-
-window.goProfile = () => {
-  window.location.href = "profile.html";
-};
+// NAV
+window.goProfile = () => window.location.href = "profile.html";
 
 window.goUpgrade = () => {
-  alert("Redirecting to upgrade...");
   window.location.href = "https://nowpayments.io/payment/?iid=5153003613";
 };
 
-window.goSupport = () => {
-  window.location.href = "support.html";
-};
-
-window.goChat = () => {
-  window.location.href = "chat.html";
-};
+window.goSupport = () => window.location.href = "support.html";
 
 window.logout = async () => {
   await signOut(auth);
   window.location.href = "index.html";
 };
 
-// POST
-window.createPost = async () => {
-  const text = document.getElementById("postText").value;
+// GENERAL CHAT
+window.sendMessage = async () => {
+  const input = document.getElementById("chatInput");
+  const text = input.value;
 
-  if (!text) return alert("Write something");
+  if (!text) return;
 
-  const now = Date.now();
-
-  if (now - currentUserData.lastPost < 86400000) {
-    return alert("Only 1 post per day");
-  }
-
-  await addDoc(collection(db, "posts"), {
+  await addDoc(collection(db, "generalChat"), {
     text,
-    user: currentUser.email,
-    time: now
+    name: nickname,
+    time: Date.now()
   });
 
-  await updateDoc(doc(db, "users", currentUser.uid), {
-    lastPost: now
-  });
-
-  currentUserData.lastPost = now;
-
-  document.getElementById("postText").value = "";
-
-  loadPosts();
+  input.value = "";
 };
 
-// LOAD POSTS
-async function loadPosts() {
-  const snapshot = await getDocs(collection(db, "posts"));
-  const postsDiv = document.getElementById("posts");
+// LOAD CHAT
+async function loadMessages() {
+  const snapshot = await getDocs(collection(db, "generalChat"));
+  const box = document.getElementById("chatBox");
 
-  postsDiv.innerHTML = "";
+  box.innerHTML = "";
 
   snapshot.forEach(doc => {
-    const post = doc.data();
+    const msg = doc.data();
 
-    postsDiv.innerHTML += `
-      <div class="post">
-        <h4>${post.user}</h4>
-        <p>${post.text}</p>
+    box.innerHTML += `
+      <div style="margin:5px;">
+        <b>${msg.name}</b>: ${msg.text}
       </div>
     `;
   });
 }
-
-// CLIP BUTTON (v2 lock)
-window.openUpload = () => {
-  alert("Image upload available in Version 2");
-};
