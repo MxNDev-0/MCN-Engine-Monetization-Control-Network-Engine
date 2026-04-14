@@ -8,21 +8,23 @@
 
 <body>
 
-<div class="login-wrapper">
-  <div class="center-box">
+<div class="center-box">
 
-    <h2>MXM Crypto Empire</h2>
-    <span class="gold-badge">Genesis Beta v1</span>
+  <div class="logo">MXM</div>
 
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
+  <h2>MXM Crypto Empire</h2>
+  <p class="subtext">Welcome — Register or Login to continue</p>
 
-    <button onclick="login()">Login</button>
-    <button onclick="signup()">Create Account</button>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
 
-    <p id="message"></p>
+  <button onclick="signup()">Create Account</button>
+  <button class="secondary-btn" onclick="login()">Login</button>
 
-  </div>
+  <p id="message"></p>
+
+</div>
+
 </div>
 
 <script type="module" src="app.js"></script>
