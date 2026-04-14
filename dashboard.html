@@ -9,48 +9,55 @@
 <body>
 
 <div class="navbar">
-  <h2>MXM Dashboard</h2>
 
-  <div class="nav-links">
-    <button onclick="goProfile()">Profile</button>
-    <button onclick="goUpgrade()">Upgrade</button>
-    <button onclick="goSupport()">Support</button>
-    <button onclick="logout()">Logout</button>
-  </div>
+  <!-- HAMBURGER -->
+  <button onclick="toggleMenu()">☰</button>
+
+  <h3 style="margin:0;">MXM Dashboard</h3>
+
+  <button onclick="logout()">Logout</button>
+
+</div>
+
+<!-- HAMBURGER MENU -->
+<div id="menu" style="display:none; background:#1c2541; padding:10px;">
+  <p id="userEmail"></p>
+  <button onclick="setUsername()">Set Username</button>
+  <button onclick="location.href='faq.html'">FAQ</button>
+  <button onclick="changePassword()">Change Password</button>
 </div>
 
 <div class="container">
 
-  <!-- ADMIN -->
-  <div id="adminPanel" style="display:none;" class="post-box">
-    <h3>👑 Admin Panel</h3>
-    <p>Monitor users here</p>
-    <div id="usersList"></div>
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel" class="post-box" style="display:none;">
+    <h3>👑 Admin Monitor</h3>
+    <p>Total Users: <span id="totalUsers">0</span></p>
+    <p>Total Posts: <span id="totalPosts">0</span></p>
   </div>
 
   <!-- GENERAL CHAT -->
   <div class="post-box">
-    <h3>🌍 General Chat</h3>
+    <h4 style="margin-top:0;">General Chat</h4>
 
-    <div id="chatBox" style="height:200px; overflow:auto;"></div>
+    <div id="chatBox" class="chat-box"></div>
 
     <div style="display:flex; gap:5px;">
-      <input id="chatInput" placeholder="Say something...">
+      <input id="chatInput" placeholder="Type message...">
       <button onclick="sendMessage()">Send</button>
     </div>
   </div>
 
+  <!-- POSTS -->
+  <div id="posts"></div>
+
 </div>
 
 <div class="footer">
-  ⚠️ Educational platform only. No financial guarantees.
-  <br><br>
-  FAQ:
-  <br>• Is it free? Yes  
-  <br>• Is it safe? Use at your own risk  
-  <br>• Can I earn? Depends on effort  
+⚠️ Educational platform only. No financial guarantees.
 </div>
 
 <script type="module" src="dashboard.js"></script>
+
 </body>
 </html>
