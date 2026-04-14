@@ -29,7 +29,7 @@ onAuthStateChanged(auth, (u) => {
 
   loadFeed();
   loadWallet();
-  loadCryptoPrices(); // ✅ FIXED (THIS WAS THE ISSUE)
+  loadCryptoPrices(); // ✅ FIXED (was loadBTCPrice)
 });
 
 /* ================= FEED ================= */
@@ -96,7 +96,7 @@ function loadWallet() {
   });
 }
 
-/* ================= ✅ CRYPTO (FIXED PROPERLY) ================= */
+/* ================= ✅ FIXED CRYPTO (BTC + ETH + BNB + USDT) ================= */
 async function loadCryptoPrices() {
   const el = document.getElementById("btcPrice");
   if (!el) return;
@@ -108,21 +108,24 @@ async function loadCryptoPrices() {
 
     const data = await res.json();
 
+    if (!data.bitcoin) throw new Error("API failed");
+
     el.innerText =
-      "BTC: $" + (data.bitcoin?.usd ?? "?") +
-      " | ETH: $" + (data.ethereum?.usd ?? "?") +
-      " | BNB: $" + (data.binancecoin?.usd ?? "?") +
-      " | USDT: $" + (data.tether?.usd ?? "?");
+      "BTC: $" + data.bitcoin.usd +
+      " | ETH: $" + data.ethereum.usd +
+      " | BNB: $" + data.binancecoin.usd +
+      " | USDT: $" + data.tether.usd;
 
   } catch (err) {
-    el.innerText = "Crypto temporarily unavailable";
+    el.innerText = "Crypto prices unavailable (API limit)";
   }
 }
 
 /* refresh every 30s */
 setInterval(loadCryptoPrices, 30000);
 
-/* ================= 🚀 UPGRADE ================= */
+/* ================= 🚀 UPGRADE FIX ================= */
+
 const UPGRADE_LINK = "https://nowpayments.io/payment/?iid=5153003613";
 
 function handleUpgrade() {
