@@ -2,7 +2,8 @@ import { auth, db } from "./firebase.js";
 
 import {
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  updatePassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
@@ -16,77 +17,131 @@ import {
 
 const ADMIN_EMAIL = "nc.maxiboro@gmail.com";
 
-let currentUser = null;
-let nickname = "User";
+let currentUser;
+let username = null;
 
 // AUTH
 onAuthStateChanged(auth, async (user) => {
-  if (!user) return window.location.href = "index.html";
+  if (!user) return location.href = "index.html";
 
   currentUser = user;
+
+  document.getElementById("userEmail").innerText = user.email;
 
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
-    await setDoc(ref, {
-      nickname: "User" + Math.floor(Math.random()*1000)
-    });
+    await setDoc(ref, { username: "" });
   }
 
-  nickname = (await getDoc(ref)).data().nickname;
+  username = (await getDoc(ref)).data().username;
 
   if (user.email === ADMIN_EMAIL) {
     document.getElementById("adminPanel").style.display = "block";
+    loadAdminStats();
   }
 
-  loadMessages();
+  loadChat();
+  loadPosts();
 });
 
-// NAV
-window.goProfile = () => window.location.href = "profile.html";
-
-window.goUpgrade = () => {
-  window.location.href = "https://nowpayments.io/payment/?iid=5153003613";
+// MENU
+window.toggleMenu = () => {
+  const menu = document.getElementById("menu");
+  menu.style.display = menu.style.display === "none" ? "block" : "none";
 };
 
-window.goSupport = () => window.location.href = "support.html";
+// USERNAME
+window.setUsername = async () => {
+  const name = prompt("Enter username:");
+  if (!name) return;
 
-window.logout = async () => {
-  await signOut(auth);
-  window.location.href = "index.html";
+  await setDoc(doc(db, "users", currentUser.uid), {
+    username: name
+  });
+
+  username = name;
+  alert("Username set!");
 };
 
-// GENERAL CHAT
+// CHANGE PASSWORD
+window.changePassword = async () => {
+  const newPass = prompt("Enter new password:");
+  if (!newPass) return;
+
+  await updatePassword(currentUser, newPass);
+  alert("Password updated!");
+};
+
+// CHAT
 window.sendMessage = async () => {
-  const input = document.getElementById("chatInput");
-  const text = input.value;
+  const text = document.getElementById("chatInput").value;
+
+  if (!username) {
+    alert("Set username first");
+    return;
+  }
 
   if (!text) return;
 
   await addDoc(collection(db, "generalChat"), {
     text,
-    name: nickname,
+    name: username,
     time: Date.now()
   });
 
-  input.value = "";
+  document.getElementById("chatInput").value = "";
+  loadChat();
 };
 
 // LOAD CHAT
-async function loadMessages() {
-  const snapshot = await getDocs(collection(db, "generalChat"));
+async function loadChat() {
+  const snap = await getDocs(collection(db, "generalChat"));
   const box = document.getElementById("chatBox");
 
   box.innerHTML = "";
 
-  snapshot.forEach(doc => {
-    const msg = doc.data();
+  snap.forEach(doc => {
+    const m = doc.data();
 
     box.innerHTML += `
       <div style="margin:5px;">
-        <b>${msg.name}</b>: ${msg.text}
+        <b>${m.name}</b>: ${m.text}
       </div>
     `;
   });
 }
+
+// POSTS (VISIBLE TO ALL)
+async function loadPosts() {
+  const snap = await getDocs(collection(db, "posts"));
+  const div = document.getElementById("posts");
+
+  div.innerHTML = "";
+
+  snap.forEach(doc => {
+    const p = doc.data();
+
+    div.innerHTML += `
+      <div class="post">
+        <p>${p.text}</p>
+      </div>
+    `;
+  });
+}
+
+// ADMIN STATS
+async function loadAdminStats() {
+  const users = await getDocs(collection(db, "users"));
+  const posts = await getDocs(collection(db, "posts"));
+
+  document.getElementById("totalUsers").innerText = users.size;
+  document.getElementById("totalPosts").innerText = posts.size;
+}
+
+// NAV
+window.logout = async () => {
+  await signOut(auth);
+  location.href = "index.html";
+};
