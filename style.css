@@ -1,3 +1,4 @@
+/* ================= GLOBAL ================= */
 body {
   margin: 0;
   font-family: Arial;
@@ -5,19 +6,61 @@ body {
   color: white;
 }
 
+/* ================= LOGIN ================= */
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.center-box {
+  width: 90%;
+  max-width: 320px;
+  background: #1c2541;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+}
+
+button {
+  width: 100%;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background: #5bc0be;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ================= NAVBAR ================= */
 .navbar {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
+  align-items: center;
   background: #1c2541;
+  padding: 10px;
 }
 
+/* ================= CONTAINER ================= */
 .container {
   max-width: 650px;
   margin: auto;
   padding: 10px;
 }
 
+/* ================= CARD ================= */
 .card {
   background: #1c2541;
   padding: 10px;
@@ -25,41 +68,66 @@ body {
   border-radius: 10px;
 }
 
-/* CHAT */
-.chatBox {
-  height: 180px;
+/* ================= CHAT ================= */
+#chatBox {
+  height: 200px;
   overflow-y: auto;
   background: #0b132b;
   padding: 10px;
+  border-radius: 8px;
 }
 
-/* INPUT ROW */
+/* input row */
 .row {
   display: flex;
   gap: 5px;
-  margin-top: 5px;
+  margin-top: 8px;
 }
 
-input, textarea {
-  width: 100%;
-  padding: 8px;
+.row input {
+  flex: 1;
 }
 
-/* MENU (FIXED DROPDOWN STYLE) */
+/* ================= MENU ================= */
 .menu {
+  display: none;
   position: absolute;
   top: 50px;
   left: 10px;
   background: #2a2a2a;
-  padding: 8px;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: 180px;
+  padding: 10px;
+  border-radius: 10px;
+  width: 160px;
+  z-index: 999;
 }
 
 .menu button {
-  padding: 6px;
-  font-size: 12px;
+  width: 100%;
+  margin: 4px 0;
+  padding: 8px;
+  background: #5bc0be;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* ================= ONLINE USERS ================= */
+#onlineUsers {
+  font-size: 14px;
+}
+
+/* ================= POSTS ================= */
+#posts {
+  font-size: 14px;
+}
+
+/* ================= SMALL MOBILE FIX ================= */
+@media (max-width: 600px) {
+  .center-box {
+    max-width: 95%;
+  }
+
+  .menu {
+    width: 140px;
+  }
 }
