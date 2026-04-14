@@ -8,37 +8,49 @@
 
 <body>
 
-<div id="loader">Loading...</div>
-
 <div class="navbar">
-  <h2 class="logo">MXM Dashboard</h2>
+  <h2>MXM Dashboard</h2>
 
   <div class="nav-links">
-    <button onclick="goHome()">Home</button>
     <button onclick="goProfile()">Profile</button>
-    <button onclick="goUpgrade()">Upgrade 🚀</button>
-    <button onclick="goSupport()">Support 💰</button>
-    <button onclick="goChat()">Chat 💬</button>
+    <button onclick="goUpgrade()">Upgrade</button>
+    <button onclick="goSupport()">Support</button>
     <button onclick="logout()">Logout</button>
   </div>
 </div>
 
 <div class="container">
 
+  <!-- ADMIN -->
+  <div id="adminPanel" style="display:none;" class="post-box">
+    <h3>👑 Admin Panel</h3>
+    <p>Monitor users here</p>
+    <div id="usersList"></div>
+  </div>
+
+  <!-- GENERAL CHAT -->
   <div class="post-box">
-    <textarea id="postText" placeholder="What's on your mind?"></textarea>
+    <h3>🌍 General Chat</h3>
+
+    <div id="chatBox" style="height:200px; overflow:auto;"></div>
 
     <div style="display:flex; gap:5px;">
-      <button onclick="openUpload()">📎</button>
-      <button onclick="createPost()">Post</button>
+      <input id="chatInput" placeholder="Say something...">
+      <button onclick="sendMessage()">Send</button>
     </div>
   </div>
 
-  <div id="posts"></div>
+</div>
 
+<div class="footer">
+  ⚠️ Educational platform only. No financial guarantees.
+  <br><br>
+  FAQ:
+  <br>• Is it free? Yes  
+  <br>• Is it safe? Use at your own risk  
+  <br>• Can I earn? Depends on effort  
 </div>
 
 <script type="module" src="dashboard.js"></script>
-
 </body>
 </html>
