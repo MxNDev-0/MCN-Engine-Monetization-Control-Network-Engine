@@ -10,10 +10,9 @@
 
 <div class="navbar">
 
-  <!-- HAMBURGER -->
   <button onclick="toggleMenu()">☰</button>
 
-  <h3 style="margin:0;">MXM Dashboard</h3>
+  <h3>MXM Dashboard</h3>
 
   <button onclick="logout()">Logout</button>
 
@@ -21,24 +20,33 @@
 
 <!-- HAMBURGER MENU -->
 <div id="menu" style="display:none; background:#1c2541; padding:10px;">
+
   <p id="userEmail"></p>
+
+  <button onclick="goProfile()">👤 Profile</button>
+  <button onclick="goUpgrade()">🚀 Upgrade</button>
+  <button onclick="goSupport()">💰 Support</button>
+  <button onclick="goFAQ()">❓ FAQ</button>
+  <button onclick="openSupport()">📩 Contact Support</button>
+
+  <button onclick="openMySection()">🔒 My Section</button>
+
   <button onclick="setUsername()">Set Username</button>
-  <button onclick="location.href='faq.html'">FAQ</button>
   <button onclick="changePassword()">Change Password</button>
+
 </div>
 
 <div class="container">
 
-  <!-- ADMIN PANEL -->
-  <div id="adminPanel" class="post-box" style="display:none;">
-    <h3>👑 Admin Monitor</h3>
-    <p>Total Users: <span id="totalUsers">0</span></p>
-    <p>Total Posts: <span id="totalPosts">0</span></p>
+  <!-- ONLINE USERS (GLOBAL MONITOR) -->
+  <div class="post-box">
+    <h3>🟢 Online Users</h3>
+    <div id="onlineUsers"></div>
   </div>
 
   <!-- GENERAL CHAT -->
   <div class="post-box">
-    <h4 style="margin-top:0;">General Chat</h4>
+    <h3>General Chat</h3>
 
     <div id="chatBox" class="chat-box"></div>
 
@@ -46,18 +54,11 @@
       <input id="chatInput" placeholder="Type message...">
       <button onclick="sendMessage()">Send</button>
     </div>
+
   </div>
 
-  <!-- POSTS -->
-  <div id="posts"></div>
-
-</div>
-
-<div class="footer">
-⚠️ Educational platform only. No financial guarantees.
 </div>
 
 <script type="module" src="dashboard.js"></script>
-
 </body>
 </html>
