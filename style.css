@@ -1,186 +1,202 @@
 /* ================= GLOBAL ================= */
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0b132b;
-  color: white;
+margin: 0;
+font-family: Arial;
+background: #0b132b;
+color: white;
 }
 
-/* ================= LOGIN PAGE ================= */
+/* ================= LOGIN (FIXED ALIGNMENT) ================= */
+
+body {
+margin: 0;
+font-family: Arial;
+background: #0b132b;
+color: white;
+}
+
 .login-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  padding: 15px;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+padding: 15px;
+box-sizing: border-box;
 }
 
 .center-box {
-  width: 100%;
-  max-width: 360px;
-  background: #1c2541;
-  padding: 30px 20px;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+width: 100%;
+max-width: 340px;
+background: #1c2541;
+padding: 25px 20px;
+border-radius: 12px;
+text-align: center;
+box-sizing: border-box;
 }
 
-.logo {
-  width: 70px;
-  height: 70px;
-  background: gold;
-  color: black;
-  font-weight: bold;
-  font-size: 22px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto 15px;
-}
-
+/* TITLE */
 .center-box h2 {
-  margin: 10px 0;
-  font-size: 22px;
+margin: 0 0 5px 0;
 }
 
-.subtext {
-  font-size: 14px;
-  color: #ccc;
-  margin-bottom: 20px;
+/* BADGE */
+.gold-badge {
+display: inline-block;
+margin-bottom: 15px;
+background: gold;
+color: black;
+padding: 4px 10px;
+border-radius: 8px;
+font-size: 12px;
 }
 
-/* LOGIN INPUTS */
-.center-box input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  box-sizing: border-box;
+/* INPUT FIX (KEY PART) /
+input {
+width: 100%;
+display: block;
+padding: 12px;
+margin: 10px 0;
+border-radius: 6px;
+border: none;
+outline: none;
+box-sizing: border-box; / 🔥 fixes left/right misalignment */
+font-size: 14px;
 }
 
-/* LOGIN BUTTONS */
-.center-box button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
-  background: gold;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
+/* BUTTON FIX */
+button {
+width: 100%;
+display: block;
+margin: 8px 0;
+padding: 12px;
+border-radius: 6px;
+border: none;
+background: #5bc0be;
+color: black;
+font-weight: bold;
+cursor: pointer;
+box-sizing: border-box;
 }
 
-.center-box button:hover {
-  opacity: 0.9;
+/* extra spacing consistency */
+.center-box button:first-of-type {
+margin-top: 15px;
 }
 
-.secondary-btn {
-  background: #5bc0be;
-  color: black;
+input {
+width: 100%;
+padding: 10px;
+margin: 8px 0;
+border-radius: 5px;
+border: none;
+outline: none;
+box-sizing: border-box;
 }
 
-#message {
-  margin-top: 10px;
-  font-size: 13px;
+button {
+width: 100%;
+margin: 5px 0;
+padding: 10px;
+border-radius: 5px;
+border: none;
+background: #5bc0be;
+color: black;
+font-weight: bold;
+cursor: pointer;
 }
 
 /* ================= NAVBAR ================= */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #1c2541;
-  padding: 10px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+background: #1c2541;
+padding: 10px;
 }
 
+/* SMALL BUTTONS */
 .navbar button {
-  width: auto;
-  padding: 5px 8px;
-  font-size: 13px;
-  border-radius: 5px;
-  background: #5bc0be;
-  border: none;
-  cursor: pointer;
+width: auto;
+padding: 5px 8px;
+font-size: 13px;
+border-radius: 5px;
+background: #5bc0be;
+border: none;
+cursor: pointer;
 }
 
 /* ================= MENU ================= */
 .menu {
-  display: none;
-  position: absolute;
-  top: 50px;
-  left: 10px;
-  background: #2a2a2a;
-  padding: 10px;
-  border-radius: 10px;
-  width: 160px;
+display: none;
+position: absolute;
+top: 50px;
+left: 10px;
+background: #2a2a2a;
+padding: 10px;
+border-radius: 10px;
+width: 160px;
 }
 
 .menu button {
-  width: 100%;
-  margin: 5px 0;
-  padding: 6px;
-  font-size: 13px;
+width: 100%;
+margin: 5px 0;
+padding: 6px;
+font-size: 13px;
 }
 
 /* ================= DASHBOARD TITLE ================= */
 .title-box {
-  text-align: center;
-  margin: 10px 0;
+text-align: center;
+margin: 10px 0;
 }
 
 .title-box h2 {
-  margin: 0;
+margin: 0;
 }
 
 .badge {
-  background: gold;
-  color: black;
-  padding: 3px 8px;
-  border-radius: 8px;
-  font-size: 12px;
+background: gold;
+color: black;
+padding: 3px 8px;
+border-radius: 8px;
+font-size: 12px;
 }
 
 /* ================= CARD ================= */
 .card {
-  background: #1c2541;
-  padding: 12px;
-  margin: 10px;
-  border-radius: 10px;
+background: #1c2541;
+padding: 12px;
+margin: 10px;
+border-radius: 10px;
 }
 
 /* ================= CHAT ================= */
 #chatBox {
-  height: 220px;
-  overflow-y: auto;
-  background: #0b132b;
-  padding: 10px;
-  border-radius: 8px;
+height: 220px;
+overflow-y: auto;
+background: #0b132b;
+padding: 10px;
+border-radius: 8px;
 }
 
 .row {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
+display: flex;
+gap: 6px;
+margin-top: 8px;
 }
 
 .row input {
-  width: 70%;
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-  box-sizing: border-box;
+width: 70%;
+padding: 8px;
+border-radius: 5px;
+border: none;
+box-sizing: border-box;
 }
 
 .row button {
-  padding: 6px 10px;
-  border-radius: 5px;
-  background: #5bc0be;
-  border: none;
-  cursor: pointer;
+padding: 6px 10px;
+border-radius: 5px;
+background: #5bc0be;
+border: none;
+cursor: pointer;
 }
