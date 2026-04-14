@@ -6,44 +6,6 @@ body {
   color: white;
 }
 
-/* ================= LOGIN ================= */
-.login-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.center-box {
-  width: 90%;
-  max-width: 320px;
-  background: #1c2541;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 5px;
-  border: none;
-  outline: none;
-}
-
-button {
-  width: 100%;
-  margin: 5px 0;
-  padding: 10px;
-  border-radius: 5px;
-  border: none;
-  background: #5bc0be;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-}
-
 /* ================= NAVBAR ================= */
 .navbar {
   display: flex;
@@ -53,39 +15,20 @@ button {
   padding: 10px;
 }
 
-/* ================= CONTAINER ================= */
-.container {
-  max-width: 650px;
-  margin: auto;
-  padding: 10px;
+.navbar h3 {
+  margin: 0;
+  font-size: 16px;
 }
 
-/* ================= CARD ================= */
-.card {
-  background: #1c2541;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 10px;
-}
-
-/* ================= CHAT ================= */
-#chatBox {
-  height: 200px;
-  overflow-y: auto;
-  background: #0b132b;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-/* input row */
-.row {
-  display: flex;
-  gap: 5px;
-  margin-top: 8px;
-}
-
-.row input {
-  flex: 1;
+/* ✅ FIXED BUTTON SIZE (hamburger + logout) */
+.navbar button {
+  width: auto;
+  padding: 5px 8px;
+  font-size: 13px;
+  border-radius: 5px;
+  border: none;
+  background: #5bc0be;
+  cursor: pointer;
 }
 
 /* ================= MENU ================= */
@@ -103,7 +46,7 @@ button {
 
 .menu button {
   width: 100%;
-  margin: 4px 0;
+  margin: 5px 0;
   padding: 8px;
   background: #5bc0be;
   border: none;
@@ -111,20 +54,97 @@ button {
   cursor: pointer;
 }
 
-/* ================= ONLINE USERS ================= */
+/* ================= CONTAINER ================= */
+.container {
+  max-width: 650px;
+  margin: auto;
+  padding: 10px;
+}
+
+/* ================= CARD ================= */
+.card {
+  background: #1c2541;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+}
+
+/* ================= CHAT / FEED ================= */
+#chatBox {
+  height: 220px;
+  overflow-y: auto;
+  background: #0b132b;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* ================= INPUT ROW ================= */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* ✅ FIXED INPUT SIZE (not too long) */
+.row input {
+  flex: none;
+  width: 70%;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+}
+
+/* ✅ SMALL BUTTON (Post button) */
+.row button {
+  width: auto;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: none;
+  background: #5bc0be;
+  cursor: pointer;
+}
+
+/* ================= USERS ================= */
 #onlineUsers {
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-/* ================= POSTS ================= */
-#posts {
-  font-size: 14px;
+/* ================= LOGIN ================= */
+.center-box {
+  width: 90%;
+  max-width: 320px;
+  background: #1c2541;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 100px auto;
 }
 
-/* ================= SMALL MOBILE FIX ================= */
+.center-box input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 5px;
+  border: none;
+}
+
+.center-box button {
+  width: 100%;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background: #5bc0be;
+  cursor: pointer;
+}
+
+/* ================= MOBILE ================= */
 @media (max-width: 600px) {
-  .center-box {
-    max-width: 95%;
+  .container {
+    max-width: 100%;
   }
 
   .menu {
