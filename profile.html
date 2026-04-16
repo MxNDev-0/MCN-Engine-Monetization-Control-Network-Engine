@@ -1,116 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Profile</title>
+  <title>Profile - MXM</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="style.css">
-
-  <style>
-    body {
-      background: #0b132b;
-      color: white;
-      margin: 0;
-      font-family: Arial;
-    }
-
-    .navbar {
-      background: #1c2541;
-      padding: 12px;
-      text-align: center;
-    }
-
-    .container {
-      padding: 15px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 15px;
-    }
-
-    .card {
-      background: #1c2541;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      background: #0b132b;
-      color: white;
-      resize: none;
-      height: 80px;
-    }
-
-    button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      background: #5bc0be;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.85;
-    }
-
-    .post {
-      background: #0b132b;
-      padding: 10px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    .controls {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .tag-public {
-      color: lime;
-      font-size: 12px;
-    }
-
-    .tag-private {
-      color: orange;
-      font-size: 12px;
-    }
-  </style>
+  <link rel="stylesheet" href="ui-theme.css">
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <div class="navbar">
-  <h3 style="margin:auto;">Profile 👤</h3>
+  <h3>Profile 👤</h3>
 </div>
+
+<!-- BACK BUTTON -->
+<button class="back-btn" onclick="location.href='dashboard.html'">← Back</button>
 
 <div class="container">
 
-  <!-- CREATE POST -->
   <div class="card">
-    <h4>Create Post</h4>
-
-    <textarea id="postInput" placeholder="Write something..."></textarea>
-
-    <div style="display:flex;justify-content:flex-end;margin-top:10px;">
-      <button onclick="createPost()" style="width:auto;">Post</button>
-    </div>
+    <h3>Create Post</h3>
+    <textarea id="postInput" style="width:100%;height:80px;background:#0b132b;color:white;border:none;padding:10px;border-radius:8px;"></textarea>
+    <button onclick="createPost()">Post</button>
   </div>
 
-  <!-- MY POSTS -->
   <div class="card">
-    <h4>My Field</h4>
-
+    <h3>My Posts</h3>
     <div id="myPosts"></div>
   </div>
 
 </div>
 
 <script type="module" src="profile.js"></script>
+
 </body>
 </html>
