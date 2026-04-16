@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="ui-theme.css">
 
   <style>
     body {
@@ -20,17 +21,6 @@
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 15px;
       margin-top: 20px;
-    }
-
-    .card {
-      background: #1c2541;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-
-    h2, h3 {
-      margin: 0 0 10px 0;
     }
 
     input {
@@ -83,13 +73,6 @@
       font-size: 14px;
     }
 
-    .small-btn {
-      width: auto;
-      padding: 6px 10px;
-      font-size: 12px;
-      margin-top: 5px;
-    }
-
     @media (max-width: 600px) {
       body {
         padding: 10px;
@@ -100,7 +83,13 @@
 
 <body>
 
-<h2>👑 Pro Admin Control Panel V3</h2>
+<!-- NAVBAR -->
+<div class="navbar">
+  <h3>👑 Admin Control Panel V3</h3>
+</div>
+
+<!-- BACK BUTTON (SAFE INJECTION) -->
+<button class="back-btn" onclick="location.href='dashboard.html'">← Back</button>
 
 <div class="grid">
 
