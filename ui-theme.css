@@ -1,0 +1,130 @@
+/* ================= MXM PREMIUM UI THEME ================= */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b132b;
+  color: #ffffff;
+}
+
+/* ================= GLOBAL CARDS ================= */
+.card {
+  background: #1c2541;
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  border: 1px solid rgba(91, 192, 190, 0.15);
+}
+
+/* ================= HEADERS ================= */
+h1, h2, h3, h4 {
+  color: #5bc0be;
+  margin: 10px 0;
+}
+
+/* ================= BUTTONS ================= */
+button {
+  background: #5bc0be;
+  color: #000;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+  background: #1c2541;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(91, 192, 190, 0.2);
+}
+
+/* ================= MENU ================= */
+.menu {
+  background: #1c2541;
+  padding: 10px;
+  display: none;
+  flex-direction: column;
+}
+
+.menu button {
+  margin-bottom: 8px;
+}
+
+/* ================= INPUTS ================= */
+input {
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
+/* ================= BLOG STYLE (COINDESK LOOK) ================= */
+.blog-card {
+  background: #1c2541;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.blog-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.blog-content {
+  padding: 12px;
+}
+
+.blog-tag {
+  font-size: 10px;
+  background: #5bc0be;
+  color: #000;
+  padding: 3px 6px;
+  border-radius: 5px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.blog-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.blog-text {
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+
+/* ================= EARN SECTION ================= */
+.earn-card {
+  border-left: 4px solid #5bc0be;
+}
+
+/* ================= SCROLLBAR (CLEAN LOOK) ================= */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #5bc0be;
+  border-radius: 10px;
+}
