@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Earn Online</title>
+  <title>MCN Engine - Earn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../style.css">
 </head>
@@ -10,7 +10,7 @@
 
 <div style="text-align:center; padding:20px;">
 
-  <h1>💰 Start Earning Online</h1>
+  <h1>💰 MCN Engine Earnings Hub</h1>
 
   <p style="max-width:500px; margin:auto; line-height:1.6;">
     Learn how to earn money using simple online platforms. This section guides you step-by-step into understanding how online earning systems work, how creators monetize content, and how beginners can get started without technical skills.
@@ -24,8 +24,7 @@
 </div>
 
 <script type="module">
-import { auth } from "../firebase.js";
-import { db } from "../firebase.js";
+import { auth, db } from "../firebase.js";
 
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -37,7 +36,7 @@ onAuthStateChanged(auth, (user) => {
   currentUser = user;
 });
 
-/* ================= PREMIUM CHECK ================= */
+/* ================= PREMIUM + ADMIN CHECK ================= */
 window.checkPremium = async () => {
 
   if (!currentUser) {
@@ -49,25 +48,31 @@ window.checkPremium = async () => {
   const ref = doc(db, "users", currentUser.uid);
   const snap = await getDoc(ref);
 
-  const isPremium = snap.exists() && snap.data().premium === true;
+  let isPremium = false;
+  let isAdmin = false;
 
-  if (!isPremium) {
+  if (snap.exists()) {
+    const data = snap.data();
+    isPremium = data.premium === true;
+    isAdmin = data.role === "admin"; // ✅ NEW
+  }
 
-    const confirmUpgrade = confirm(
-      "⚠️ This feature is for PREMIUM users only.\n\n" +
-      "Upgrade now to unlock earning tools.\n\n" +
-      "Payments are NON-REFUNDABLE and results are NOT guaranteed."
-    );
-
-    if (confirmUpgrade) {
-      location.href = "../dashboard.html";
-    }
-
+  // ✅ ADMIN BYPASS (MAIN FIX)
+  if (isAdmin || isPremium) {
+    location.href = "forfans.html";
     return;
   }
 
-  /* ✅ ALLOW ACCESS */
-  location.href = "forfans.html";
+  // ❌ NORMAL USERS (LOCKED)
+  const confirmUpgrade = confirm(
+    "⚠️ This feature is for PREMIUM users only.\n\n" +
+    "Upgrade now to unlock earning tools.\n\n" +
+    "Payments are NON-REFUNDABLE and results are NOT guaranteed."
+  );
+
+  if (confirmUpgrade) {
+    location.href = "../dashboard.html";
+  }
 };
 </script>
 
