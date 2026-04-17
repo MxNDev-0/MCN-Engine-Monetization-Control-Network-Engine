@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Profile</title>
+  <title>MCN Engine Profile</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css">
@@ -17,17 +17,18 @@
 
     .container {
       padding: 15px;
+      position: relative;
     }
 
     .small-nav-btn {
-      position: fixed;
-      bottom: 15px;
-      right: 15px;
+      position: absolute;
+      top: 10px;
+      right: 10px;
       background: #5bc0be;
       border: none;
-      padding: 8px 12px;
-      border-radius: 30px;
-      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 11px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -41,6 +42,10 @@
 </div>
 
 <div class="container">
+
+  <button class="small-nav-btn" onclick="location.href='dashboard.html'">
+    ⬅ Back
+  </button>
 
   <div class="card">
     <h4>Create Post</h4>
@@ -57,11 +62,6 @@
   </div>
 
 </div>
-
-<!-- CLEAN NAV BUTTON -->
-<button class="small-nav-btn" onclick="location.href='dashboard.html'">
-  Dashboard
-</button>
 
 <script type="module" src="profile.js"></script>
 </body>
