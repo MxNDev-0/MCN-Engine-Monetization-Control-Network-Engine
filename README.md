@@ -1,4 +1,4 @@
-# MCN Engine = Monetization Control Network Engine Blog Platform
+# MCN-Engine = Monetization Control Network Engine Blog Platform
 
 A simple monetized blog system built with Firebase.
 
