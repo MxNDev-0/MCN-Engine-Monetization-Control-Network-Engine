@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css">
+
+  <!-- 🔥 FIX: ensures menu always appears above everything -->
+  <style>
+    .menu {
+      z-index: 9999;
+    }
+
+    #chatBox {
+      scroll-behavior: smooth;
+    }
+  </style>
 </head>
 
 <body>
@@ -21,6 +32,11 @@
   <button onclick="goAdmin()">Admin</button>
   <button onclick="goPremium()">Upgrade</button>
   <button onclick="support()">Support</button>
+
+  <!-- 🔥 FIX: ensure missing buttons exist if JS adds them -->
+  <button onclick="goFaq()">FAQ</button>
+  <button onclick="goAbout()">About</button>
+  <button onclick="goBlog()">Blog</button>
 </div>
 
 <div class="container">
