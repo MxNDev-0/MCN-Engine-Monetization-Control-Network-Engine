@@ -20,16 +20,10 @@
       position: relative;
     }
 
-    /* HEADER BAR */
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      background: #1c2541;
-    }
-
     .menu-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
       background: #5bc0be;
       border: none;
       padding: 6px 10px;
@@ -37,54 +31,31 @@
       cursor: pointer;
     }
 
-    .back-btn {
-      background: transparent;
-      border: 1px solid #5bc0be;
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    /* DROPDOWN MENU */
     .dropdown {
       position: absolute;
-      top: 55px;
-      left: 10px;
+      top: 45px;
+      right: 10px;
       background: #1c2541;
       border-radius: 10px;
       padding: 10px;
       display: none;
       width: 200px;
-      z-index: 1000;
     }
 
     .dropdown input {
       margin-bottom: 6px;
-      width: 100%;
-      padding: 6px;
     }
 
     .dropdown button {
       width: 100%;
       margin-top: 5px;
-      padding: 6px;
     }
 
     .username-box {
       text-align: center;
-      margin: 15px 0;
+      margin-bottom: 15px;
       font-size: 16px;
       color: #5bc0be;
-    }
-
-    /* POSTS */
-    .post {
-      background: #1c2541;
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      position: relative;
     }
 
     /* 3 DOT MENU */
@@ -94,6 +65,14 @@
       top: 10px;
       cursor: pointer;
       font-size: 18px;
+    }
+
+    .post {
+      position: relative;
+      background: #1c2541;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
     }
 
     .post-menu {
@@ -121,45 +100,21 @@
       background: #1c2541;
     }
 
-    /* TOAST */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #5bc0be;
-      color: #000;
-      padding: 10px 15px;
-      border-radius: 8px;
-      display: none;
-    }
-
-    textarea {
-      width: 100%;
-      height: 90px;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      resize: none;
-    }
-
   </style>
 </head>
 
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <button class="menu-btn" onclick="toggleMenu()">☰</button>
-
-  <h3 style="margin:0;">Profile 👤</h3>
-
-  <button class="back-btn" onclick="location.href='dashboard.html'">⬅</button>
+<div class="navbar">
+  <h3 style="margin:auto;">Profile 👤</h3>
+  <button onclick="location.href='dashboard.html'">⬅</button>
 </div>
 
 <div class="container">
 
-  <!-- DROPDOWN -->
+  <!-- MENU -->
+  <button class="menu-btn" onclick="toggleMenu()">☰</button>
+
   <div id="dropdownMenu" class="dropdown">
     <input id="usernameInput" placeholder="New username">
     <button onclick="updateUsername()">Save Username</button>
@@ -171,13 +126,13 @@
     Username: <span id="usernameDisplay">Loading...</span>
   </div>
 
-  <!-- POST BOX -->
+  <!-- POST -->
   <div class="card">
     <h4>Create Post</h4>
     <textarea id="postInput" placeholder="Write something..."></textarea>
 
     <div style="display:flex;justify-content:flex-end;margin-top:10px;">
-      <button onclick="createPost()" style="width:auto;">Post</button>
+      <button onclick="createPost()">Post</button>
     </div>
   </div>
 
@@ -189,10 +144,6 @@
 
 </div>
 
-<!-- TOAST -->
-<div id="toast" class="toast"></div>
-
 <script type="module" src="profile.js"></script>
-
 </body>
 </html>
