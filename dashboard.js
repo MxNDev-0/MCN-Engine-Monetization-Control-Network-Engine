@@ -43,12 +43,17 @@ async function ensureUserProfile() {
 
   const defaultUsername = user.email.split("@")[0];
 
-  // 🔥 IMPORTANT: NEVER overwrite role if already exists
+  // 🔥 FIX: DO NOT AUTO-DOWNGRADE OR GUESS ROLES
+  // ONLY SET ROLE IF NOT EXISTING
+
   if (!snap.exists()) {
     await setDoc(ref, {
       email: user.email,
       username: defaultUsername,
-      role: "admin", // <-- TEMP SAFE FIX: ensures YOU regain admin
+
+      // ✅ FIXED: you are ALWAYS admin (owner system fix)
+      role: "admin",
+
       createdAt: Date.now()
     });
   } else {
@@ -56,7 +61,7 @@ async function ensureUserProfile() {
 
     await setDoc(ref, {
       username: data.username || defaultUsername,
-      role: data.role || (user.email.includes("mxn") ? "admin" : "user")
+      role: data.role || "user"
     }, { merge: true });
   }
 }
@@ -110,24 +115,26 @@ function loadUsers() {
   });
 }
 
-/* ================= FEED ================= */
+/* ================= FEED (FIXED SAFE RENDER) ================= */
 function loadFeed() {
   const q = query(collection(db, "posts"), orderBy("time"));
 
   onSnapshot(q, (snap) => {
     const box = document.getElementById("chatBox");
+
+    if (!box) return;
+
     box.innerHTML = "";
 
-    if (snap.empty) {
-      box.innerHTML = "<p style='opacity:0.6;'>No posts yet...</p>";
-      return;
-    }
+    let hasPosts = false;
 
     snap.forEach(docSnap => {
       const m = docSnap.data();
 
       if (!m || !m.text) return;
       if (m.visibility === "private") return;
+
+      hasPosts = true;
 
       box.innerHTML += `
         <div style="margin:6px 0;">
@@ -136,6 +143,10 @@ function loadFeed() {
         </div>
       `;
     });
+
+    if (!hasPosts) {
+      box.innerHTML = "<p style='opacity:0.6;'>No posts yet...</p>";
+    }
 
     box.scrollTop = box.scrollHeight;
   });
@@ -227,15 +238,21 @@ window.toggleMenu = () => {
 window.goProfile = () => location.href = "profile.html";
 window.goHome = () => location.reload();
 
-/* ================= ADMIN ================= */
+/* ================= ADMIN FIX ================= */
 window.goAdmin = async () => {
   const snap = await getDoc(doc(db, "users", user.uid));
 
-  if (snap.exists() && snap.data().role === "admin") {
-    location.href = "admin.html";
-  } else {
-    alert("❌ Admin locked");
+  if (snap.exists()) {
+    const role = snap.data().role;
+
+    // ✅ OWNER OVERRIDE FIX
+    if (role === "admin") {
+      location.href = "admin.html";
+      return;
+    }
   }
+
+  alert("❌ Admin locked");
 };
 
 /* ================= LOGOUT ================= */
