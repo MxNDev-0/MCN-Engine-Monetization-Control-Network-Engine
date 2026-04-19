@@ -10,7 +10,6 @@ import {
   addDoc,
   onSnapshot,
   query,
-  orderBy,
   doc,
   getDoc,
   setDoc
@@ -71,7 +70,7 @@ async function getUsername() {
   return user.email.split("@")[0];
 }
 
-/* ================= ONLINE USERS ================= */
+/* ================= ONLINE ================= */
 async function registerOnline() {
   const name = await getUsername();
 
@@ -82,7 +81,7 @@ async function registerOnline() {
   });
 }
 
-/* ================= USERS LIST ================= */
+/* ================= USERS ================= */
 function loadUsers() {
   const box = document.getElementById("onlineUsers");
   if (!box) return;
@@ -107,7 +106,7 @@ function loadUsers() {
   });
 }
 
-/* ================= FEED (FIXED CHAT) ================= */
+/* ================= FEED (FIXED) ================= */
 function loadFeed() {
   const box = document.getElementById("chatBox");
   if (!box) return;
@@ -122,10 +121,9 @@ function loadFeed() {
     snap.forEach(docSnap => {
       const m = docSnap.data();
 
-      if (!m) return;
-      if (!m.text) return;
+      if (!m || !m.text) return;
 
-      // ✅ FIXED: only hide private messages
+      // ✅ FIXED: only hide PRIVATE posts
       if (m.visibility === "private") return;
 
       count++;
@@ -143,13 +141,10 @@ function loadFeed() {
     }
 
     box.scrollTop = box.scrollHeight;
-  }, (error) => {
-    console.error("Feed error:", error);
-    box.innerHTML = "<p style='color:red;'>Chat failed to load</p>";
   });
 }
 
-/* ================= SEND MESSAGE ================= */
+/* ================= SEND ================= */
 window.sendMessage = async () => {
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
@@ -204,27 +199,6 @@ async function loadCryptoPrices() {
 }
 
 setInterval(loadCryptoPrices, 30000);
-
-/* ================= UPGRADE ================= */
-async function handleUpgrade() {
-  const token = await user.getIdToken();
-
-  const res = await fetch("https://mxm-backend.onrender.com/create-payment", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + token
-    }
-  });
-
-  const data = await res.json();
-
-  if (data.payment_url) {
-    location.href = data.payment_url;
-  }
-}
-
-window.goPremium = handleUpgrade;
 
 /* ================= NAV ================= */
 window.toggleMenu = () => {
