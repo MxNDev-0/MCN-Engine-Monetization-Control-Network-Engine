@@ -1,7 +1,8 @@
 import { auth, db } from "./firebase.js";
 
 import {
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
@@ -11,17 +12,83 @@ import {
   query,
   orderBy,
   updateDoc,
-  doc
+  doc,
+  getDoc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
 
-onAuthStateChanged(auth, (u) => {
+/* ================= AUTH ================= */
+onAuthStateChanged(auth, async (u) => {
   if (!u) location.href = "index.html";
+
   user = u;
 
   loadPosts();
+  loadUsername();
 });
+
+/* ================= MENU ================= */
+window.toggleMenu = () => {
+  const m = document.getElementById("dropdownMenu");
+  m.style.display = m.style.display === "block" ? "none" : "block";
+};
+
+/* ================= USERNAME LOAD ================= */
+async function loadUsername() {
+  if (!user) return;
+
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+
+  const display = document.getElementById("usernameDisplay");
+
+  if (snap.exists() && snap.data().username) {
+    display.innerText = snap.data().username;
+  } else {
+    display.innerText = "Not set";
+  }
+}
+
+/* ================= UPDATE USERNAME ================= */
+window.updateUsername = async () => {
+  const input = document.getElementById("usernameInput");
+  const username = input.value.trim();
+
+  if (!username) {
+    alert("Enter username");
+    return;
+  }
+
+  try {
+    await setDoc(doc(db, "users", user.uid), {
+      username: username
+    }, { merge: true });
+
+    document.getElementById("usernameDisplay").innerText = username;
+
+    input.value = "";
+    alert("Username updated ✅");
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update username");
+  }
+};
+
+/* ================= RESET PASSWORD ================= */
+window.resetPassword = async () => {
+  if (!user || !user.email) return;
+
+  try {
+    await sendPasswordResetEmail(auth, user.email);
+    alert("Password reset link sent to your email 📩");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to send reset email");
+  }
+};
 
 /* ================= CREATE POST (UNCHANGED) ================= */
 window.createPost = async () => {
@@ -40,7 +107,7 @@ window.createPost = async () => {
   input.value = "";
 };
 
-/* ================= LOAD POSTS (UI ONLY IMPROVED) ================= */
+/* ================= LOAD POSTS (UNCHANGED LOGIC) ================= */
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("time"));
 
@@ -78,7 +145,7 @@ function loadPosts() {
   });
 }
 
-/* ================= TOGGLE (UNCHANGED LOGIC) ================= */
+/* ================= TOGGLE VISIBILITY ================= */
 window.setPublic = async (id) => {
   await updateDoc(doc(db, "posts", id), {
     visibility: "public"
@@ -90,11 +157,3 @@ window.setPrivate = async (id) => {
     visibility: "private"
   });
 };
-
-/* MENU (UNCHANGED) */
-window.toggleMenu = () => {
-  const m = document.getElementById("menu");
-  m.style.display = m.style.display === "block" ? "none" : "block";
-};
-
-window.goDashboard = () => location.href = "dashboard.html";
