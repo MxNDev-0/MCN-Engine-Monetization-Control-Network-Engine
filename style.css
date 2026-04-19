@@ -1,4 +1,3 @@
-/* ================= GLOBAL ================= */
 body {
   margin: 0;
   font-family: Arial;
@@ -6,97 +5,20 @@ body {
   color: white;
 }
 
-/* ================= LOGIN ================= */
-.login-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  padding: 15px;
-  box-sizing: border-box;
+.container {
+  max-width: 900px;
+  margin: auto;
 }
 
-.center-box {
-  width: 100%;
-  max-width: 340px;
-  background: #1c2541;
-  padding: 25px 20px;
-  border-radius: 12px;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-/* TITLE */
-.center-box h2 {
-  margin: 0 0 5px 0;
-}
-
-/* BADGE */
-.gold-badge {
-  display: inline-block;
-  margin-bottom: 15px;
-  background: blue;
-  color: black;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-}
-
-/* ================= INPUTS ================= */
-/* FIX INPUT ALIGNMENT */
-input {
-  width: 100%;
-  display: block;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 6px;
-  border: none;
-  outline: none;
-  box-sizing: border-box;
-  font-size: 14px;
-}
-
-/* ================= BUTTONS ================= */
-button {
-  width: 100%;
-  display: block;
-  margin: 8px 0;
-  padding: 12px;
-  border-radius: 6px;
-  border: none;
-  background: #5bc0be;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-  box-sizing: border-box;
-}
-
-/* extra spacing consistency */
-.center-box button:first-of-type {
-  margin-top: 15px;
-}
-
-/* ================= NAVBAR ================= */
+/* NAVBAR */
 .navbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  background: #1c2541;
   padding: 10px;
+  background: #1c2541;
 }
 
-/* SMALL BUTTONS */
-.navbar button {
-  width: auto;
-  padding: 5px 8px;
-  font-size: 13px;
-  border-radius: 5px;
-  background: #5bc0be;
-  border: none;
-  cursor: pointer;
-}
-
-/* ================= MENU ================= */
+/* MENU */
 .menu {
   display: none;
   position: absolute;
@@ -105,35 +27,19 @@ button {
   background: #2a2a2a;
   padding: 10px;
   border-radius: 10px;
-  width: 160px;
+}
+
+.menu.active {
+  display: block;
 }
 
 .menu button {
+  display: block;
   width: 100%;
   margin: 5px 0;
-  padding: 6px;
-  font-size: 13px;
 }
 
-/* ================= DASHBOARD TITLE ================= */
-.title-box {
-  text-align: center;
-  margin: 10px 0;
-}
-
-.title-box h2 {
-  margin: 0;
-}
-
-.badge {
-  background: gold;
-  color: black;
-  padding: 3px 8px;
-  border-radius: 8px;
-  font-size: 12px;
-}
-
-/* ================= CARD ================= */
+/* CARD */
 .card {
   background: #1c2541;
   padding: 12px;
@@ -141,7 +47,7 @@ button {
   border-radius: 10px;
 }
 
-/* ================= CHAT ================= */
+/* CHAT */
 #chatBox {
   height: 220px;
   overflow-y: auto;
@@ -153,61 +59,35 @@ button {
 .row {
   display: flex;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .row input {
-  width: 70%;
+  flex: 1;
   padding: 8px;
-  border-radius: 5px;
-  border: none;
-  box-sizing: border-box;
 }
 
 .row button {
-  padding: 6px 10px;
-  border-radius: 5px;
-  background: #5bc0be;
-  border: none;
+  padding: 8px;
+}
+
+/* USERS */
+.user-item {
+  padding: 8px;
+  margin: 5px 0;
+  background: #0b132b;
+  border-radius: 6px;
+}
+
+/* MESSAGE */
+.msg {
+  padding: 6px;
+  margin: 5px 0;
+  background: #0b132b;
+  border-radius: 6px;
+}
+
+/* BUTTONS */
+button {
   cursor: pointer;
-}
-
-/* ================= EARN SECTION ================= */
-.earn-card {
-  border: 1px solid #5bc0be;
-  box-shadow: 0 0 8px rgba(91, 192, 190, 0.2);
-}
-
-.earn-card h4 {
-  margin-bottom: 5px;
-  color: #5bc0be;
-}
-
-.earn-card button {
-  background: #22c55e;
-  color: white;
-  font-weight: bold;
-}
-
-.earn-card button:hover {
-  background: #16a34a;
-}
-
-/* ================= ADDED: EARN BUTTON STYLE (NEW) ================= */
-.earn-btn {
-  display: inline-block;
-  padding: 12px 18px;
-  background: #22c55e;
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-  border-radius: 8px;
-  text-align: center;
-  margin-top: 15px;
-  transition: 0.3s ease;
-}
-
-.earn-btn:hover {
-  background: #16a34a;
-  transform: scale(1.03);
 }
