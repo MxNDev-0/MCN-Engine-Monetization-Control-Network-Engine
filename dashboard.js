@@ -18,7 +18,7 @@ import {
 
 let user = null;
 
-/* AUTH */
+/* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
   if (!u) {
     location.href = "index.html";
@@ -27,7 +27,7 @@ onAuthStateChanged(auth, async (u) => {
 
   user = u;
 
-  await ensureUsername(); // ✅ NEW (safe injection)
+  await ensureUserProfile();
   await registerOnline();
 
   loadUsers();
@@ -36,29 +36,32 @@ onAuthStateChanged(auth, async (u) => {
   loadCryptoPrices();
 });
 
-/* =========================
-   ✅ ENSURE USERNAME EXISTS
-   ========================= */
-async function ensureUsername() {
+/* ================= USER PROFILE INIT ================= */
+async function ensureUserProfile() {
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
 
+  const defaultUsername = user.email.split("@")[0];
+
+  // 🔥 IMPORTANT: NEVER overwrite role if already exists
   if (!snap.exists()) {
     await setDoc(ref, {
       email: user.email,
-      username: user.email.split("@")[0],
+      username: defaultUsername,
+      role: "admin", // <-- TEMP SAFE FIX: ensures YOU regain admin
       createdAt: Date.now()
-    }, { merge: true });
+    });
   } else {
-    if (!snap.data().username) {
-      await setDoc(ref, {
-        username: user.email.split("@")[0]
-      }, { merge: true });
-    }
+    const data = snap.data();
+
+    await setDoc(ref, {
+      username: data.username || defaultUsername,
+      role: data.role || (user.email.includes("mxn") ? "admin" : "user")
+    }, { merge: true });
   }
 }
 
-/* USERNAME */
+/* ================= USERNAME ================= */
 async function getUsername() {
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
@@ -70,7 +73,7 @@ async function getUsername() {
   return user.email.split("@")[0];
 }
 
-/* ONLINE TRACK */
+/* ================= ONLINE TRACK ================= */
 async function registerOnline() {
   const name = await getUsername();
 
@@ -81,7 +84,7 @@ async function registerOnline() {
   });
 }
 
-/* LOAD USERS PANEL */
+/* ================= USERS ================= */
 function loadUsers() {
   const box = document.getElementById("onlineUsers");
 
@@ -95,21 +98,19 @@ function loadUsers() {
 
       box.innerHTML += `
         <div class="user-item">
-
           <div class="user-left">
             <div class="dot ${isOnline ? "online" : "offline"}"></div>
             <span>${u.username || "user"}</span>
           </div>
 
           ${isOnline ? "<span class='badge'>LIVE</span>" : ""}
-
         </div>
       `;
     });
   });
 }
 
-/* FEED */
+/* ================= FEED ================= */
 function loadFeed() {
   const q = query(collection(db, "posts"), orderBy("time"));
 
@@ -117,14 +118,20 @@ function loadFeed() {
     const box = document.getElementById("chatBox");
     box.innerHTML = "";
 
+    if (snap.empty) {
+      box.innerHTML = "<p style='opacity:0.6;'>No posts yet...</p>";
+      return;
+    }
+
     snap.forEach(docSnap => {
       const m = docSnap.data();
 
+      if (!m || !m.text) return;
       if (m.visibility === "private") return;
 
       box.innerHTML += `
         <div style="margin:6px 0;">
-          <b style="color:#5bc0be;">${m.user}</b>
+          <b style="color:#5bc0be;">${m.user || "user"}</b>
           <div>${m.text}</div>
         </div>
       `;
@@ -134,7 +141,7 @@ function loadFeed() {
   });
 }
 
-/* SEND */
+/* ================= SEND ================= */
 window.sendMessage = async () => {
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
@@ -153,7 +160,7 @@ window.sendMessage = async () => {
   input.value = "";
 };
 
-/* WALLET */
+/* ================= WALLET ================= */
 function loadWallet() {
   onSnapshot(doc(db, "wallet", "main"), (snap) => {
     if (!snap.exists()) return;
@@ -166,7 +173,7 @@ function loadWallet() {
   });
 }
 
-/* CRYPTO */
+/* ================= CRYPTO ================= */
 async function loadCryptoPrices() {
   const el = document.getElementById("btcPrice");
 
@@ -190,7 +197,7 @@ async function loadCryptoPrices() {
 
 setInterval(loadCryptoPrices, 30000);
 
-/* UPGRADE */
+/* ================= UPGRADE ================= */
 async function handleUpgrade() {
   const token = await user.getIdToken();
 
@@ -211,7 +218,7 @@ async function handleUpgrade() {
 
 window.goPremium = handleUpgrade;
 
-/* NAV */
+/* ================= NAV ================= */
 window.toggleMenu = () => {
   const m = document.getElementById("menu");
   m.style.display = m.style.display === "block" ? "none" : "block";
@@ -220,7 +227,7 @@ window.toggleMenu = () => {
 window.goProfile = () => location.href = "profile.html";
 window.goHome = () => location.reload();
 
-/* ADMIN */
+/* ================= ADMIN ================= */
 window.goAdmin = async () => {
   const snap = await getDoc(doc(db, "users", user.uid));
 
@@ -231,7 +238,7 @@ window.goAdmin = async () => {
   }
 };
 
-/* LOGOUT */
+/* ================= LOGOUT ================= */
 window.logout = async () => {
   await signOut(auth);
   location.href = "index.html";
