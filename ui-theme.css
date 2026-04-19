@@ -23,7 +23,8 @@ h1, h2, h3, h4 {
   margin: 10px 0;
 }
 
-/* ================= BUTTONS ================= */
+/* ================= BUTTON FIX (IMPORTANT) ================= */
+/* FIX: prevents UI breaking button layout */
 button {
   background: #5bc0be;
   color: #000;
@@ -33,6 +34,7 @@ button {
   font-weight: bold;
   cursor: pointer;
   transition: 0.2s;
+  width: auto;
 }
 
 button:hover {
@@ -53,12 +55,22 @@ button:hover {
   border-bottom: 1px solid rgba(91, 192, 190, 0.2);
 }
 
-/* ================= MENU ================= */
+/* ================= MENU FIX ================= */
 .menu {
   background: #1c2541;
   padding: 10px;
   display: none;
   flex-direction: column;
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  width: 160px;
+  border-radius: 10px;
+  z-index: 9999;
+}
+
+.menu.active {
+  display: flex;
 }
 
 .menu button {
@@ -73,7 +85,7 @@ input {
   outline: none;
 }
 
-/* ================= BLOG STYLE (COINDESK LOOK) ================= */
+/* ================= BLOG ================= */
 .blog-card {
   background: #1c2541;
   border-radius: 14px;
@@ -114,12 +126,12 @@ input {
   line-height: 1.4;
 }
 
-/* ================= EARN SECTION ================= */
+/* ================= EARN ================= */
 .earn-card {
   border-left: 4px solid #5bc0be;
 }
 
-/* ================= SCROLLBAR (CLEAN LOOK) ================= */
+/* ================= SCROLLBAR ================= */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -129,7 +141,7 @@ input {
   border-radius: 10px;
 }
 
-/* ================= FIXED BACK BUTTON (BLOG STYLE FLOATING NAV) ================= */
+/* ================= FLOAT BUTTON ================= */
 .back-btn {
   position: fixed;
   bottom: 15px;
@@ -142,9 +154,4 @@ input {
   font-weight: bold;
   cursor: pointer;
   z-index: 9999;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-.back-btn:hover {
-  opacity: 0.85;
 }
