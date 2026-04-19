@@ -1,3 +1,4 @@
+/* ================= GLOBAL ================= */
 body {
   margin: 0;
   font-family: Arial;
@@ -5,20 +6,76 @@ body {
   color: white;
 }
 
+/* ================= CONTAINER ================= */
 .container {
   max-width: 900px;
   margin: auto;
 }
 
-/* NAVBAR */
+/* ================= LOGIN ================= */
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.center-box {
+  width: 100%;
+  max-width: 340px;
+  background: #1c2541;
+  padding: 25px 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* ================= INPUTS ================= */
+input {
+  width: 100%;
+  display: block;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+/* ================= BUTTONS ================= */
+button {
+  width: 100%;
+  display: block;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  background: #5bc0be;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* ================= NAVBAR ================= */
 .navbar {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
+  align-items: center;
   background: #1c2541;
+  padding: 10px;
 }
 
-/* MENU */
+.navbar button {
+  width: auto;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+/* ================= MENU (FIXED ONLY) ================= */
 .menu {
   display: none;
   position: absolute;
@@ -27,19 +84,15 @@ body {
   background: #2a2a2a;
   padding: 10px;
   border-radius: 10px;
+  width: 160px;
+  z-index: 999;
 }
 
 .menu.active {
   display: block;
 }
 
-.menu button {
-  display: block;
-  width: 100%;
-  margin: 5px 0;
-}
-
-/* CARD */
+/* ================= CARD ================= */
 .card {
   background: #1c2541;
   padding: 12px;
@@ -47,7 +100,7 @@ body {
   border-radius: 10px;
 }
 
-/* CHAT */
+/* ================= CHAT ================= */
 #chatBox {
   height: 220px;
   overflow-y: auto;
@@ -59,35 +112,76 @@ body {
 .row {
   display: flex;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .row input {
-  flex: 1;
+  width: 70%;
   padding: 8px;
+  border-radius: 5px;
+  border: none;
+  box-sizing: border-box;
 }
 
 .row button {
-  padding: 8px;
-}
-
-/* USERS */
-.user-item {
-  padding: 8px;
-  margin: 5px 0;
-  background: #0b132b;
-  border-radius: 6px;
-}
-
-/* MESSAGE */
-.msg {
-  padding: 6px;
-  margin: 5px 0;
-  background: #0b132b;
-  border-radius: 6px;
-}
-
-/* BUTTONS */
-button {
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: #5bc0be;
+  border: none;
   cursor: pointer;
+}
+
+/* ================= USERS ================= */
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  margin: 6px 0;
+  background: #0b132b;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* ================= DOTS ================= */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.online {
+  background: #22c55e;
+}
+
+.offline {
+  background: #555;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: gold;
+  color: black;
+}
+
+/* ================= EARN CARD (RESTORED) ================= */
+.earn-card {
+  border: 1px solid #5bc0be;
+  box-shadow: 0 0 8px rgba(91, 192, 190, 0.2);
+}
+
+.earn-card h4 {
+  margin-bottom: 5px;
+  color: #5bc0be;
+}
+
+.earn-card button {
+  background: #22c55e;
+  color: white;
+}
+
+.earn-card button:hover {
+  background: #16a34a;
 }
