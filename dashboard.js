@@ -10,12 +10,14 @@ import {
   addDoc,
   onSnapshot,
   query,
+  orderBy,
   doc,
   getDoc,
   setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
+let userData = null;
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
@@ -27,12 +29,15 @@ onAuthStateChanged(auth, async (u) => {
   user = u;
 
   await ensureUserProfile();
+  await loadUserData();
   await registerOnline();
 
   loadUsers();
   loadFeed();
   loadWallet();
   loadCryptoPrices();
+
+  setupDebugAccess(); // 🔥 NEW
 });
 
 /* ================= USER PROFILE ================= */
@@ -47,27 +52,23 @@ async function ensureUserProfile() {
       email: user.email,
       username: defaultUsername,
       role: "user",
+      isPremium: false,
       createdAt: Date.now()
     });
-  } else {
-    const data = snap.data();
+  }
+}
 
-    await setDoc(ref, {
-      username: data.username || defaultUsername
-    }, { merge: true });
+/* ================= LOAD USER DATA ================= */
+async function loadUserData() {
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (snap.exists()) {
+    userData = snap.data();
   }
 }
 
 /* ================= USERNAME ================= */
 async function getUsername() {
-  const ref = doc(db, "users", user.uid);
-  const snap = await getDoc(ref);
-
-  if (snap.exists()) {
-    return snap.data().username || user.email.split("@")[0];
-  }
-
-  return user.email.split("@")[0];
+  return userData?.username || user.email.split("@")[0];
 }
 
 /* ================= ONLINE ================= */
@@ -106,12 +107,15 @@ function loadUsers() {
   });
 }
 
-/* ================= FEED (FIXED) ================= */
+/* ================= FEED (FULLY FIXED) ================= */
 function loadFeed() {
   const box = document.getElementById("chatBox");
   if (!box) return;
 
-  const q = query(collection(db, "posts"), orderBy("time"));
+  const q = query(
+    collection(db, "posts"),
+    orderBy("time", "desc") // 🔥 FIXED
+  );
 
   onSnapshot(q, (snap) => {
     box.innerHTML = "";
@@ -125,18 +129,18 @@ function loadFeed() {
 
     snap.forEach(docSnap => {
       const m = docSnap.data();
-
       if (!m || !m.text) return;
 
-      // ✅ SAFE DEFAULT RULE (VERY IMPORTANT FIX)
       const visibility = m.visibility || "public";
 
-      if (visibility === "private") return;
+      // 🔐 Visibility control
+      if (visibility === "admin-only" && userData?.role !== "admin") return;
+      if (visibility === "premium" && !userData?.isPremium) return;
 
       count++;
 
       box.innerHTML += `
-        <div style="margin:6px 0;">
+        <div style="margin:8px 0; padding:8px; background:#0b132b; border-radius:6px;">
           <b style="color:#5bc0be;">${m.user || "user"}</b>
           <div>${m.text}</div>
         </div>
@@ -173,72 +177,26 @@ window.sendMessage = async () => {
   input.value = "";
 };
 
-/* ================= WALLET ================= */
-function loadWallet() {
-  onSnapshot(doc(db, "wallet", "main"), (snap) => {
-    if (!snap.exists()) return;
+/* ================= DEBUG SYSTEM ================= */
+function setupDebugAccess() {
+  const btn = document.getElementById("debugBtn");
+  if (!btn) return;
 
-    const data = snap.data();
+  if (userData?.role === "admin" || userData?.isPremium) {
+    btn.style.display = "block";
 
-    document.getElementById("walletBalance").innerText = data.balance || 0;
-    document.getElementById("walletUpdated").innerText =
-      data.lastUpdated ? new Date(data.lastUpdated).toLocaleString() : "-";
-  });
-}
+    btn.onclick = async () => {
+      console.clear();
+      console.log("🛠 MCN Debug Start");
 
-/* ================= CRYPTO ================= */
-async function loadCryptoPrices() {
-  const el = document.getElementById("btcPrice");
+      console.log("User:", user.email);
+      console.log("Role:", userData?.role);
+      console.log("Premium:", userData?.isPremium);
 
-  try {
-    const res = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,tether&vs_currencies=usd"
-    );
+      const snap = await getDoc(doc(db, "users", user.uid));
+      console.log("User Data:", snap.data());
 
-    const d = await res.json();
+      console.log("✅ Debug Complete");
+    };
 
-    el.innerText =
-      "BTC $" + d.bitcoin.usd +
-      " | ETH $" + d.ethereum.usd +
-      " | BNB $" + d.binancecoin.usd +
-      " | USDT $" + d.tether.usd;
-
-  } catch {
-    el.innerText = "Unavailable";
-  }
-}
-
-setInterval(loadCryptoPrices, 30000);
-
-/* ================= NAV ================= */
-window.toggleMenu = () => {
-  const m = document.getElementById("menu");
-  m.style.display = m.style.display === "block" ? "none" : "block";
-};
-
-window.goProfile = () => location.href = "profile.html";
-window.goHome = () => location.reload();
-
-/* ================= ADMIN ================= */
-window.goAdmin = async () => {
-  const snap = await getDoc(doc(db, "users", user.uid));
-
-  if (!snap.exists()) {
-    alert("❌ No user profile found");
-    return;
-  }
-
-  const data = snap.data();
-
-  if (data.role === "admin") {
-    location.href = "admin.html";
-  } else {
-    alert("❌ Admin locked");
-  }
-};
-
-/* ================= LOGOUT ================= */
-window.logout = async () => {
-  await signOut(auth);
-  location.href = "index.html";
-};
+  } else
