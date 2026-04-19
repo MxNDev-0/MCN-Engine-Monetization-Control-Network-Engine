@@ -16,50 +16,48 @@ import {
   doc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const usersListDiv = document.getElementById("usersList");
-const chatBox = document.getElementById("chatBox");
-const chatHeader = document.getElementById("chatHeader");
-
 let currentChatId = null;
 let currentUser = null;
+let unsubscribeMessages = null;
 
-// 🔒 STOP LOOP
-let initialized = false;
-
-// ================= AUTH =================
+/* ================= AUTH ================= */
 onAuthStateChanged(auth, async (user) => {
 
-  if (initialized) return; // 🛑 VERY IMPORTANT
-  initialized = true;
-
   if (!user) {
-    window.location.replace("index.html");
+    location.href = "index.html";
     return;
   }
 
   currentUser = user;
 
-  // mark user online
   await setDoc(doc(db, "onlineUsers", user.uid), {
     email: user.email,
     online: true
-  });
+  }, { merge: true });
 
   loadUsers();
 });
 
-// ================= NAV =================
+/* ================= SAFE DOM HELPERS ================= */
+function getEl(id) {
+  return document.getElementById(id);
+}
+
+/* ================= NAV ================= */
 window.logout = async () => {
   await signOut(auth);
-  window.location.replace("index.html");
+  location.href = "index.html";
 };
 
 window.goBack = () => {
-  window.location.href = "dashboard.html";
+  location.href = "dashboard.html";
 };
 
-// ================= LOAD USERS =================
+/* ================= LOAD USERS ================= */
 async function loadUsers() {
+  const usersListDiv = getEl("usersList");
+  if (!usersListDiv) return;
+
   const snapshot = await getDocs(collection(db, "onlineUsers"));
 
   usersListDiv.innerHTML = "<h4>Users Online</h4>";
@@ -79,8 +77,11 @@ async function loadUsers() {
   });
 }
 
-// ================= OPEN CHAT =================
+/* ================= OPEN CHAT ================= */
 window.openChat = function (userId, email) {
+  const chatHeader = getEl("chatHeader");
+  const chatBox = getEl("chatBox");
+
   const myId = currentUser.uid;
 
   currentChatId = [myId, userId].sort().join("_");
@@ -90,9 +91,9 @@ window.openChat = function (userId, email) {
   loadMessages();
 };
 
-// ================= SEND MESSAGE =================
+/* ================= SEND MESSAGE ================= */
 window.sendMessage = async function () {
-  const input = document.getElementById("messageInput");
+  const input = getEl("messageInput");
   const text = input.value.trim();
 
   if (!text || !currentChatId) {
@@ -110,18 +111,27 @@ window.sendMessage = async function () {
   input.value = "";
 };
 
-// ================= LOAD MESSAGES =================
+/* ================= LOAD MESSAGES ================= */
 function loadMessages() {
+  const chatBox = getEl("chatBox");
+  if (!chatBox) return;
+
+  // 🛑 unsubscribe previous listener (VERY IMPORTANT FIX)
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+  }
+
   const q = query(
     collection(db, "chats", currentChatId, "messages"),
     orderBy("time")
   );
 
-  onSnapshot(q, (snapshot) => {
+  unsubscribeMessages = onSnapshot(q, (snapshot) => {
+
     chatBox.innerHTML = "";
 
-    snapshot.forEach(doc => {
-      const msg = doc.data();
+    snapshot.forEach(docSnap => {
+      const msg = docSnap.data();
       const isMe = msg.sender === currentUser.uid;
 
       chatBox.innerHTML += `
