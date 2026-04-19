@@ -20,9 +20,7 @@ let currentChatId = null;
 let currentUser = null;
 let unsubscribeMessages = null;
 
-/* ================= AUTH ================= */
 onAuthStateChanged(auth, async (user) => {
-
   if (!user) {
     location.href = "index.html";
     return;
@@ -32,18 +30,17 @@ onAuthStateChanged(auth, async (user) => {
 
   await setDoc(doc(db, "onlineUsers", user.uid), {
     email: user.email,
-    online: true
+    online: true,
+    lastActive: Date.now()
   }, { merge: true });
 
   loadUsers();
 });
 
-/* ================= SAFE DOM HELPERS ================= */
 function getEl(id) {
   return document.getElementById(id);
 }
 
-/* ================= NAV ================= */
 window.logout = async () => {
   await signOut(auth);
   location.href = "index.html";
@@ -53,7 +50,6 @@ window.goBack = () => {
   location.href = "dashboard.html";
 };
 
-/* ================= LOAD USERS ================= */
 async function loadUsers() {
   const usersListDiv = getEl("usersList");
   if (!usersListDiv) return;
@@ -77,13 +73,10 @@ async function loadUsers() {
   });
 }
 
-/* ================= OPEN CHAT ================= */
 window.openChat = function (userId, email) {
   const chatHeader = getEl("chatHeader");
-  const chatBox = getEl("chatBox");
 
   const myId = currentUser.uid;
-
   currentChatId = [myId, userId].sort().join("_");
 
   chatHeader.innerText = "Chat with " + email;
@@ -91,7 +84,6 @@ window.openChat = function (userId, email) {
   loadMessages();
 };
 
-/* ================= SEND MESSAGE ================= */
 window.sendMessage = async function () {
   const input = getEl("messageInput");
   const text = input.value.trim();
@@ -111,23 +103,18 @@ window.sendMessage = async function () {
   input.value = "";
 };
 
-/* ================= LOAD MESSAGES ================= */
 function loadMessages() {
   const chatBox = getEl("chatBox");
   if (!chatBox) return;
 
-  // 🛑 unsubscribe previous listener (VERY IMPORTANT FIX)
-  if (unsubscribeMessages) {
-    unsubscribeMessages();
-  }
+  if (unsubscribeMessages) unsubscribeMessages();
 
   const q = query(
     collection(db, "chats", currentChatId, "messages"),
-    orderBy("time")
+    orderBy("time", "asc")
   );
 
   unsubscribeMessages = onSnapshot(q, (snapshot) => {
-
     chatBox.innerHTML = "";
 
     snapshot.forEach(docSnap => {
@@ -139,7 +126,7 @@ function loadMessages() {
           margin:5px 0;
           padding:8px;
           border-radius:5px;
-          background:${isMe ? "#5bc0be" : "#0b132b"};
+          background:${isMe ? "#5bc0be" : "#1c2541"};
           text-align:${isMe ? "right" : "left"};
         ">
           ${msg.text}
