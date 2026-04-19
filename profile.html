@@ -20,17 +20,42 @@
       position: relative;
     }
 
-    .small-nav-btn {
+    .menu-btn {
       position: absolute;
       top: 10px;
       right: 10px;
       background: #5bc0be;
       border: none;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: bold;
+      padding: 6px 10px;
+      border-radius: 6px;
       cursor: pointer;
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 45px;
+      right: 10px;
+      background: #1c2541;
+      border-radius: 10px;
+      padding: 10px;
+      display: none;
+      width: 200px;
+    }
+
+    .dropdown input {
+      margin-bottom: 6px;
+    }
+
+    .dropdown button {
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .username-box {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #5bc0be;
     }
   </style>
 </head>
@@ -42,6 +67,22 @@
 </div>
 
 <div class="container">
+
+  <!-- ☰ MENU BUTTON -->
+  <button class="menu-btn" onclick="toggleMenu()">☰</button>
+
+  <!-- DROPDOWN MENU -->
+  <div id="dropdownMenu" class="dropdown">
+    <input id="usernameInput" placeholder="New username">
+    <button onclick="updateUsername()">Save Username</button>
+
+    <button onclick="resetPassword()">Reset Password</button>
+  </div>
+
+  <!-- USERNAME DISPLAY -->
+  <div class="username-box">
+    Username: <span id="usernameDisplay">Loading...</span>
+  </div>
 
   <button class="small-nav-btn" onclick="location.href='dashboard.html'">
     ⬅ Back
