@@ -17,9 +17,12 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+const API = "https://mxm-backend.onrender.com";
+
 let user = null;
 let userData = null;
 let isAdmin = false;
+let adsLoaded = false;
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
@@ -99,8 +102,54 @@ function loadFeed() {
         </div>
       `;
     });
+
+    /* 🔥 LOAD ADS ONCE AFTER FEED RENDERS */
+    loadAdsIntoDashboard();
   });
 }
+
+/* ================= ADS SYSTEM ================= */
+async function loadAdsIntoDashboard() {
+  const box = document.getElementById("chatBox");
+  if (!box) return;
+
+  if (adsLoaded) return; // prevent duplication
+  adsLoaded = true;
+
+  try {
+    const res = await fetch(`${API}/ads/list`);
+    const ads = await res.json();
+
+    ads.forEach(ad => {
+      box.innerHTML += `
+        <div style="
+          margin:8px 0;
+          padding:10px;
+          border:1px dashed #5bc0be;
+          border-radius:8px;
+          background:#16213e;
+        ">
+          <div style="font-size:10px;color:#5bc0be;">SPONSORED</div>
+          <b>${ad.title}</b><br/>
+          <span style="font-size:13px;">${ad.text}</span><br/>
+
+          <button onclick="openAd('${ad.id}','${ad.link}')">
+            Open Ad
+          </button>
+        </div>
+      `;
+    });
+
+  } catch (err) {
+    console.log("Ads failed to load", err);
+  }
+}
+
+/* ================= AD CLICK TRACK ================= */
+window.openAd = function (id, link) {
+  fetch(`${API}/ads/click/${id}`, { method: "POST" });
+  window.location.href = link;
+};
 
 /* ================= SEND MESSAGE ================= */
 window.sendMessage = async function () {
@@ -133,7 +182,7 @@ window.logout = async function () {
 window.goHome = () => location.href = "dashboard.html";
 window.goProfile = () => location.href = "profile.html";
 
-/* ================= ADMIN ONLY (FIXED UX) ================= */
+/* ================= ADMIN ONLY ================= */
 window.goAdmin = () => {
   if (!user) {
     alert("Loading session...");
