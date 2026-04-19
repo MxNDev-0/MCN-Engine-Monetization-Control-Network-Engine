@@ -30,7 +30,7 @@ async function loadUsers() {
 
     usersList.innerHTML += `
       <div class="user-card">
-        <p>${user.email}</p>
+        <p>${user.username || user.email}</p>
         <button onclick="startChat('${id}')">Chat</button>
       </div>
     `;
