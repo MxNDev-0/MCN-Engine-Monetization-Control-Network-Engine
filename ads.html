@@ -20,6 +20,7 @@
       text-align: center;
       position: sticky;
       top: 0;
+      z-index: 1000; /* ✅ FIX: stays above content */
     }
 
     .header h2 {
@@ -31,6 +32,7 @@
       padding: 15px;
       max-width: 900px;
       margin: auto;
+      margin-top: 10px; /* ✅ FIX: prevents overlap under header */
     }
 
     .card {
@@ -85,11 +87,12 @@
       margin: 10px 0;
     }
 
-    /* ✅ STEP 1 — NEW BACK BUTTON STYLE */
+    /* ✅ BACK BUTTON (unchanged position, but layered safely) */
     .back {
       position: fixed;
       bottom: 18px;
       right: 18px;
+      z-index: 900; /* ✅ stays below header but above content */
 
       background: rgba(91, 192, 190, 0.15);
       color: #5bc0be;
@@ -122,7 +125,6 @@
 
 <div class="container">
 
-  <!-- INTRO -->
   <div class="card">
     <h3>Advertise on MCN Engine</h3>
 
@@ -134,11 +136,9 @@
     </div>
   </div>
 
-  <!-- PRICING -->
   <div class="card">
     <h3>💰 Pricing</h3>
 
-    <!-- ✅ STEP 2 — DYNAMIC PRICE -->
     <div class="price-tag" id="priceTag">$10 / 7 Days</div>
 
     <div class="info-box">
@@ -149,7 +149,6 @@
     </div>
   </div>
 
-  <!-- CREATE AD -->
   <div class="card">
     <h3>📝 Create Your Ad</h3>
 
@@ -166,7 +165,6 @@
     <button onclick="buyAd()">Proceed to Payment 🚀</button>
   </div>
 
-  <!-- HOW IT WORKS -->
   <div class="card">
     <h3>⚙️ How It Works</h3>
 
@@ -181,7 +179,6 @@
 
 </div>
 
-<!-- ✅ STEP 1 BUTTON -->
 <button class="back" onclick="location.href='dashboard.html'">← Back</button>
 
 <script type="module">
@@ -190,7 +187,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 
 const API = "https://mxm-backend.onrender.com";
 
-/* ================= STEP 2 — PRICE CALCULATOR ================= */
 function calculatePrice(days) {
   const base = 10;
 
@@ -201,7 +197,6 @@ function calculatePrice(days) {
   return base;
 }
 
-/* LIVE PRICE UPDATE */
 document.getElementById("adDuration").addEventListener("change", function () {
   const days = Number(this.value);
   const price = calculatePrice(days);
@@ -210,14 +205,13 @@ document.getElementById("adDuration").addEventListener("change", function () {
     `$${price.toFixed(2)} / ${days} Days`;
 });
 
-/* ================= BUY AD ================= */
 window.buyAd = async function () {
   const title = document.getElementById("adTitle").value.trim();
   const text = document.getElementById("adText").value.trim();
   const link = document.getElementById("adLink").value.trim();
   const duration = Number(document.getElementById("adDuration").value);
 
-  const price = calculatePrice(duration); // ✅ STEP 3 FIX
+  const price = calculatePrice(duration);
 
   if (!title || !text || !link) {
     alert("Please fill all fields");
@@ -245,7 +239,7 @@ window.buyAd = async function () {
           text,
           link,
           duration,
-          price   // ✅ IMPORTANT FIX
+          price
         })
       });
 
