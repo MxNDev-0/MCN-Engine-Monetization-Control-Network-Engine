@@ -19,7 +19,7 @@ import {
 
 let user = null;
 
-/* AUTH */
+/* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
   if (!u) location.href = "index.html";
 
@@ -29,14 +29,16 @@ onAuthStateChanged(auth, async (u) => {
   loadUsername();
 });
 
-/* MENU */
+/* ================= MENU ================= */
 window.toggleMenu = () => {
   const m = document.getElementById("dropdownMenu");
   m.style.display = m.style.display === "block" ? "none" : "block";
 };
 
-/* USERNAME */
+/* ================= USERNAME LOAD ================= */
 async function loadUsername() {
+  if (!user) return;
+
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
 
@@ -49,28 +51,46 @@ async function loadUsername() {
   }
 }
 
-/* UPDATE USERNAME */
+/* ================= UPDATE USERNAME ================= */
 window.updateUsername = async () => {
   const input = document.getElementById("usernameInput");
   const username = input.value.trim();
 
-  if (!username) return;
+  if (!username) {
+    alert("Enter username");
+    return;
+  }
 
-  await setDoc(doc(db, "users", user.uid), {
-    username
-  }, { merge: true });
+  try {
+    await setDoc(doc(db, "users", user.uid), {
+      username: username
+    }, { merge: true });
 
-  document.getElementById("usernameDisplay").innerText = username;
-  input.value = "";
+    document.getElementById("usernameDisplay").innerText = username;
+
+    input.value = "";
+    alert("Username updated ✅");
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update username");
+  }
 };
 
-/* RESET PASSWORD */
+/* ================= RESET PASSWORD ================= */
 window.resetPassword = async () => {
-  await sendPasswordResetEmail(auth, user.email);
-  alert("Reset email sent");
+  if (!user || !user.email) return;
+
+  try {
+    await sendPasswordResetEmail(auth, user.email);
+    alert("Password reset link sent to your email 📩");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to send reset email");
+  }
 };
 
-/* CREATE POST */
+/* ================= CREATE POST (UNCHANGED) ================= */
 window.createPost = async () => {
   const input = document.getElementById("postInput");
   const text = input.value.trim();
@@ -87,7 +107,7 @@ window.createPost = async () => {
   input.value = "";
 };
 
-/* POSTS */
+/* ================= LOAD POSTS (UNCHANGED LOGIC) ================= */
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("time"));
 
@@ -101,13 +121,28 @@ function loadPosts() {
 
       if (p.user !== user.email.split("@")[0]) return;
 
+      const isPrivate = p.visibility === "private";
+
       box.innerHTML += `
         <div class="post">
+
+          <div class="post-header">
+            <div class="avatar"></div>
+            <div>${p.user}</div>
+          </div>
+
           <div>${p.text}</div>
 
-          <div class="dots" onclick="togglePostMenu('${id}')">⋮</div>
+          <div style="margin-top:6px;">
+            <span class="${isPrivate ? "tag-private" : "tag-public"}">
+              ${isPrivate ? "🔒 Private" : "🌍 Public"}
+            </span>
+          </div>
 
-          <div id="menu-${id}" class="post-menu">
+          <!-- 3 DOT MENU -->
+          <div class="dot-menu" onclick="toggleVisibilityMenu('${id}')">⋮</div>
+
+          <div class="visibility-menu" id="menu-${id}">
             <button onclick="setPublic('${id}')">Make Public</button>
             <button onclick="setPrivate('${id}')">Make Private</button>
           </div>
@@ -118,23 +153,27 @@ function loadPosts() {
   });
 }
 
-/* TOGGLE MENU */
-window.togglePostMenu = (id) => {
-  const el = document.getElementById("menu-" + id);
-  el.style.display = el.style.display === "flex" ? "none" : "flex";
-};
-
-/* VISIBILITY */
+/* ================= TOGGLE VISIBILITY ================= */
 window.setPublic = async (id) => {
   await updateDoc(doc(db, "posts", id), {
     visibility: "public"
   });
-  alert("Post is now public");
+
+  document.getElementById("menu-" + id).style.display = "none";
 };
 
 window.setPrivate = async (id) => {
   await updateDoc(doc(db, "posts", id), {
     visibility: "private"
   });
-  alert("Post is now private");
+
+  document.getElementById("menu-" + id).style.display = "none";
+};
+
+/* ================= NEW (UI SUPPORT ONLY) ================= */
+window.toggleVisibilityMenu = (id) => {
+  const el = document.getElementById("menu-" + id);
+  if (!el) return;
+
+  el.style.display = el.style.display === "flex" ? "none" : "flex";
 };
