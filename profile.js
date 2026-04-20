@@ -29,10 +29,20 @@ onAuthStateChanged(auth, async (u) => {
   loadUsername();
 });
 
-/* ================= MENU ================= */
-window.toggleMenu = () => {
-  const m = document.getElementById("dropdownMenu");
-  m.style.display = m.style.display === "block" ? "none" : "block";
+/* ================= MENU FIX (STABLE) ================= */
+window.toggleMenu = function () {
+  const menu =
+    document.getElementById("dropdownMenu") ||
+    document.getElementById("menu");
+
+  if (!menu) return;
+
+  const isOpen =
+    menu.style.display === "block" ||
+    menu.classList.contains("active");
+
+  menu.style.display = isOpen ? "none" : "block";
+  menu.classList.toggle("active");
 };
 
 /* ================= USERNAME LOAD ================= */
@@ -62,9 +72,11 @@ window.updateUsername = async () => {
   }
 
   try {
-    await setDoc(doc(db, "users", user.uid), {
-      username: username
-    }, { merge: true });
+    await setDoc(
+      doc(db, "users", user.uid),
+      { username },
+      { merge: true }
+    );
 
     document.getElementById("usernameDisplay").innerText = username;
 
@@ -79,18 +91,18 @@ window.updateUsername = async () => {
 
 /* ================= RESET PASSWORD ================= */
 window.resetPassword = async () => {
-  if (!user || !user.email) return;
+  if (!user?.email) return;
 
   try {
     await sendPasswordResetEmail(auth, user.email);
-    alert("Password reset link sent to your email 📩");
+    alert("Password reset link sent 📩");
   } catch (err) {
     console.error(err);
     alert("Failed to send reset email");
   }
 };
 
-/* ================= CREATE POST (UNCHANGED) ================= */
+/* ================= CREATE POST ================= */
 window.createPost = async () => {
   const input = document.getElementById("postInput");
   const text = input.value.trim();
@@ -107,7 +119,7 @@ window.createPost = async () => {
   input.value = "";
 };
 
-/* ================= LOAD POSTS (UNCHANGED LOGIC) ================= */
+/* ================= LOAD POSTS (CLEAN V15 FIX) ================= */
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("time"));
 
@@ -139,12 +151,12 @@ function loadPosts() {
             </span>
           </div>
 
-          <!-- 3 DOT MENU -->
+          <!-- 3 DOT MENU ONLY -->
           <div class="dot-menu" onclick="toggleVisibilityMenu('${id}')">⋮</div>
 
-          <div class="visibility-menu" id="menu-${id}">
-            <button onclick="setPublic('${id}')">Make Public</button>
-            <button onclick="setPrivate('${id}')">Make Private</button>
+          <div class="visibility-menu" id="menu-${id}" style="display:none;flex-direction:column;">
+            <button onclick="setPublic('${id}')">🌍 Public</button>
+            <button onclick="setPrivate('${id}')">🔒 Private</button>
           </div>
 
         </div>
@@ -153,7 +165,21 @@ function loadPosts() {
   });
 }
 
-/* ================= TOGGLE VISIBILITY ================= */
+/* ================= TOGGLE MENU (FIXED) ================= */
+window.toggleVisibilityMenu = (id) => {
+  const el = document.getElementById("menu-" + id);
+  if (!el) return;
+
+  const isVisible = el.style.display === "flex";
+
+  document.querySelectorAll(".visibility-menu").forEach(m => {
+    m.style.display = "none";
+  });
+
+  el.style.display = isVisible ? "none" : "flex";
+};
+
+/* ================= VISIBILITY ================= */
 window.setPublic = async (id) => {
   await updateDoc(doc(db, "posts", id), {
     visibility: "public"
@@ -168,12 +194,4 @@ window.setPrivate = async (id) => {
   });
 
   document.getElementById("menu-" + id).style.display = "none";
-};
-
-/* ================= NEW (UI SUPPORT ONLY) ================= */
-window.toggleVisibilityMenu = (id) => {
-  const el = document.getElementById("menu-" + id);
-  if (!el) return;
-
-  el.style.display = el.style.display === "flex" ? "none" : "flex";
 };
