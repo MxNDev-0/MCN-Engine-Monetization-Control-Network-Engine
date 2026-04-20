@@ -105,18 +105,21 @@
     <p id="walletUpdated">-</p>
   </div>
 
-  <!-- CHAT V10 -->
-  <div class="card">
-    <h4>💬 Community Chat V10</h4>
+  <!-- CHAT V11 -->
+<div class="card">
+  <h4>💬 Community Chat V11</h4>
 
-    <div id="chatBox"></div>
+  <div id="chatBox"></div>
 
-    <div class="row">
-      <input id="chatInput" placeholder="Write something...">
-      <button onclick="sendMessage()">Post</button>
-    </div>
+  <div id="replyBox" style="display:none;font-size:12px;opacity:0.7;margin-bottom:5px;">
+    Replying to: <span id="replyText"></span>
+    <button onclick="cancelReply()" style="margin-left:10px;">X</button>
   </div>
 
+  <div class="row">
+    <input id="chatInput" placeholder="Write something...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
 </div>
 
 <script type="module" src="dashboard.js"></script>
