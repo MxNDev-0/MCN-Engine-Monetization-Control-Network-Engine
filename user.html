@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Profile - MCN Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0b132b;
+      color: white;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1c2541;
+      padding: 10px;
+    }
+
+    .icon-btn {
+      background: #5bc0be;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .profile-card {
+      margin: 10px;
+      padding: 12px;
+      background: #1c2541;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #5bc0be;
+    }
+
+    .username {
+      font-weight: bold;
+      color: #5bc0be;
+    }
+
+    .actions button {
+      margin-left: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .card {
+      background: #1c2541;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    .post {
+      background: #0b132b;
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="icon-btn" onclick="history.back()">⬅ Back</button>
+  <h3>User Profile</h3>
+  <button class="icon-btn" onclick="location.href='dashboard.html'">Home</button>
+</div>
+
+<div class="profile-card">
+  <div class="left">
+    <div class="avatar"></div>
+    <div>
+      <div id="username">Loading...</div>
+      <small id="uid"></small>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="friendBtn" onclick="toggleFriend()">Add Friend</button>
+    <button onclick="openDM()">Message</button>
+  </div>
+</div>
+
+<div class="card">
+  <h4>Posts</h4>
+  <div id="posts"></div>
+</div>
+
+<script type="module" src="user.js"></script>
+
+</body>
+</html>
