@@ -14,7 +14,8 @@ import {
   doc,
   getDoc,
   setDoc,
-  serverTimestamp
+  serverTimestamp,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const API = "https://mxm-backend.onrender.com";
@@ -22,7 +23,6 @@ const API = "https://mxm-backend.onrender.com";
 let user = null;
 let userData = null;
 let isAdmin = false;
-let adsLoaded = false;
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
@@ -39,7 +39,9 @@ onAuthStateChanged(auth, async (u) => {
   isAdmin = userData?.role === "admin";
 
   loadUsers();
-  loadFeed();
+  loadChatV6();
+  setupPresence();
+  setupTypingListener();
 });
 
 /* ================= USER ================= */
@@ -66,108 +68,161 @@ function loadUsers() {
   const box = document.getElementById("onlineUsers");
   if (!box) return;
 
-  onSnapshot(collection(db, "onlineUsers"), (snap) => {
+  onSnapshot(collection(db, "presence"), (snap) => {
     box.innerHTML = "";
 
     snap.forEach(d => {
       const u = d.data();
 
+      if (!u.online) return;
+
       box.innerHTML += `
         <div class="user-item">
-          <span>${u.username || "user"}</span>
+          🟢 ${u.username || "user"}
         </div>
       `;
     });
   });
 }
 
-/* ================= CHAT V3 (FIXED + STABLE) ================= */
-function loadFeed() {
+/* ================= CHAT V6 ================= */
+function loadChatV6() {
   const box = document.getElementById("chatBox");
   if (!box) return;
 
   const q = query(collection(db, "posts"), orderBy("time", "asc"));
 
   onSnapshot(q, (snap) => {
-    box.innerHTML = "";
+    let html = "";
 
-    snap.forEach((docSnap) => {
-      const m = docSnap.data();
-      if (!m) return;
+    snap.forEach(d => {
+      const m = d.data() || {};
 
-      // 🔥 normalize all possible field formats
-      const text = m.text || m.message || m.msg;
-      const userName = m.user || m.username || "guest";
-
-      // 🚫 block empty / broken messages
-      if (!text || text.trim() === "") return;
+      const text = m.text ?? "[message removed]";
+      const userName = m.user ?? "unknown";
 
       const time = m.time?.toDate
-        ? m.time.toDate().toLocaleTimeString()
+        ? m.time.toDate().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          })
         : "";
 
-      box.innerHTML += `
-        <div class="msg" style="
+      const isMe = user && user.email
+        ? userName === user.email.split("@")[0]
+        : false;
+
+      html += `
+        <div style="
+          display:flex;
+          flex-direction:column;
+          align-items:${isMe ? "flex-end" : "flex-start"};
           margin:6px 0;
-          padding:8px;
-          background:#1c2541;
-          border-radius:6px;
-          font-size:13px;
         ">
-          <b>${userName}</b>: ${text}
-          <div style="font-size:10px;opacity:0.6;">${time}</div>
+          <div style="
+            max-width:75%;
+            padding:8px 10px;
+            border-radius:12px;
+            background:${isMe ? "#5bc0be" : "#1c2541"};
+            color:${isMe ? "#000" : "#fff"};
+            font-size:13px;
+            word-break:break-word;
+          ">
+            ${text}
+          </div>
+
+          <small style="font-size:10px;opacity:0.5;">
+            ${userName}${time ? " • " + time : ""}
+          </small>
         </div>
       `;
     });
 
+    box.innerHTML = html;
     box.scrollTop = box.scrollHeight;
-
-    loadAdsIntoDashboard();
   });
 }
 
-/* ================= ADS SYSTEM (SEPARATED FIX) ================= */
-async function loadAdsIntoDashboard() {
-  const box = document.getElementById("adsBox");
+/* ================= TYPING SYSTEM ================= */
+let typingTimeout;
+
+window.handleTyping = async function () {
+  if (!user) return;
+
+  await setDoc(doc(db, "typing", user.uid), {
+    uid: user.uid,
+    username: user.email.split("@")[0],
+    typing: true,
+    updatedAt: serverTimestamp()
+  });
+
+  clearTimeout(typingTimeout);
+
+  typingTimeout = setTimeout(async () => {
+    await deleteDoc(doc(db, "typing", user.uid));
+  }, 1500);
+};
+
+document.addEventListener("input", (e) => {
+  if (e.target.id === "chatInput") {
+    handleTyping();
+  }
+});
+
+/* ================= TYPING UI ================= */
+function setupTypingListener() {
+  const box = document.getElementById("chatBox");
   if (!box) return;
 
-  if (adsLoaded) return;
-  adsLoaded = true;
+  onSnapshot(collection(db, "typing"), (snap) => {
+    let users = [];
 
-  try {
-    const res = await fetch(`${API}/ads/list`);
-    const ads = await res.json();
-
-    ads.forEach(ad => {
-      box.innerHTML += `
-        <div style="
-          margin:8px 0;
-          padding:10px;
-          border:1px dashed #5bc0be;
-          border-radius:8px;
-          background:#16213e;
-        ">
-          <div style="font-size:10px;color:#5bc0be;">SPONSORED</div>
-          <b>${ad.title}</b><br/>
-          <span style="font-size:13px;">${ad.text}</span><br/>
-
-          <button onclick="openAd('${ad.id}','${ad.link}')">
-            Open Ad
-          </button>
-        </div>
-      `;
+    snap.forEach(d => {
+      const t = d.data();
+      if (t.uid !== user.uid) {
+        users.push(t.username || "user");
+      }
     });
 
-  } catch (err) {
-    console.log("Ads failed", err);
-  }
+    let indicator = document.getElementById("typingIndicator");
+
+    if (!indicator) {
+      indicator = document.createElement("div");
+      indicator.id = "typingIndicator";
+      indicator.style.fontSize = "11px";
+      indicator.style.opacity = "0.6";
+      indicator.style.marginTop = "5px";
+      box.parentNode.appendChild(indicator);
+    }
+
+    indicator.innerText = users.length
+      ? "⌨️ Someone is typing..."
+      : "";
+  });
 }
 
-/* ================= AD CLICK ================= */
-window.openAd = function (id, link) {
-  fetch(`${API}/ads/click/${id}`, { method: "POST" });
-  window.location.href = link;
-};
+/* ================= PRESENCE SYSTEM ================= */
+function setupPresence() {
+  if (!user) return;
+
+  const ref = doc(db, "presence", user.uid);
+
+  setDoc(ref, {
+    uid: user.uid,
+    username: user.email.split("@")[0],
+    online: true,
+    lastSeen: serverTimestamp()
+  });
+
+  window.addEventListener("beforeunload", async () => {
+    await setDoc(ref, {
+      uid: user.uid,
+      username: user.email.split("@")[0],
+      online: false,
+      lastSeen: serverTimestamp()
+    }, { merge: true });
+  });
+}
 
 /* ================= SEND MESSAGE ================= */
 window.sendMessage = async function () {
@@ -196,26 +251,21 @@ window.logout = async function () {
   location.href = "index.html";
 };
 
-/* ================= NAVIGATION ================= */
+/* ================= NAV ================= */
 window.goHome = () => location.href = "dashboard.html";
 window.goProfile = () => location.href = "profile.html";
+window.goAdSpace = () => location.href = "ads.html";
+window.support = () => alert("Support coming soon");
+window.goFaq = () => location.href = "faq.html";
+window.goAbout = () => location.href = "about.html";
+window.goBlog = () => location.href = "blog/index.html";
 
-/* ================= ADMIN ================= */
 window.goAdmin = () => {
   if (!userData) return alert("Loading...");
   if (!isAdmin) return alert("❌ Admin only");
   location.href = "admin.html";
 };
 
-/* ================= ADS PAGE ================= */
-window.goAdSpace = () => location.href = "ads.html";
-
-window.support = () => alert("Support coming soon");
-window.goFaq = () => location.href = "faq.html";
-window.goAbout = () => location.href = "about.html";
-window.goBlog = () => location.href = "blog/index.html";
-
-/* ================= DEVELOPER ================= */
 window.openDeveloper = () => {
   alert("Developer tools coming soon");
 };
