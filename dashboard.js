@@ -16,7 +16,8 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
+  where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
@@ -37,6 +38,9 @@ onAuthStateChanged(auth, async (u) => {
   loadUsers();
   loadChat();
   loadPrices();
+
+  // 🔔 V18.1 NOTIFICATIONS INIT
+  loadNotifications();
 });
 
 /* USER */
@@ -74,7 +78,7 @@ function loadUsers() {
   });
 }
 
-/* ================= CHAT V14 STABLE ================= */
+/* ================= CHAT ================= */
 function loadChat() {
   const box = document.getElementById("chatBox");
   if (!box) return;
@@ -167,7 +171,7 @@ window.deletePost = async function (id) {
   await deleteDoc(doc(db, "posts", id));
 };
 
-/* MENU FIX */
+/* MENU */
 window.toggleMenu = function () {
   const menu = document.getElementById("menu");
   if (!menu) return;
@@ -213,107 +217,43 @@ async function loadPrices() {
   }
 }
 
-/* ================= FRIEND SYSTEM V15 ================= */
+/* ================= 🔔 NOTIFICATIONS SYSTEM ================= */
 
-/* SEND FRIEND REQUEST */
-window.sendFriendRequest = async function (toUid, toName) {
-  if (!user) return;
+/* LOAD NOTIFICATIONS */
+function loadNotifications() {
+  const panel = document.getElementById("notifPanel");
+  const badge = document.getElementById("notifCount");
 
-  await addDoc(collection(db, "friendRequests"), {
-    from: user.uid,
-    fromName: user.email.split("@")[0],
-    to: toUid,
-    toName,
-    status: "pending",
-    createdAt: serverTimestamp()
-  });
-
-  alert("Friend request sent");
-};
-
-/* LOAD FRIEND REQUESTS */
-window.loadFriendRequests = function () {
-  const box = document.getElementById("friendRequestsBox");
-  if (!box) return;
+  if (!panel || !badge) return;
 
   const q = query(
-    collection(db, "friendRequests"),
-    where("to", "==", user.uid)
+    collection(db, "notifications", user.uid, "items"),
+    orderBy("createdAt", "desc")
   );
 
   onSnapshot(q, (snap) => {
     let html = "";
+    let count = 0;
 
     snap.forEach(d => {
-      const r = d.data();
-      const id = d.id;
+      const n = d.data();
 
-      if (r.status !== "pending") return;
+      if (!n.seen) count++;
 
       html += `
-        <div style="padding:8px;margin:6px;background:#1c2541;border-radius:8px;">
-          <b>${r.fromName}</b> sent you a friend request
-
-          <div style="margin-top:6px;">
-            <button onclick="acceptFriend('${id}','${r.from}','${r.to}')">Accept</button>
-            <button onclick="rejectFriend('${id}')">Reject</button>
-          </div>
+        <div class="notif-item">
+          🔔 ${n.text}
         </div>
       `;
     });
 
-    box.innerHTML = html;
+    panel.innerHTML = html;
+
+    if (count > 0) {
+      badge.style.display = "inline-block";
+      badge.innerText = count;
+    } else {
+      badge.style.display = "none";
+    }
   });
-};
-
-/* ACCEPT FRIEND */
-window.acceptFriend = async function (id, fromUid, toUid) {
-  await updateDoc(doc(db, "friendRequests", id), {
-    status: "accepted"
-  });
-
-  await addDoc(collection(db, "friends"), {
-    users: [fromUid, toUid],
-    createdAt: serverTimestamp()
-  });
-
-  alert("Friend added");
-};
-
-/* REJECT FRIEND */
-window.rejectFriend = async function (id) {
-  await updateDoc(doc(db, "friendRequests", id), {
-    status: "rejected"
-  });
-
-  alert("Request rejected");
-};
-
-/* LOAD FRIEND LIST */
-window.loadFriends = function () {
-  const box = document.getElementById("friendsBox");
-  if (!box) return;
-
-  const q = query(collection(db, "friends"));
-
-  onSnapshot(q, (snap) => {
-    let html = "";
-
-    snap.forEach(d => {
-      const f = d.data();
-
-      if (!f.users.includes(user.uid)) return;
-
-      const friendId = f.users.find(u => u !== user.uid);
-
-      html += `
-        <div style="padding:8px;margin:6px;background:#0b132b;border-radius:8px;">
-          👤 Friend UID: ${friendId}
-          <button onclick="openDM('${friendId}')">💬 Message</button>
-        </div>
-      `;
-    });
-
-    box.innerHTML = html;
-  });
-};
+}
