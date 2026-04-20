@@ -35,11 +35,19 @@
 
     #chatBox {
       scroll-behavior: smooth;
-      max-height: 300px;
+      max-height: 250px;
       overflow-y: auto;
       padding: 10px;
       background: #0b132b;
       border-radius: 8px;
+    }
+
+    .msg {
+      margin-bottom: 8px;
+      padding: 6px;
+      background: #1c2541;
+      border-radius: 6px;
+      font-size: 13px;
     }
 
     .row {
@@ -65,8 +73,9 @@
       cursor: pointer;
     }
 
-    .msgBox {
-      margin: 8px 0;
+    /* ADS BOX */
+    #adsBox {
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -79,17 +88,23 @@
   <button onclick="logout()">Logout</button>
 </div>
 
-<!-- MENU -->
+<!-- MENU (REORDERED LOGICALLY) -->
 <div id="menu" class="menu">
-  <button onclick="goHome()">Home</button>
-  <button onclick="goProfile()">Profile</button>
-  <button onclick="goAdSpace()">Buy Ad Space 🚀</button>
-  <button onclick="goBlog()">Blog</button>
-  <button onclick="goFaq()">FAQ</button>
-  <button onclick="goAbout()">About</button>
-  <button onclick="support()">Support</button>
-  <button onclick="openDeveloper()">Developer</button>
-  <button onclick="goAdmin()">Admin</button>
+  <button onclick="goHome()">🏠 Home</button>
+  <button onclick="goProfile()">👤 Profile</button>
+
+  <button onclick="goAdSpace()">🚀 Buy Ad Space</button>
+
+  <button onclick="goBlog()">📰 Blog</button>
+  <button onclick="goFaq()">❓ FAQ</button>
+  <button onclick="goAbout()">ℹ️ About</button>
+
+  <button onclick="support()">💰 Support</button>
+
+  <button onclick="openDeveloper()">💻 Developer</button>
+
+  <!-- ADMIN LAST (SECURE + CLEAN) -->
+  <button onclick="goAdmin()">🔐 Admin</button>
 </div>
 
 <div class="container">
@@ -105,21 +120,31 @@
     <p id="walletUpdated">-</p>
   </div>
 
-  <!-- CHAT V11 -->
-<div class="card">
-  <h4>💬 Community Chat V11</h4>
+  <!-- CHAT SYSTEM -->
+  <div class="card">
+    <h4>💬 Community Chat</h4>
 
-  <div id="chatBox"></div>
+    <div id="chatBox"></div>
 
-  <div id="replyBox" style="display:none;font-size:12px;opacity:0.7;margin-bottom:5px;">
-    Replying to: <span id="replyText"></span>
-    <button onclick="cancelReply()" style="margin-left:10px;">X</button>
+    <!-- ADS SEPARATED -->
+    <div id="adsBox"></div>
+
+    <div class="row">
+      <input id="chatInput" placeholder="Write something...">
+      <button onclick="sendMessage()">Post</button>
+    </div>
   </div>
 
-  <div class="row">
-    <input id="chatInput" placeholder="Write something...">
-    <button onclick="sendMessage()">Send</button>
+  <div class="card ads-only">
+    <h4>📢 Sponsored Space</h4>
+    <p>Buy this space to promote your business</p>
   </div>
+
+  <div class="card earn-card">
+    <h4>💰 Earn</h4>
+    <button onclick="location.href='earn/index.html'">Open Earn</button>
+  </div>
+
 </div>
 
 <script type="module" src="dashboard.js"></script>
