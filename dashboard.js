@@ -81,7 +81,7 @@ function loadUsers() {
   });
 }
 
-/* ================= FEED (CHAT SYSTEM FIXED) ================= */
+/* ================= CHAT V3 (FIXED + STABLE) ================= */
 function loadFeed() {
   const box = document.getElementById("chatBox");
   if (!box) return;
@@ -91,13 +91,16 @@ function loadFeed() {
   onSnapshot(q, (snap) => {
     box.innerHTML = "";
 
-    snap.forEach(docSnap => {
-
+    snap.forEach((docSnap) => {
       const m = docSnap.data();
       if (!m) return;
 
-      const text = m.text || "[empty message]";
-      const userName = m.user || "guest";
+      // 🔥 normalize all possible field formats
+      const text = m.text || m.message || m.msg;
+      const userName = m.user || m.username || "guest";
+
+      // 🚫 block empty / broken messages
+      if (!text || text.trim() === "") return;
 
       const time = m.time?.toDate
         ? m.time.toDate().toLocaleTimeString()
@@ -117,17 +120,15 @@ function loadFeed() {
       `;
     });
 
-    /* AUTO SCROLL */
     box.scrollTop = box.scrollHeight;
 
-    /* LOAD ADS ONCE */
     loadAdsIntoDashboard();
   });
 }
 
-/* ================= ADS SYSTEM ================= */
+/* ================= ADS SYSTEM (SEPARATED FIX) ================= */
 async function loadAdsIntoDashboard() {
-  const box = document.getElementById("chatBox");
+  const box = document.getElementById("adsBox");
   if (!box) return;
 
   if (adsLoaded) return;
@@ -206,7 +207,7 @@ window.goAdmin = () => {
   location.href = "admin.html";
 };
 
-/* ================= ADS ================= */
+/* ================= ADS PAGE ================= */
 window.goAdSpace = () => location.href = "ads.html";
 
 window.support = () => alert("Support coming soon");
