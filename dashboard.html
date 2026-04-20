@@ -7,48 +7,6 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #0b132b;
-      color: white;
-    }
-
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #1c2541;
-      padding: 10px;
-    }
-
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .icon-btn {
-      background: #5bc0be;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      position: relative;
-    }
-
-    /* 🔔 NOTIFICATION BADGE */
-    .badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: red;
-      color: white;
-      font-size: 10px;
-      padding: 2px 5px;
-      border-radius: 50%;
-    }
-
     .menu {
       z-index: 9999;
       width: 200px;
@@ -56,6 +14,9 @@
       border-radius: 12px;
       display: none;
       flex-direction: column;
+      position: absolute;
+      top: 50px;
+      left: 10px;
     }
 
     .menu.active {
@@ -70,6 +31,49 @@
       border: none;
       color: white;
       cursor: pointer;
+    }
+
+    /* 🔔 NOTIFICATION SYSTEM */
+    .notif-wrapper {
+      position: relative;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .notif-badge {
+      position: absolute;
+      top: -5px;
+      right: -8px;
+      background: red;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 10px;
+      display: none;
+    }
+
+    .notif-panel {
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      width: 280px;
+      max-height: 350px;
+      overflow-y: auto;
+      background: #1c2541;
+      border-radius: 12px;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .notif-item {
+      padding: 10px;
+      border-bottom: 1px solid #0b132b;
+      cursor: pointer;
+    }
+
+    .notif-item:hover {
+      background: #0b132b;
     }
 
     #chatBox {
@@ -113,29 +117,6 @@
       font-size: 13px;
       line-height: 1.6;
     }
-
-    /* 🔔 NOTIFICATION PANEL */
-    #notifPanel {
-      display: none;
-      position: fixed;
-      top: 60px;
-      right: 10px;
-      width: 280px;
-      max-height: 300px;
-      overflow-y: auto;
-      background: #1c2541;
-      border-radius: 12px;
-      padding: 10px;
-      z-index: 999;
-    }
-
-    .notif-item {
-      background: #0b132b;
-      padding: 8px;
-      border-radius: 8px;
-      margin-bottom: 6px;
-      font-size: 13px;
-    }
   </style>
 </head>
 
@@ -143,30 +124,25 @@
 
 <div class="navbar">
   <button onclick="toggleMenu()">☰</button>
-
   <h3>MCN Engine</h3>
 
-  <!-- 🔥 RIGHT SIDE UPGRADE -->
-  <div class="nav-right">
-
-    <!-- 🔔 NOTIFICATION BUTTON -->
-    <button class="icon-btn" onclick="toggleNotif()">
-      🔔
-      <span id="notifCount" class="badge" style="display:none;">0</span>
-    </button>
-
-    <button onclick="logout()">Logout</button>
-
+  <!-- 🔔 NOTIFICATION BELL -->
+  <div class="notif-wrapper" onclick="toggleNotif()">
+    🔔
+    <span id="notifCount" class="notif-badge"></span>
   </div>
+
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- 🔔 NOTIFICATION PANEL -->
-<div id="notifPanel"></div>
+<!-- 🔔 PANEL -->
+<div id="notifPanel" class="notif-panel"></div>
 
 <div id="menu" class="menu">
   <button onclick="goHome()">🏠 Home</button>
   <button onclick="goProfile()">👤 Profile</button>
 
+  <!-- 🔥 DM SYSTEM -->
   <button onclick="goMessages()">💬 Messages</button>
 
   <button onclick="goAdSpace()">🚀 Ads</button>
@@ -192,6 +168,7 @@
     <div class="price-box" id="priceBox">Loading prices...</div>
   </div>
 
+  <!-- CHAT -->
   <div class="card">
     <h4>💬 Community Chat</h4>
 
@@ -204,6 +181,7 @@
     </div>
   </div>
 
+  <!-- EARN (RESTORED) -->
   <div class="card earn-card">
     <h4>💰 Earn</h4>
     <button onclick="location.href='earn/index.html'">Open</button>
@@ -212,15 +190,6 @@
 </div>
 
 <script type="module" src="dashboard.js"></script>
-
-<script>
-/* 🔔 SIMPLE TOGGLE (UI ONLY — SAFE) */
-function toggleNotif() {
-  const panel = document.getElementById("notifPanel");
-  panel.style.display =
-    panel.style.display === "block" ? "none" : "block";
-}
-</script>
 
 </body>
 </html>
