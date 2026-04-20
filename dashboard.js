@@ -15,7 +15,7 @@ import {
   getDoc,
   setDoc,
   serverTimestamp,
-  deleteDoc
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const API = "https://mxm-backend.onrender.com";
@@ -23,6 +23,9 @@ const API = "https://mxm-backend.onrender.com";
 let user = null;
 let userData = null;
 let isAdmin = false;
+
+/* ================= CHAT STATE ================= */
+let activeChatId = null;
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
@@ -39,9 +42,7 @@ onAuthStateChanged(auth, async (u) => {
   isAdmin = userData?.role === "admin";
 
   loadUsers();
-  loadChatV6();
-  setupPresence();
-  setupTypingListener();
+  loadFeed();
 });
 
 /* ================= USER ================= */
@@ -63,21 +64,19 @@ async function loadUser() {
   if (snap.exists()) userData = snap.data();
 }
 
-/* ================= USERS ================= */
+/* ================= USERS LIST ================= */
 function loadUsers() {
   const box = document.getElementById("onlineUsers");
   if (!box) return;
 
-  onSnapshot(collection(db, "presence"), (snap) => {
+  onSnapshot(collection(db, "onlineUsers"), (snap) => {
     box.innerHTML = "";
 
     snap.forEach(d => {
       const u = d.data();
 
-      if (!u.online) return;
-
       box.innerHTML += `
-        <div class="user-item">
+        <div style="cursor:pointer" onclick="openChat('${u.uid}')">
           🟢 ${u.username || "user"}
         </div>
       `;
@@ -85,32 +84,46 @@ function loadUsers() {
   });
 }
 
-/* ================= CHAT V6 ================= */
-function loadChatV6() {
+/* ================= OPEN CHAT ================= */
+window.openChat = function (uid) {
+  getOrCreateChat(uid);
+};
+
+async function getOrCreateChat(otherUid) {
+  const chatId = [user.uid, otherUid].sort().join("_");
+
+  const ref = doc(db, "conversations", chatId);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      users: [user.uid, otherUid],
+      updatedAt: serverTimestamp(),
+      lastMessage: ""
+    });
+  }
+
+  activeChatId = chatId;
+  loadMessages(chatId);
+}
+
+/* ================= LOAD MESSAGES ================= */
+function loadMessages(chatId) {
   const box = document.getElementById("chatBox");
   if (!box) return;
 
-  const q = query(collection(db, "posts"), orderBy("time", "asc"));
+  const q = query(
+    collection(db, "conversations", chatId, "messages"),
+    orderBy("time", "asc")
+  );
 
   onSnapshot(q, (snap) => {
     let html = "";
 
     snap.forEach(d => {
-      const m = d.data() || {};
+      const m = d.data();
 
-      const text = m.text ?? "[message removed]";
-      const userName = m.user ?? "unknown";
-
-      const time = m.time?.toDate
-        ? m.time.toDate().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
-          })
-        : "";
-
-      const isMe = user && user.email
-        ? userName === user.email.split("@")[0]
-        : false;
+      const isMe = m.senderId === user.uid;
 
       html += `
         <div style="
@@ -128,11 +141,11 @@ function loadChatV6() {
             font-size:13px;
             word-break:break-word;
           ">
-            ${text}
+            ${m.text}
           </div>
 
           <small style="font-size:10px;opacity:0.5;">
-            ${userName}${time ? " • " + time : ""}
+            ${m.status || "sent"}
           </small>
         </div>
       `;
@@ -140,87 +153,8 @@ function loadChatV6() {
 
     box.innerHTML = html;
     box.scrollTop = box.scrollHeight;
-  });
-}
 
-/* ================= TYPING SYSTEM ================= */
-let typingTimeout;
-
-window.handleTyping = async function () {
-  if (!user) return;
-
-  await setDoc(doc(db, "typing", user.uid), {
-    uid: user.uid,
-    username: user.email.split("@")[0],
-    typing: true,
-    updatedAt: serverTimestamp()
-  });
-
-  clearTimeout(typingTimeout);
-
-  typingTimeout = setTimeout(async () => {
-    await deleteDoc(doc(db, "typing", user.uid));
-  }, 1500);
-};
-
-document.addEventListener("input", (e) => {
-  if (e.target.id === "chatInput") {
-    handleTyping();
-  }
-});
-
-/* ================= TYPING UI ================= */
-function setupTypingListener() {
-  const box = document.getElementById("chatBox");
-  if (!box) return;
-
-  onSnapshot(collection(db, "typing"), (snap) => {
-    let users = [];
-
-    snap.forEach(d => {
-      const t = d.data();
-      if (t.uid !== user.uid) {
-        users.push(t.username || "user");
-      }
-    });
-
-    let indicator = document.getElementById("typingIndicator");
-
-    if (!indicator) {
-      indicator = document.createElement("div");
-      indicator.id = "typingIndicator";
-      indicator.style.fontSize = "11px";
-      indicator.style.opacity = "0.6";
-      indicator.style.marginTop = "5px";
-      box.parentNode.appendChild(indicator);
-    }
-
-    indicator.innerText = users.length
-      ? "⌨️ Someone is typing..."
-      : "";
-  });
-}
-
-/* ================= PRESENCE SYSTEM ================= */
-function setupPresence() {
-  if (!user) return;
-
-  const ref = doc(db, "presence", user.uid);
-
-  setDoc(ref, {
-    uid: user.uid,
-    username: user.email.split("@")[0],
-    online: true,
-    lastSeen: serverTimestamp()
-  });
-
-  window.addEventListener("beforeunload", async () => {
-    await setDoc(ref, {
-      uid: user.uid,
-      username: user.email.split("@")[0],
-      online: false,
-      lastSeen: serverTimestamp()
-    }, { merge: true });
+    markSeen(chatId);
   });
 }
 
@@ -229,16 +163,69 @@ window.sendMessage = async function () {
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
 
-  if (!text) return;
+  if (!text || !activeChatId) return;
 
-  await addDoc(collection(db, "posts"), {
-    text,
-    user: user.email.split("@")[0],
-    time: serverTimestamp()
-  });
+  const msgRef = await addDoc(
+    collection(db, "conversations", activeChatId, "messages"),
+    {
+      text,
+      senderId: user.uid,
+      status: "sent",
+      time: serverTimestamp()
+    }
+  );
+
+  await setDoc(doc(db, "conversations", activeChatId), {
+    lastMessage: text,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 
   input.value = "";
+
+  setTimeout(async () => {
+    await updateDoc(msgRef, { status: "delivered" });
+  }, 800);
 };
+
+/* ================= SEEN SYSTEM ================= */
+async function markSeen(chatId) {
+  const q = query(collection(db, "conversations", chatId, "messages"));
+
+  onSnapshot(q, (snap) => {
+    snap.forEach(async (d) => {
+      const m = d.data();
+
+      if (m.senderId !== user.uid && m.status !== "seen") {
+        await updateDoc(d.ref, { status: "seen" });
+      }
+    });
+  });
+}
+
+/* ================= GLOBAL FEED (OPTIONAL KEEP) ================= */
+function loadFeed() {
+  const box = document.getElementById("chatBox");
+  if (!box) return;
+
+  const q = query(collection(db, "posts"), orderBy("time", "asc"));
+
+  onSnapshot(q, (snap) => {
+    let html = "";
+
+    snap.forEach(d => {
+      const m = d.data();
+      if (!m?.text) return;
+
+      html += `
+        <div style="margin:4px 0;padding:6px;background:#0b132b;border-radius:6px;">
+          <b>${m.user}</b>: ${m.text}
+        </div>
+      `;
+    });
+
+    box.innerHTML = html;
+  });
+}
 
 /* ================= MENU ================= */
 window.toggleMenu = function () {
@@ -260,6 +247,7 @@ window.goFaq = () => location.href = "faq.html";
 window.goAbout = () => location.href = "about.html";
 window.goBlog = () => location.href = "blog/index.html";
 
+/* ================= ADMIN ================= */
 window.goAdmin = () => {
   if (!userData) return alert("Loading...");
   if (!isAdmin) return alert("❌ Admin only");
