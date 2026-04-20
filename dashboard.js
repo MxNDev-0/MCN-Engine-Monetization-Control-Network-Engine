@@ -212,3 +212,108 @@ async function loadPrices() {
     box.innerText = "Failed to load prices";
   }
 }
+
+/* ================= FRIEND SYSTEM V15 ================= */
+
+/* SEND FRIEND REQUEST */
+window.sendFriendRequest = async function (toUid, toName) {
+  if (!user) return;
+
+  await addDoc(collection(db, "friendRequests"), {
+    from: user.uid,
+    fromName: user.email.split("@")[0],
+    to: toUid,
+    toName,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  alert("Friend request sent");
+};
+
+/* LOAD FRIEND REQUESTS */
+window.loadFriendRequests = function () {
+  const box = document.getElementById("friendRequestsBox");
+  if (!box) return;
+
+  const q = query(
+    collection(db, "friendRequests"),
+    where("to", "==", user.uid)
+  );
+
+  onSnapshot(q, (snap) => {
+    let html = "";
+
+    snap.forEach(d => {
+      const r = d.data();
+      const id = d.id;
+
+      if (r.status !== "pending") return;
+
+      html += `
+        <div style="padding:8px;margin:6px;background:#1c2541;border-radius:8px;">
+          <b>${r.fromName}</b> sent you a friend request
+
+          <div style="margin-top:6px;">
+            <button onclick="acceptFriend('${id}','${r.from}','${r.to}')">Accept</button>
+            <button onclick="rejectFriend('${id}')">Reject</button>
+          </div>
+        </div>
+      `;
+    });
+
+    box.innerHTML = html;
+  });
+};
+
+/* ACCEPT FRIEND */
+window.acceptFriend = async function (id, fromUid, toUid) {
+  await updateDoc(doc(db, "friendRequests", id), {
+    status: "accepted"
+  });
+
+  await addDoc(collection(db, "friends"), {
+    users: [fromUid, toUid],
+    createdAt: serverTimestamp()
+  });
+
+  alert("Friend added");
+};
+
+/* REJECT FRIEND */
+window.rejectFriend = async function (id) {
+  await updateDoc(doc(db, "friendRequests", id), {
+    status: "rejected"
+  });
+
+  alert("Request rejected");
+};
+
+/* LOAD FRIEND LIST */
+window.loadFriends = function () {
+  const box = document.getElementById("friendsBox");
+  if (!box) return;
+
+  const q = query(collection(db, "friends"));
+
+  onSnapshot(q, (snap) => {
+    let html = "";
+
+    snap.forEach(d => {
+      const f = d.data();
+
+      if (!f.users.includes(user.uid)) return;
+
+      const friendId = f.users.find(u => u !== user.uid);
+
+      html += `
+        <div style="padding:8px;margin:6px;background:#0b132b;border-radius:8px;">
+          👤 Friend UID: ${friendId}
+          <button onclick="openDM('${friendId}')">💬 Message</button>
+        </div>
+      `;
+    });
+
+    box.innerHTML = html;
+  });
+};
