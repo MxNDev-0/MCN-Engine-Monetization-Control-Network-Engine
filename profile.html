@@ -7,12 +7,27 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #0b132b;
-      color: white;
-    }
+  body {
+    margin: 0;
+    font-family: Arial;
+    background: #0b132b;
+    color: white;
+  }
+
+  /* other styles... */
+
+  /* ================= FORCE FIX (ADD HERE) ================= */
+
+  /* HARD REMOVE ANY OLD BUTTON ROWS */
+  .post button {
+    display: none !important;
+  }
+
+  /* ONLY allow dropdown buttons */
+  .menu-box button {
+    display: block !important;
+  }
+</style>
 
     /* ================= NAVBAR ================= */
     .navbar {
