@@ -68,14 +68,6 @@
     #adsBox {
       margin-top: 10px;
     }
-
-    /* 🔔 ALERT UI */
-    #alertStatus {
-      margin-top: 10px;
-      font-size: 12px;
-      opacity: 0.85;
-      line-height: 1.4;
-    }
   </style>
 </head>
 
@@ -107,7 +99,7 @@
     <div id="onlineUsers"></div>
   </div>
 
-  <!-- WALLET -->
+  <!-- ✅ WALLET UPGRADED -->
   <div class="card">
     <h4>💰 Wallet</h4>
 
@@ -122,26 +114,6 @@
     </div>
   </div>
 
-  <!-- 🔔 PRICE ALERT SYSTEM (INJECTED) -->
-  <div class="card">
-    <h4>🔔 Price Alerts</h4>
-
-    <select id="alertCoin">
-      <option value="bitcoin">BTC</option>
-      <option value="ethereum">ETH</option>
-      <option value="tether">USDT</option>
-    </select>
-
-    <input id="alertPrice" placeholder="Target price (USD)">
-
-    <button onclick="setPriceAlert()">Set Alert</button>
-
-    <div id="alertStatus">
-      No active alerts
-    </div>
-  </div>
-
-  <!-- CHAT -->
   <div class="card">
     <h4>💬 Community Chat</h4>
 
@@ -152,6 +124,16 @@
       <input id="chatInput" placeholder="Write something...">
       <button onclick="sendMessage()">Post</button>
     </div>
+  </div>
+
+  <div class="card ads-only">
+    <h4>📢 Sponsored Space</h4>
+    <p>Buy this space to promote your business</p>
+  </div>
+
+  <div class="card earn-card">
+    <h4>💰 Earn</h4>
+    <button onclick="location.href='earn/index.html'">Open Earn</button>
   </div>
 
 </div>
