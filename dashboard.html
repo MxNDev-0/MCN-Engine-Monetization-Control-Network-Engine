@@ -66,7 +66,7 @@
       z-index: 9999;
     }
 
-    /* HEADER FIX */
+    /* HEADER */
     .navbar {
       display: flex;
       align-items: center;
@@ -100,10 +100,15 @@
       font-size: 13px;
     }
 
-    /* ADS */
+    /* ✅ ADS FIX (REAL SLIDER) */
+    .ads-container {
+      overflow: hidden;
+      position: relative;
+    }
+
     .ads-slider {
       display: flex;
-      overflow: hidden;
+      transition: transform 0.5s ease;
     }
 
     .ad {
@@ -112,9 +117,34 @@
       padding: 15px;
       background: #0b132b;
       border-radius: 8px;
+      font-size: 13px;
     }
 
-    /* CHAT BUTTON FIX */
+    /* ✅ CHAT FIX */
+    .row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .row input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      background: white; /* back to white */
+      color: black;
+    }
+
+    .row button {
+      padding: 10px 14px;
+      border-radius: 6px;
+      background: #5bc0be;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Chat action buttons */
     #chatBox button {
       padding: 6px 10px;
       font-size: 12px;
@@ -152,20 +182,23 @@
   <button onclick="goBlog()">📰 Blog</button>
   <button onclick="goFaq()">❓ FAQ</button>
   <button onclick="goAbout()">ℹ️ About</button>
-  <button onclick="support()">💰 Support</button>
+  <button onclick="donate()">💰 Donate</button>
   <button onclick="openDeveloper()">💻 Dev</button>
   <button onclick="goAdmin()">🔐 Admin</button>
 </div>
 
 <div class="container">
 
-  <!-- ADS INSTEAD OF USERS -->
+  <!-- ✅ ADS -->
   <div class="card">
     <h4>🔥 Sponsored Ads</h4>
-    <div class="ads-slider" id="adsSlider">
-      <div class="ad">🚀 Promote your project here</div>
-      <div class="ad">💰 Buy ad space on MCN Engine</div>
-      <div class="ad">📢 Your ad here</div>
+
+    <div class="ads-container">
+      <div class="ads-slider" id="adsSlider">
+        <div class="ad">🚀 Promote your project here</div>
+        <div class="ad">💰 Buy ad space on MCN Engine</div>
+        <div class="ad">📢 Your ad here</div>
+      </div>
     </div>
   </div>
 
@@ -180,7 +213,7 @@
     <div id="chatBox"></div>
 
     <div class="row">
-      <input id="chatInput">
+      <input id="chatInput" placeholder="Type a message...">
       <button onclick="sendMessage()">Send</button>
     </div>
   </div>
