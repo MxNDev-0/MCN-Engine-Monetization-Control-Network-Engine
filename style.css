@@ -82,13 +82,12 @@ button {
 
 /* Right */
 .nav-right {
-  width: 120px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px; /* instead of fixed width */
 }
 
-/* Bell spacing */
+/* Bell */
 .notif-wrapper {
   position: relative;
   cursor: pointer;
