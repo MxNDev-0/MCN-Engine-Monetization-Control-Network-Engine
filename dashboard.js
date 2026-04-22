@@ -10,14 +10,14 @@ import {
   getDoc,
   setDoc,
   doc,
-  onSnapshot,
-  serverTimestamp
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
 let userData = null;
 let isAdmin = false;
 
+/* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
   if (!u) return location.href = "index.html";
 
@@ -28,12 +28,11 @@ onAuthStateChanged(auth, async (u) => {
 
   isAdmin = userData?.role === "admin";
 
-  loadUsers();
   loadPrices();
   loadNotifications();
 });
 
-/* USER */
+/* ================= USER ================= */
 async function ensureUser() {
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
@@ -52,24 +51,7 @@ async function loadUser() {
   if (snap.exists()) userData = snap.data();
 }
 
-/* USERS */
-function loadUsers() {
-  const box = document.getElementById("onlineUsers");
-  if (!box) return;
-
-  onSnapshot(collection(db, "presence"), (snap) => {
-    box.innerHTML = "";
-
-    snap.forEach(d => {
-      const u = d.data();
-      if (!u.online) return;
-
-      box.innerHTML += `<div>🟢 ${u.username}</div>`;
-    });
-  });
-}
-
-/* PRICES */
+/* ================= PRICES ================= */
 async function loadPrices() {
   const box = document.getElementById("priceBox");
 
@@ -86,7 +68,7 @@ async function loadPrices() {
   }
 }
 
-/* NOTIFICATIONS */
+/* ================= NOTIFICATIONS ================= */
 function loadNotifications() {
   const panel = document.getElementById("notifPanel");
   const badge = document.getElementById("notifCount");
@@ -102,7 +84,7 @@ function loadNotifications() {
 
       if (!n.seen) count++;
 
-      html += `<div>🔔 ${n.text}</div>`;
+      html += `<div style="padding:8px;border-bottom:1px solid #333;">🔔 ${n.text}</div>`;
     });
 
     panel.innerHTML = html;
@@ -116,9 +98,9 @@ function loadNotifications() {
   });
 }
 
-/* MENU */
+/* ================= NAV ================= */
 window.toggleMenu = function () {
-  document.getElementById("menu").classList.toggle("active");
+  document.getElementById("menu")?.classList.toggle("active");
 };
 
 window.logout = async function () {
@@ -126,7 +108,7 @@ window.logout = async function () {
   location.href = "index.html";
 };
 
-/* NAV */
+/* ================= ROUTING ================= */
 window.goHome = () => location.href = "dashboard.html";
 window.goProfile = () => location.href = "profile.html";
 window.goMessages = () => location.href = "messages.html";
@@ -134,18 +116,13 @@ window.goAdSpace = () => location.href = "ads.html";
 window.goBlog = () => location.href = "blog/index.html";
 window.goFaq = () => location.href = "faq.html";
 window.goAbout = () => location.href = "about.html";
+
 window.goAdmin = () => {
   if (!isAdmin) return alert("Admin only");
   location.href = "admin.html";
 };
 
-/* ADS SLIDER */
-let currentAd = 0;
-
-setInterval(() => {
-  const slider = document.getElementById("adsSlider");
-  if (!slider) return;
-
-  currentAd = (currentAd + 1) % slider.children.length;
-  slider.style.transform = `translateX(-${currentAd * 100}%)`;
-}, 3000);
+/* GLOBAL ROUTE FIX (used by discover) */
+window.openPost = function(id) {
+  location.href = "blog/post.html?id=" + id;
+};
