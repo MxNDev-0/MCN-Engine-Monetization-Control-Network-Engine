@@ -33,7 +33,6 @@
       cursor: pointer;
     }
 
-    /* 🔔 NOTIFICATION */
     .notif-wrapper {
       position: relative;
       cursor: pointer;
@@ -66,7 +65,6 @@
       z-index: 9999;
     }
 
-    /* HEADER */
     .navbar {
       display: flex;
       align-items: center;
@@ -100,7 +98,6 @@
       font-size: 13px;
     }
 
-    /* ✅ ADS FIX (REAL SLIDER) */
     .ads-container {
       overflow: hidden;
       position: relative;
@@ -120,7 +117,6 @@
       font-size: 13px;
     }
 
-    /* ✅ CHAT FIX */
     .row {
       display: flex;
       gap: 6px;
@@ -132,7 +128,7 @@
       padding: 10px;
       border-radius: 6px;
       border: none;
-      background: white; /* back to white */
+      background: white;
       color: black;
     }
 
@@ -144,11 +140,36 @@
       cursor: pointer;
     }
 
-    /* Chat action buttons */
-    #chatBox button {
-      padding: 6px 10px;
+    #discoverBox {
+      margin-top: 10px;
+    }
+
+    .card {
+      background: #1c2541;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 10px;
+    }
+
+    .card-title {
+      color: #5bc0be;
+      font-weight: bold;
+    }
+
+    .card-text {
       font-size: 12px;
-      border-radius: 6px;
+      opacity: 0.85;
     }
   </style>
 </head>
@@ -189,7 +210,6 @@
 
 <div class="container">
 
-  <!-- ✅ ADS -->
   <div class="card">
     <h4>🔥 Sponsored Ads</h4>
 
@@ -207,20 +227,54 @@
     <div id="priceBox">Loading...</div>
   </div>
 
+  <!-- 📰 REPLACED CHAT WITH DISCOVER -->
   <div class="card">
-    <h4>💬 Community Chat</h4>
-
-    <div id="chatBox"></div>
-
-    <div class="row">
-      <input id="chatInput" placeholder="Type a message...">
-      <button onclick="sendMessage()">Send</button>
-    </div>
+    <h4>📰 Discover Feed</h4>
+    <div id="discoverBox">Loading feed...</div>
   </div>
 
 </div>
 
 <script type="module" src="dashboard.js"></script>
+
+<script>
+async function loadDiscover() {
+  const box = document.getElementById("discoverBox");
+
+  try {
+    const res = await fetch("https://mxm-backend.onrender.com/blog/list");
+    const data = await res.json();
+
+    box.innerHTML = "";
+
+    data.forEach(post => {
+      box.innerHTML += `
+        <div class="card" onclick="openPost('${post.id}')">
+
+          ${post.image ? `<img src="${post.image}">` : ""}
+
+          <div class="card-content">
+            <div class="card-title">${post.title}</div>
+            <div class="card-text">
+              ${(post.content || "").substring(0, 120)}...
+            </div>
+          </div>
+
+        </div>
+      `;
+    });
+
+  } catch (e) {
+    box.innerHTML = "Failed to load feed";
+  }
+}
+
+function openPost(id) {
+  location.href = "post.html?id=" + id;
+}
+
+loadDiscover();
+</script>
 
 </body>
 </html>
