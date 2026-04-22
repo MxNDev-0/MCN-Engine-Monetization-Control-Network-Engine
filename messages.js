@@ -4,12 +4,11 @@ import {
   collection,
   addDoc,
   query,
-  orderBy,
   onSnapshot,
+  orderBy,
   serverTimestamp,
   doc,
   updateDoc,
-  getDoc,
   setDoc,
   arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -20,16 +19,15 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 let me = null;
-let otherUid = null;
-let typingTimeout = null;
+let activeChat = null;
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
   if (!u) location.href = "index.html";
   me = u;
 
-  await setupPresence();
-  loadUsers();
+  await setPresence();
+  loadChats();
 });
 
 /* ================= CHAT ID ================= */
@@ -37,39 +35,40 @@ function chatId(a, b) {
   return [a, b].sort().join("_");
 }
 
-/* ================= PRESENCE (REAL ONLINE SYSTEM) ================= */
-async function setupPresence() {
-  const userRef = doc(db, "users", me.uid);
+/* ================= PRESENCE ================= */
+async function setPresence() {
+  const ref = doc(db, "users", me.uid);
 
-  await setDoc(userRef, {
+  await setDoc(ref, {
     online: true,
     lastSeen: serverTimestamp()
   }, { merge: true });
 
-  onDisconnect(userRef).update({
+  onDisconnect(ref).update({
     online: false,
     lastSeen: serverTimestamp()
   });
 }
 
-/* ================= USERS LIST ================= */
-function loadUsers() {
-  const q = query(collection(db, "users"));
+/* ================= LOAD CHAT LIST ================= */
+function loadChats() {
+  const q = query(collection(db, "chats"));
 
   onSnapshot(q, (snap) => {
-    const box = document.getElementById("users");
+    const box = document.getElementById("chatList");
     box.innerHTML = "";
 
     snap.forEach(d => {
-      const user = d.data();
-      const uid = d.id;
+      const c = d.data();
 
-      if (uid === me.uid) return;
+      if (!c.members.includes(me.uid)) return;
+
+      const other = c.members.find(u => u !== me.uid);
 
       box.innerHTML += `
-        <div class="user" onclick="openChat('${uid}')">
-          <span>${user.name || "User"}</span>
-          <span class="online">${user.online ? "🟢" : "⚪"}</span>
+        <div class="chat-item" onclick="openChat('${other}')">
+          <div class="chat-name">${other}</div>
+          <div class="chat-last">${c.lastMessage || ""}</div>
         </div>
       `;
     });
@@ -78,51 +77,41 @@ function loadUsers() {
 
 /* ================= OPEN CHAT ================= */
 window.openChat = function(uid) {
-  otherUid = uid;
+  activeChat = chatId(me.uid, uid);
 
   document.getElementById("msgInput").disabled = false;
   document.getElementById("sendBtn").disabled = false;
 
+  document.getElementById("chatName").innerText = uid;
+
   loadMessages();
-  listenTyping();
+  listenTyping(uid);
 };
 
-/* ================= CHAT LOADER ================= */
+/* ================= LOAD MESSAGES ================= */
 function loadMessages() {
-  const id = chatId(me.uid, otherUid);
-
   const q = query(
-    collection(db, "chats", id, "messages"),
+    collection(db, "chats", activeChat, "messages"),
     orderBy("createdAt")
   );
 
-  onSnapshot(q, async (snap) => {
-    const box = document.getElementById("chat");
+  onSnapshot(q, (snap) => {
+    const box = document.getElementById("messages");
     box.innerHTML = "";
 
     snap.forEach(d => {
       const m = d.data();
-      const isMe = m.sender === me.uid;
+      const isMe = m.senderId === me.uid;
 
       box.innerHTML += `
         <div class="msg ${isMe ? "me" : "other"}">
           ${m.text}<br>
-          <small>
-            ${m.readBy?.includes(me.uid) ? "✓✓" : "✓"}
-          </small>
+          <small>${m.status || "sent"}</small>
         </div>
       `;
     });
 
     box.scrollTop = box.scrollHeight;
-
-    /* mark messages as read */
-    snap.forEach(async d => {
-      const ref = doc(db, "chats", id, "messages", d.id);
-      await updateDoc(ref, {
-        readBy: arrayUnion(me.uid)
-      });
-    });
   });
 }
 
@@ -130,68 +119,53 @@ function loadMessages() {
 window.sendMsg = async function () {
   const input = document.getElementById("msgInput");
   const text = input.value.trim();
-  if (!text || !otherUid) return;
+  if (!text || !activeChat) return;
 
-  const id = chatId(me.uid, otherUid);
-
-  const msgRef = await addDoc(collection(db, "chats", id, "messages"), {
+  await addDoc(collection(db, "chats", activeChat, "messages"), {
     text,
-    sender: me.uid,
+    senderId: me.uid,
     createdAt: serverTimestamp(),
-    readBy: [me.uid]
+    status: "sent"
   });
 
-  await setDoc(doc(db, "chats", id), {
-    users: [me.uid, otherUid],
+  await updateDoc(doc(db, "chats", activeChat), {
     lastMessage: text,
-    updatedAt: serverTimestamp()
-  }, { merge: true });
+    lastUpdated: serverTimestamp(),
+    members: arrayUnion(me.uid)
+  });
 
   input.value = "";
-  setTyping(false);
 };
 
-/* ================= TYPING SYSTEM (CLEAN + DEBOUNCED) ================= */
-document.getElementById("msgInput").addEventListener("input", () => {
-  setTyping(true);
+/* ================= TYPING ================= */
+document.getElementById("msgInput").addEventListener("input", async () => {
+  if (!activeChat) return;
 
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(() => {
-    setTyping(false);
+  await setDoc(doc(db, "typing", me.uid), {
+    chatId: activeChat,
+    typing: true
+  });
+
+  setTimeout(async () => {
+    await setDoc(doc(db, "typing", me.uid), {
+      chatId: activeChat,
+      typing: false
+    });
   }, 1500);
 });
 
-async function setTyping(state) {
-  if (!otherUid) return;
-
-  await setDoc(doc(db, "typing", me.uid), {
-    to: otherUid,
-    typing: state
-  });
-}
-
 /* ================= LISTEN TYPING ================= */
-function listenTyping() {
-  const ref = doc(db, "typing", otherUid);
+function listenTyping(uid) {
+  const ref = doc(db, "typing", uid);
 
   onSnapshot(ref, (snap) => {
-    const data = snap.data();
+    const d = snap.data();
     const el = document.getElementById("typing");
 
-    if (data?.to === me.uid && data?.typing) {
+    if (d?.chatId === activeChat && d?.typing) {
       el.innerText = "typing...";
     } else {
       el.innerText = "";
     }
   });
 }
-
-/* ================= AUTO OFFLINE ON TAB CLOSE ================= */
-window.addEventListener("beforeunload", async () => {
-  if (!me) return;
-
-  await updateDoc(doc(db, "users", me.uid), {
-    online: false,
-    lastSeen: serverTimestamp()
-  });
-});
