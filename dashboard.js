@@ -11,14 +11,17 @@ import {
   setDoc,
   doc,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  addDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
 let userData = null;
-let isAdmin = false;
+let lastBTC = null;
+let lastETH = null;
 
-/* ================= AUTH ================= */
+/* AUTH */
 onAuthStateChanged(auth, async (u) => {
   if (!u) return location.href = "index.html";
 
@@ -27,14 +30,12 @@ onAuthStateChanged(auth, async (u) => {
   await ensureUser();
   await loadUser();
 
-  isAdmin = userData?.role === "admin";
-
   loadPrices();
   loadNotifications();
-  initAdsSlider();
+  startLiveSystem();
 });
 
-/* ================= USER ================= */
+/* USER */
 async function ensureUser() {
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
@@ -53,33 +54,49 @@ async function loadUser() {
   if (snap.exists()) userData = snap.data();
 }
 
-/* ================= LIVE CRYPTO PRICES ================= */
+/* PRICES + LIVE UPDATE SYSTEM */
 async function loadPrices() {
   const box = document.getElementById("priceBox");
-  if (!box) return;
 
   try {
-    const res = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,eur,gbp"
-    );
-
+    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd");
     const data = await res.json();
 
     box.innerHTML = `
-      BTC: $${data.bitcoin.usd} | €${data.bitcoin.eur} | £${data.bitcoin.gbp}<br>
-      ETH: $${data.ethereum.usd} | €${data.ethereum.eur} | £${data.ethereum.gbp}
+      BTC: $${data.bitcoin.usd}<br>
+      ETH: $${data.ethereum.usd}
     `;
+
+    checkPriceChange(data);
+
   } catch {
     box.innerText = "Failed to load prices";
   }
 }
 
-/* ================= NOTIFICATIONS ================= */
+function checkPriceChange(data) {
+  if (lastBTC && lastETH) {
+    if (data.bitcoin.usd !== lastBTC) {
+      sendNotification("BTC price changed!");
+    }
+    if (data.ethereum.usd !== lastETH) {
+      sendNotification("ETH price changed!");
+    }
+  }
+
+  lastBTC = data.bitcoin.usd;
+  lastETH = data.ethereum.usd;
+}
+
+/* LIVE LOOP */
+function startLiveSystem() {
+  setInterval(loadPrices, 30000);
+}
+
+/* NOTIFICATIONS */
 function loadNotifications() {
   const panel = document.getElementById("notifPanel");
   const badge = document.getElementById("notifCount");
-
-  if (!panel || !badge) return;
 
   onSnapshot(collection(db, "notifications", user.uid, "items"), (snap) => {
     let count = 0;
@@ -87,14 +104,8 @@ function loadNotifications() {
 
     snap.forEach(d => {
       const n = d.data();
-
       if (!n.seen) count++;
-
-      html += `
-        <div style="padding:8px;border-bottom:1px solid #333;font-size:13px;">
-          🔔 ${n.text}
-        </div>
-      `;
+      html += `<div>🔔 ${n.text}</div>`;
     });
 
     panel.innerHTML = html;
@@ -108,42 +119,26 @@ function loadNotifications() {
   });
 }
 
-/* ================= 🔔 NOTIFICATION TOGGLE ================= */
-window.toggleNotif = function () {
-  const panel = document.getElementById("notifPanel");
-  if (!panel) return;
+/* SEND NOTIFICATION */
+async function sendNotification(text) {
+  await addDoc(collection(db, "notifications", user.uid, "items"), {
+    text,
+    seen: false,
+    createdAt: serverTimestamp()
+  });
+}
 
-  panel.style.display =
-    panel.style.display === "block" ? "none" : "block";
-};
-
-/* close when clicking outside */
-document.addEventListener("click", (e) => {
-  const panel = document.getElementById("notifPanel");
-  const bell = document.querySelector(".notif-wrapper");
-
-  if (!panel || !bell) return;
-
-  if (!panel.contains(e.target) && !bell.contains(e.target)) {
-    panel.style.display = "none";
-  }
-});
-
-/* ================= HAMBURGER MENU ================= */
+/* MENU */
 window.toggleMenu = function () {
-  const menu = document.getElementById("menu");
-  if (!menu) return;
-
-  menu.classList.toggle("active");
+  document.getElementById("menu").classList.toggle("active");
 };
 
-/* ================= LOGOUT ================= */
 window.logout = async function () {
   await signOut(auth);
   location.href = "index.html";
 };
 
-/* ================= NAV ================= */
+/* NAV */
 window.goHome = () => location.href = "dashboard.html";
 window.goProfile = () => location.href = "profile.html";
 window.goMessages = () => location.href = "messages.html";
@@ -152,43 +147,17 @@ window.goBlog = () => location.href = "blog/index.html";
 window.goFaq = () => location.href = "faq.html";
 window.goAbout = () => location.href = "about.html";
 window.goAdmin = () => {
-  if (!isAdmin) return alert("Admin only");
+  if (!userData || userData.role !== "admin") return alert("Admin only");
   location.href = "admin.html";
 };
 
-/* ================= ADS SLIDER (SMOOTH + CENTER PAUSE) ================= */
-function initAdsSlider() {
+/* ADS SLIDER FIX */
+let currentAd = 0;
+
+setInterval(() => {
   const slider = document.getElementById("adsSlider");
   if (!slider) return;
 
-  let currentAd = 0;
-  let locked = false;
-
-  setInterval(() => {
-    const ads = slider.children;
-    if (!ads.length) return;
-
-    if (locked) return;
-
-    locked = true;
-
-    currentAd = (currentAd + 1) % ads.length;
-
-    slider.style.transform = `translateX(-${currentAd * 100}%)`;
-
-    setTimeout(() => {
-      locked = false;
-    }, 700);
-
-  }, 3000);
-
-  /* clickable ads only if link exists */
-  Array.from(slider.children).forEach(ad => {
-    ad.style.cursor = "pointer";
-
-    ad.onclick = () => {
-      const link = ad.getAttribute("data-link");
-      if (link) window.location.href = link;
-    };
-  });
-}
+  currentAd = (currentAd + 1) % slider.children.length;
+  slider.style.transform = `translateX(-${currentAd * 100}%)`;
+}, 3000);
