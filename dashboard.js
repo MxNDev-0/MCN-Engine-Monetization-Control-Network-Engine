@@ -29,10 +29,9 @@ onAuthStateChanged(auth, async (u) => {
 
   isAdmin = userData?.role === "admin";
 
-  loadUsers();
   loadPrices();
   loadNotifications();
-  initAdsSlider(); // ✅ restored ads slider
+  initAdsSlider();
 });
 
 /* ================= USER ================= */
@@ -52,23 +51,6 @@ async function ensureUser() {
 async function loadUser() {
   const snap = await getDoc(doc(db, "users", user.uid));
   if (snap.exists()) userData = snap.data();
-}
-
-/* ================= USERS ================= */
-function loadUsers() {
-  const box = document.getElementById("onlineUsers");
-  if (!box) return;
-
-  onSnapshot(collection(db, "presence"), (snap) => {
-    box.innerHTML = "";
-
-    snap.forEach(d => {
-      const u = d.data();
-      if (!u.online) return;
-
-      box.innerHTML += `<div>🟢 ${u.username}</div>`;
-    });
-  });
 }
 
 /* ================= LIVE CRYPTO PRICES ================= */
@@ -108,9 +90,11 @@ function loadNotifications() {
 
       if (!n.seen) count++;
 
-      html += `<div style="padding:6px;border-bottom:1px solid #333;">
-        🔔 ${n.text}
-      </div>`;
+      html += `
+        <div style="padding:8px;border-bottom:1px solid #333;font-size:13px;">
+          🔔 ${n.text}
+        </div>
+      `;
     });
 
     panel.innerHTML = html;
@@ -124,7 +108,7 @@ function loadNotifications() {
   });
 }
 
-/* ================= 🔔 TOGGLE NOTIFICATION PANEL ================= */
+/* ================= 🔔 NOTIFICATION TOGGLE ================= */
 window.toggleNotif = function () {
   const panel = document.getElementById("notifPanel");
   if (!panel) return;
@@ -145,7 +129,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-/* ================= ☰ MENU TOGGLE FIX ================= */
+/* ================= HAMBURGER MENU ================= */
 window.toggleMenu = function () {
   const menu = document.getElementById("menu");
   if (!menu) return;
@@ -172,18 +156,39 @@ window.goAdmin = () => {
   location.href = "admin.html";
 };
 
-/* ================= ADS SLIDER (SAFE VERSION) ================= */
+/* ================= ADS SLIDER (SMOOTH + CENTER PAUSE) ================= */
 function initAdsSlider() {
   const slider = document.getElementById("adsSlider");
   if (!slider) return;
 
   let currentAd = 0;
+  let locked = false;
 
   setInterval(() => {
-    const total = slider.children.length;
-    if (total === 0) return;
+    const ads = slider.children;
+    if (!ads.length) return;
 
-    currentAd = (currentAd + 1) % total;
+    if (locked) return;
+
+    locked = true;
+
+    currentAd = (currentAd + 1) % ads.length;
+
     slider.style.transform = `translateX(-${currentAd * 100}%)`;
+
+    setTimeout(() => {
+      locked = false;
+    }, 700);
+
   }, 3000);
+
+  /* clickable ads only if link exists */
+  Array.from(slider.children).forEach(ad => {
+    ad.style.cursor = "pointer";
+
+    ad.onclick = () => {
+      const link = ad.getAttribute("data-link");
+      if (link) window.location.href = link;
+    };
+  });
 }
