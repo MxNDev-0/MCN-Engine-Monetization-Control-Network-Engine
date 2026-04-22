@@ -14,7 +14,7 @@
       color: white;
     }
 
-    /* NAVBAR (RESTORED SMALL STYLE) */
+    /* NAVBAR */
     .navbar {
       display: flex;
       align-items: center;
@@ -38,7 +38,7 @@
       font-size: 18px;
     }
 
-    /* MENU (UNCHANGED STYLE) */
+    /* MENU */
     .menu {
       z-index: 9999;
       width: 200px;
@@ -65,7 +65,7 @@
       cursor: pointer;
     }
 
-    /* NOTIFICATION BADGE */
+    /* NOTIFICATIONS */
     .notif-badge {
       background: red;
       color: white;
@@ -76,7 +76,6 @@
       display: none;
     }
 
-    /* NOTIFICATION PANEL */
     .notif-panel {
       position: absolute;
       top: 50px;
@@ -91,30 +90,7 @@
       padding: 8px;
     }
 
-    /* ADS FIX (CENTER PERFECTLY) */
-    .ads-container {
-      overflow: hidden;
-      position: relative;
-    }
-
-    .ads-slider {
-      display: flex;
-      transition: transform 0.5s ease;
-    }
-
-    .ad {
-      min-width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
-      background: #0b132b;
-      border-radius: 8px;
-      font-size: 13px;
-    }
-
-    /* CARDS */
+    /* CONTAINER */
     .container {
       padding: 10px;
     }
@@ -124,6 +100,58 @@
       margin-top: 10px;
       padding: 10px;
       border-radius: 10px;
+    }
+
+    /* ================= NEW ADS DESIGN ================= */
+
+    .ads-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .ads-slider {
+      display: flex;
+      transition: transform 0.6s ease;
+    }
+
+    .ad {
+      min-width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 25px 15px;
+      cursor: pointer;
+    }
+
+    .ad-content {
+      background: linear-gradient(135deg, #1c2541, #0b132b);
+      border: 1px solid rgba(91,192,190,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      text-align: center;
+      font-size: 14px;
+      color: #5bc0be;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .ads-dots {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+      gap: 6px;
+    }
+
+    .ads-dots span {
+      width: 6px;
+      height: 6px;
+      background: #555;
+      border-radius: 50%;
+    }
+
+    .ads-dots .active {
+      background: #5bc0be;
     }
 
     /* DISCOVER */
@@ -162,43 +190,54 @@
   <button onclick="goAbout()">ℹ️ About</button>
   <button onclick="donate()">💰 Donate</button>
 
-  <!-- 🔔 INSIDE MENU -->
   <button onclick="toggleNotif()">
     🔔 Notifications <span id="notifCount" class="notif-badge"></span>
   </button>
 
-  <!-- LOGOUT MOVED HERE -->
   <button onclick="logout()">🚪 Logout</button>
 
   <button onclick="goAdmin()">🔐 Admin</button>
 
 </div>
 
-<!-- NOTIFICATION PANEL -->
+<!-- NOTIFICATIONS -->
 <div id="notifPanel" class="notif-panel"></div>
 
 <!-- MAIN -->
 <div class="container">
 
-  <!-- ADS -->
+  <!-- ✅ NEW ADS SECTION -->
   <div class="card">
     <h4>🔥 Sponsored Ads</h4>
+
     <div class="ads-container">
       <div class="ads-slider" id="adsSlider">
-        <div class="ad">🚀 Promote your project here</div>
-        <div class="ad">💰 Buy ad space on MCN Engine</div>
-        <div class="ad">📢 Your ad here</div>
+
+        <div class="ad" onclick="openAd('#')">
+          <div class="ad-content">🚀 Promote your project here</div>
+        </div>
+
+        <div class="ad" onclick="openAd('#')">
+          <div class="ad-content">💰 Buy ad space on MCN Engine</div>
+        </div>
+
+        <div class="ad" onclick="openAd('#')">
+          <div class="ad-content">📢 Your ad here</div>
+        </div>
+
       </div>
+
+      <div class="ads-dots" id="adsDots"></div>
     </div>
   </div>
 
-  <!-- PRICES -->
+  <!-- PRICES (UNCHANGED) -->
   <div class="card">
     <h4>📊 Live Prices</h4>
     <div id="priceBox">Loading...</div>
   </div>
 
-  <!-- DISCOVER -->
+  <!-- DISCOVER (UNCHANGED) -->
   <div class="card">
     <h4>📰 Discover Feed</h4>
     <div id="discoverBox">Loading feed...</div>
@@ -218,7 +257,7 @@ function toggleNotif() {
   panel.style.display = panel.style.display === "block" ? "none" : "block";
 }
 
-/* KEEP YOUR ORIGINAL DISCOVER */
+/* DISCOVER (UNCHANGED) */
 async function loadDiscover() {
   const box = document.getElementById("discoverBox");
 
@@ -252,6 +291,45 @@ function openPost(id) {
 }
 
 loadDiscover();
+
+/* ✅ NEW ADS LOGIC (SAFE ADDITION) */
+let currentAd = 0;
+
+const slider = document.getElementById("adsSlider");
+const dotsBox = document.getElementById("adsDots");
+
+if (slider && dotsBox) {
+  const total = slider.children.length;
+
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement("span");
+    if (i === 0) dot.classList.add("active");
+
+    dot.onclick = () => {
+      currentAd = i;
+      updateAds();
+    };
+
+    dotsBox.appendChild(dot);
+  }
+
+  function updateAds() {
+    slider.style.transform = `translateX(-${currentAd * 100}%)`;
+
+    [...dotsBox.children].forEach(d => d.classList.remove("active"));
+    dotsBox.children[currentAd].classList.add("active");
+  }
+
+  setInterval(() => {
+    currentAd = (currentAd + 1) % total;
+    updateAds();
+  }, 4000);
+}
+
+function openAd(link) {
+  if (!link || link === "#") return;
+  window.location.href = link;
+}
 </script>
 
 </body>
