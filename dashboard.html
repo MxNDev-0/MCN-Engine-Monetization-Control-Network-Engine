@@ -37,7 +37,7 @@
     .notif-wrapper {
       position: relative;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 16px; /* ✅ reduced size */
     }
 
     .notif-badge {
@@ -117,19 +117,46 @@
       font-size: 13px;
       line-height: 1.6;
     }
+
+    /* ✅ NEW HEADER FIX */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .nav-left,
+    .nav-right {
+      width: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-title {
+      flex: 1;
+      text-align: center;
+      margin: 0;
+    }
   </style>
 </head>
 
 <body>
 
 <div class="navbar">
-  <button onclick="toggleMenu()">☰</button>
-  <h3>MCN Engine</h3>
+  <div class="nav-left">
+    <button onclick="toggleMenu()">☰</button>
+  </div>
 
-  <!-- 🔔 NOTIFICATION BELL -->
-  <div class="notif-wrapper" onclick="toggleNotif()">
-    🔔
-    <span id="notifCount" class="notif-badge"></span>
+  <h3 class="nav-title">MCN Engine</h3>
+
+  <div class="nav-right">
+    <!-- 🔔 NOTIFICATION BELL -->
+    <div class="notif-wrapper" onclick="toggleNotif()">
+      🔔
+      <span id="notifCount" class="notif-badge"></span>
+    </div>
   </div>
 
   <button onclick="logout()">Logout</button>
