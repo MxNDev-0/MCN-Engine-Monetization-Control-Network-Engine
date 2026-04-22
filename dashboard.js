@@ -10,7 +10,8 @@ import {
   getDoc,
   setDoc,
   doc,
-  onSnapshot
+  onSnapshot,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
@@ -28,8 +29,10 @@ onAuthStateChanged(auth, async (u) => {
 
   isAdmin = userData?.role === "admin";
 
+  loadUsers();
   loadPrices();
   loadNotifications();
+  initAdsSlider(); // ✅ restored ads slider
 });
 
 /* ================= USER ================= */
@@ -51,17 +54,38 @@ async function loadUser() {
   if (snap.exists()) userData = snap.data();
 }
 
-/* ================= PRICES ================= */
+/* ================= USERS ================= */
+function loadUsers() {
+  const box = document.getElementById("onlineUsers");
+  if (!box) return;
+
+  onSnapshot(collection(db, "presence"), (snap) => {
+    box.innerHTML = "";
+
+    snap.forEach(d => {
+      const u = d.data();
+      if (!u.online) return;
+
+      box.innerHTML += `<div>🟢 ${u.username}</div>`;
+    });
+  });
+}
+
+/* ================= LIVE CRYPTO PRICES ================= */
 async function loadPrices() {
   const box = document.getElementById("priceBox");
+  if (!box) return;
 
   try {
-    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd");
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,eur,gbp"
+    );
+
     const data = await res.json();
 
     box.innerHTML = `
-      BTC: $${data.bitcoin.usd}<br>
-      ETH: $${data.ethereum.usd}
+      BTC: $${data.bitcoin.usd} | €${data.bitcoin.eur} | £${data.bitcoin.gbp}<br>
+      ETH: $${data.ethereum.usd} | €${data.ethereum.eur} | £${data.ethereum.gbp}
     `;
   } catch {
     box.innerText = "Failed to load prices";
@@ -84,7 +108,9 @@ function loadNotifications() {
 
       if (!n.seen) count++;
 
-      html += `<div style="padding:8px;border-bottom:1px solid #333;">🔔 ${n.text}</div>`;
+      html += `<div style="padding:6px;border-bottom:1px solid #333;">
+        🔔 ${n.text}
+      </div>`;
     });
 
     panel.innerHTML = html;
@@ -98,17 +124,42 @@ function loadNotifications() {
   });
 }
 
-/* ================= NAV ================= */
-window.toggleMenu = function () {
-  document.getElementById("menu")?.classList.toggle("active");
+/* ================= 🔔 TOGGLE NOTIFICATION PANEL ================= */
+window.toggleNotif = function () {
+  const panel = document.getElementById("notifPanel");
+  if (!panel) return;
+
+  panel.style.display =
+    panel.style.display === "block" ? "none" : "block";
 };
 
+/* close when clicking outside */
+document.addEventListener("click", (e) => {
+  const panel = document.getElementById("notifPanel");
+  const bell = document.querySelector(".notif-wrapper");
+
+  if (!panel || !bell) return;
+
+  if (!panel.contains(e.target) && !bell.contains(e.target)) {
+    panel.style.display = "none";
+  }
+});
+
+/* ================= ☰ MENU TOGGLE FIX ================= */
+window.toggleMenu = function () {
+  const menu = document.getElementById("menu");
+  if (!menu) return;
+
+  menu.classList.toggle("active");
+};
+
+/* ================= LOGOUT ================= */
 window.logout = async function () {
   await signOut(auth);
   location.href = "index.html";
 };
 
-/* ================= ROUTING ================= */
+/* ================= NAV ================= */
 window.goHome = () => location.href = "dashboard.html";
 window.goProfile = () => location.href = "profile.html";
 window.goMessages = () => location.href = "messages.html";
@@ -116,13 +167,23 @@ window.goAdSpace = () => location.href = "ads.html";
 window.goBlog = () => location.href = "blog/index.html";
 window.goFaq = () => location.href = "faq.html";
 window.goAbout = () => location.href = "about.html";
-
 window.goAdmin = () => {
   if (!isAdmin) return alert("Admin only");
   location.href = "admin.html";
 };
 
-/* GLOBAL ROUTE FIX (used by discover) */
-window.openPost = function(id) {
-  location.href = "blog/post.html?id=" + id;
-};
+/* ================= ADS SLIDER (SAFE VERSION) ================= */
+function initAdsSlider() {
+  const slider = document.getElementById("adsSlider");
+  if (!slider) return;
+
+  let currentAd = 0;
+
+  setInterval(() => {
+    const total = slider.children.length;
+    if (total === 0) return;
+
+    currentAd = (currentAd + 1) % total;
+    slider.style.transform = `translateX(-${currentAd * 100}%)`;
+  }, 3000);
+}
