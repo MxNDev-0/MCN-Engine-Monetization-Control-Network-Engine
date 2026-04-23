@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MCN Engine V15 - Admin Control Panel</title>
+  <title>MCN Engine V16 - Admin Control Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css">
@@ -11,7 +11,7 @@
     body {
       background: #0b132b;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       margin: 0;
       padding: 20px;
     }
@@ -20,7 +20,6 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 15px;
-      margin-top: 20px;
     }
 
     input, textarea {
@@ -29,21 +28,13 @@
       margin: 6px 0;
       border-radius: 8px;
       border: none;
-      outline: none;
       background: #0b132b;
       color: white;
-      box-sizing: border-box;
     }
 
-    textarea {
-      min-height: 80px;
-      resize: none;
-    }
-
-    .grid button {
+    button {
       width: 100%;
       padding: 10px;
-      margin-top: 8px;
       border-radius: 8px;
       background: #5bc0be;
       color: #000;
@@ -52,17 +43,16 @@
     }
 
     .danger {
-      background: #ff4d4d !important;
-      color: #fff;
+      background: red;
+      color: white;
     }
 
     .list-box {
       max-height: 220px;
       overflow-y: auto;
-      padding: 5px;
       background: #0b132b;
       border-radius: 8px;
-      margin-top: 10px;
+      padding: 5px;
     }
 
     .item {
@@ -70,30 +60,31 @@
       margin-bottom: 6px;
       background: #16213e;
       border-radius: 8px;
-      font-size: 14px;
     }
 
-    .debug-btn {
-      background: #f4d35e !important;
-      color: #000;
-      font-weight: bold;
+    /* 🔥 MONITOR */
+    .monitor {
+      background: #000;
+      color: #0f0;
+      height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      padding: 10px;
+      border-radius: 8px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="navbar">
-  <h3>👑 MCN Engine V15 - Admin Control Panel</h3>
-</div>
+<h2>👑 MCN Admin Panel V16</h2>
 
 <div class="grid">
 
-  <!-- WALLET -->
+  <!-- 🔥 MONITOR -->
   <div class="card">
-    <h3>💰 Wallet</h3>
-    <input id="balanceInput" placeholder="Enter new balance">
-    <button onclick="updateWallet()">Update Wallet</button>
+    <h3>🖥 Live Monitor</h3>
+    <div id="monitor" class="monitor"></div>
   </div>
 
   <!-- EARNINGS -->
@@ -110,48 +101,38 @@
     <div id="usersList" class="list-box"></div>
   </div>
 
-  <!-- UPGRADES -->
+  <!-- 🔥 AD REQUESTS -->
   <div class="card">
-    <h3>🚀 Upgrade Requests</h3>
+    <h3>📢 Ad Payment Requests</h3>
     <div id="upgradeList" class="list-box"></div>
   </div>
 
   <!-- POSTS -->
   <div class="card">
-    <h3>💬 Posts Control</h3>
-    <button class="danger" onclick="clearAllPosts()">Clear All Posts</button>
+    <h3>💬 Posts</h3>
+    <button class="danger" onclick="clearAllPosts()">Clear All</button>
     <div id="postsList" class="list-box"></div>
-  </div>
-
-  <!-- CREATE AD -->
-  <div class="card">
-    <h3>📢 Create Ad</h3>
-    <input id="adTitle" placeholder="Ad Title">
-    <textarea id="adText" placeholder="Ad Description"></textarea>
-    <input id="adLink" placeholder="Ad Link">
-    <button onclick="createAd()">Publish Ad</button>
   </div>
 
   <!-- BLOG -->
   <div class="card">
-    <h3>📝 Create Blog Post</h3>
-    <input id="blogTitle" placeholder="Blog Title">
-    <textarea id="blogContent" placeholder="Blog Content"></textarea>
-    <input id="blogImage" placeholder="Image URL (optional)">
-    <button onclick="createBlog()">Publish Blog</button>
+    <h3>📝 Create Blog</h3>
+    <input id="blogTitle">
+    <textarea id="blogContent"></textarea>
+    <input id="blogImage">
+    <button onclick="createBlog()">Publish</button>
   </div>
 
   <!-- ANALYTICS -->
   <div class="card">
-    <h3>📊 Analytics Dashboard</h3>
+    <h3>📊 Analytics</h3>
 
     <div class="item">Users: <b id="statUsers">0</b></div>
-    <div class="item">Premium Users: <b id="statPremium">0</b></div>
-    <div class="item">Blog Views: <b id="statViews">0</b></div>
+    <div class="item">Blog Posts: <b id="statViews">0</b></div>
     <div class="item">Ad Clicks: <b id="statClicks">0</b></div>
-    <div class="item">Revenue: <b id="statRevenue">0</b></div>
+    <div class="item">Ad Requests: <b id="statRequests">0</b></div>
 
-    <button onclick="loadStats()">Refresh Stats</button>
+    <button onclick="loadStats()">Refresh</button>
   </div>
 
 </div>
