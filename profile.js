@@ -22,13 +22,13 @@ import {
 
 let user = null;
 
-/* ================= MINI MONITOR ================= */
+/* ================= MONITOR LOG ================= */
 function log(msg) {
-  const box = document.getElementById("profileMonitor");
+  const box = document.getElementById("monitor");
   if (!box) return;
 
   const time = new Date().toLocaleTimeString();
-  box.innerHTML += `[${time}] ${msg}<br>`;
+  box.innerHTML += `<br>[${time}] ${msg}`;
   box.scrollTop = box.scrollHeight;
 }
 
@@ -43,16 +43,11 @@ onAuthStateChanged(auth, async (u) => {
   loadUsername();
   loadFriendRequests();
   loadFriends();
+
+  // 🔥 NEW
+  loadNotifications();
+  monitorAdRequests();
 });
-
-/* ================= MENU ================= */
-window.toggleMenu = function () {
-  const menu = document.getElementById("dropdownMenu");
-  if (!menu) return;
-
-  menu.style.display =
-    menu.style.display === "block" ? "none" : "block";
-};
 
 /* ================= USERNAME ================= */
 async function loadUsername() {
@@ -64,8 +59,6 @@ async function loadUsername() {
   } else {
     el.innerText = "Not set";
   }
-
-  log("Username loaded");
 }
 
 /* ================= UPDATE USERNAME ================= */
@@ -88,10 +81,85 @@ window.resetPassword = async () => {
   await sendPasswordResetEmail(auth, user.email);
   alert("Reset email sent");
 
-  log("Password reset requested");
+  log("Password reset email sent");
 };
 
-/* ================= FRIEND SYSTEM (UNCHANGED) ================= */
+/* ================= 🔥 REAL NOTIFICATIONS ================= */
+function loadNotifications() {
+  const ref = collection(db, "notifications", user.uid, "items");
+
+  onSnapshot(query(ref, orderBy("createdAt", "desc")), (snap) => {
+    snap.docChanges().forEach(change => {
+      if (change.type === "added") {
+        const data = change.doc.data();
+
+        log(data.text || "New notification");
+
+        // 🔥 update message counter
+        const msgCount = document.getElementById("msgCount");
+        if (msgCount) {
+          msgCount.innerText = Number(msgCount.innerText) + 1;
+        }
+      }
+    });
+  });
+}
+
+/* ================= 🔥 AD REQUEST MONITOR ================= */
+function monitorAdRequests() {
+  const q = query(
+    collection(db, "adRequests"),
+    where("userId", "==", user.uid)
+  );
+
+  onSnapshot(q, (snap) => {
+    let active = "No active ads";
+
+    snap.forEach(d => {
+      const ad = d.data();
+
+      if (ad.status === "approved") {
+        active = "Active";
+        log("✅ Ad approved");
+      }
+
+      if (ad.status === "rejected") {
+        log("❌ Ad rejected");
+      }
+
+      if (ad.status === "pending") {
+        log("⏳ Ad request pending");
+      }
+    });
+
+    const el = document.getElementById("adStatus");
+    if (el) el.innerText = active;
+  });
+}
+
+/* ================= FRIEND REQUEST ================= */
+window.sendFriendRequest = async function (toUid, toName) {
+  if (!user || user.uid === toUid) return;
+
+  await addDoc(collection(db, "friendRequests"), {
+    from: user.uid,
+    fromName: user.email.split("@")[0],
+    to: toUid,
+    toName,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  await addDoc(collection(db, "notifications", toUid, "items"), {
+    text: `${user.email.split("@")[0]} sent you a friend request`,
+    seen: false,
+    createdAt: serverTimestamp()
+  });
+
+  log("Friend request sent");
+};
+
+/* ================= LOAD REQUESTS ================= */
 function loadFriendRequests() {
   const box = document.getElementById("friendRequestsBox");
   if (!box) return;
@@ -111,7 +179,6 @@ function loadFriendRequests() {
       html += `
         <div class="card">
           <b>${r.fromName}</b> sent a friend request
-
           <div style="margin-top:6px;">
             <button onclick="acceptFriend('${d.id}','${r.from}')">Accept</button>
             <button onclick="rejectFriend('${d.id}')">Reject</button>
@@ -124,6 +191,37 @@ function loadFriendRequests() {
   });
 }
 
+/* ================= ACCEPT ================= */
+window.acceptFriend = async function (id, fromUid) {
+  await updateDoc(doc(db, "friendRequests", id), {
+    status: "accepted"
+  });
+
+  await addDoc(collection(db, "friends"), {
+    userA: user.uid,
+    userB: fromUid,
+    createdAt: serverTimestamp()
+  });
+
+  await addDoc(collection(db, "notifications", fromUid, "items"), {
+    text: `${user.email.split("@")[0]} accepted your request`,
+    seen: false,
+    createdAt: serverTimestamp()
+  });
+
+  log("Friend request accepted");
+};
+
+/* ================= REJECT ================= */
+window.rejectFriend = async function (id) {
+  await updateDoc(doc(db, "friendRequests", id), {
+    status: "rejected"
+  });
+
+  log("Friend request rejected");
+};
+
+/* ================= FRIEND LIST ================= */
 function loadFriends() {
   const box = document.getElementById("friendsBox");
   if (!box) return;
@@ -144,6 +242,7 @@ function loadFriends() {
       html += `
         <div class="card">
           👤 ${friendId}
+          <button onclick="openProfile('${friendId}')">View</button>
         </div>
       `;
     });
@@ -152,40 +251,7 @@ function loadFriends() {
   });
 }
 
-/* ================= KEEP ORIGINAL FUNCTIONS ================= */
-window.acceptFriend = async function (id, fromUid) {
-  await updateDoc(doc(db, "friendRequests", id), {
-    status: "accepted"
-  });
-
-  await addDoc(collection(db, "friends"), {
-    userA: user.uid,
-    userB: fromUid,
-    createdAt: serverTimestamp()
-  });
-
-  log("Friend accepted");
-};
-
-window.rejectFriend = async function (id) {
-  await updateDoc(doc(db, "friendRequests", id), {
-    status: "rejected"
-  });
-
-  log("Friend rejected");
-};
-
-window.sendFriendRequest = async function (toUid, toName) {
-  if (!user || user.uid === toUid) return;
-
-  await addDoc(collection(db, "friendRequests"), {
-    from: user.uid,
-    fromName: user.email.split("@")[0],
-    to: toUid,
-    toName,
-    status: "pending",
-    createdAt: serverTimestamp()
-  });
-
-  log("Friend request sent");
+/* ================= NAV ================= */
+window.openProfile = function (uid) {
+  location.href = `user.html?uid=${uid}`;
 };
