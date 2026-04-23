@@ -20,7 +20,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* ================= MONITOR ================= */
+/* ================= MONITOR ENGINE (UPGRADED) ================= */
 function log(msg) {
   const box = document.getElementById("monitor");
   if (!box) return;
@@ -28,6 +28,11 @@ function log(msg) {
   const time = new Date().toLocaleTimeString();
   box.innerHTML += `[${time}] ${msg}<br>`;
   box.scrollTop = box.scrollHeight;
+}
+
+/* ================= NOTIFICATION LAYER (NEW) ================= */
+function notify(type, msg) {
+  log(`🔔 [${type}] ${msg}`);
 }
 
 /* ================= BLOG ================= */
@@ -49,18 +54,15 @@ window.createBlog = async () => {
   if (data.success) {
     alert("Blog posted ✅");
 
-    // ✅ CLEAR INPUTS FIXED
     blogTitle.value = "";
     blogContent.value = "";
     blogImage.value = "";
 
-    log("Blog created: " + title);
-  } else {
-    alert("Failed ❌");
+    notify("BLOG", "New blog published: " + title);
   }
 };
 
-/* ================= AD REQUESTS ================= */
+/* ================= AD REQUESTS (UPGRADED FLOW) ================= */
 function loadAdRequests() {
   const box = document.getElementById("upgradeList");
 
@@ -86,14 +88,13 @@ function loadAdRequests() {
   });
 }
 
-/* 🔥 AD APPROVAL SYSTEM */
 window.approveAd = async (id) => {
   await updateDoc(doc(db, "adRequests", id), {
     status: "approved",
     approvedAt: Date.now()
   });
 
-  log("Ad approved: " + id);
+  notify("AD", "Approved request " + id);
 };
 
 window.rejectAd = async (id) => {
@@ -101,7 +102,7 @@ window.rejectAd = async (id) => {
     status: "rejected"
   });
 
-  log("Ad rejected: " + id);
+  notify("AD", "Rejected request " + id);
 };
 
 /* ================= USERS ================= */
@@ -156,14 +157,6 @@ window.clearAllPosts = async () => {
 
   await batch.commit();
   log("All posts cleared");
-};
-
-/* ================= ANALYTICS ================= */
-window.loadStats = async () => {
-  const blogs = await getDocs(collection(db, "blogs"));
-
-  document.getElementById("statViews").innerText = blogs.size;
-  log("Stats refreshed");
 };
 
 /* ================= INIT ================= */
