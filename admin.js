@@ -4,8 +4,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 import {
   doc, addDoc, collection,
   onSnapshot, deleteDoc,
-  query, orderBy, getDocs,
-  writeBatch, getDoc
+  updateDoc, query, orderBy,
+  getDocs, writeBatch, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ================= ADMIN GUARD ================= */
@@ -39,28 +39,22 @@ window.createBlog = async () => {
 
   if (!title || !content) return alert("Fill fields");
 
-  try {
-    const res = await fetch("https://mxm-backend.onrender.com/blog/create", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ title, content, image })
-    });
+  const res = await fetch("https://mxm-backend.onrender.com/blog/create", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ title, content, image })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (data.success) {
-      alert("Blog posted ✅");
+  if (data.success) {
+    alert("Blog posted ✅");
 
-      // ✅ CLEAR INPUTS (FIX)
-      document.getElementById("blogTitle").value = "";
-      document.getElementById("blogContent").value = "";
-      document.getElementById("blogImage").value = "";
+    document.getElementById("blogTitle").value = "";
+    document.getElementById("blogContent").value = "";
+    document.getElementById("blogImage").value = "";
 
-      log("Blog created: " + title);
-    }
-
-  } catch (e) {
-    alert("Error posting blog");
+    log("Blog created: " + title);
   }
 };
 
@@ -73,14 +67,14 @@ function loadUsers() {
 
     snap.forEach(d => {
       const u = d.data();
-      box.innerHTML += `
-        <div class="item">${u.email || "user"}</div>
-      `;
+      box.innerHTML += `<div class="item">${u.email || "user"}</div>`;
     });
+
+    document.getElementById("statUsers").innerText = snap.size;
   });
 }
 
-/* ================= AD REQUESTS ================= */
+/* ================= AD REQUESTS (PHASE 5) ================= */
 function loadAdRequests() {
   const box = document.getElementById("upgradeList");
 
@@ -89,11 +83,16 @@ function loadAdRequests() {
 
     snap.forEach(d => {
       const ad = d.data();
+      const id = d.id;
 
       box.innerHTML += `
         <div class="item">
           <b>${ad.title}</b><br>
-          Status: ${ad.status || "pending"}
+          Status: ${ad.status || "pending"}<br><br>
+
+          <button onclick="approveAd('${id}')">Approve</button>
+          <button onclick="rejectAd('${id}')">Reject</button>
+          <button onclick="markPaid('${id}')">Mark Paid</button>
         </div>
       `;
     });
@@ -101,6 +100,36 @@ function loadAdRequests() {
     document.getElementById("statRequests").innerText = snap.size;
   });
 }
+
+/* ================= APPROVE AD ================= */
+window.approveAd = async (id) => {
+  await updateDoc(doc(db, "adRequests", id), {
+    status: "approved",
+    approvedAt: Date.now()
+  });
+
+  log("Ad approved: " + id);
+};
+
+/* ================= REJECT AD ================= */
+window.rejectAd = async (id) => {
+  await updateDoc(doc(db, "adRequests", id), {
+    status: "rejected",
+    rejectedAt: Date.now()
+  });
+
+  log("Ad rejected: " + id);
+};
+
+/* ================= MARK PAID ================= */
+window.markPaid = async (id) => {
+  await updateDoc(doc(db, "adRequests", id), {
+    status: "paid",
+    paidAt: Date.now()
+  });
+
+  log("Ad marked paid: " + id);
+};
 
 /* ================= POSTS ================= */
 function loadPosts() {
