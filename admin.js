@@ -1,110 +1,88 @@
 import { auth, db } from "./firebase.js";
-
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
-  doc,
-  setDoc,
-  addDoc,
-  collection,
-  onSnapshot,
-  deleteDoc,
-  updateDoc,
-  query,
-  orderBy,
-  getDocs,
-  writeBatch,
-  getDoc
+  doc, setDoc, addDoc, collection,
+  onSnapshot, deleteDoc, updateDoc,
+  query, orderBy, getDocs, writeBatch, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ================= ADMIN GUARD ================= */
-const ADMIN_UID = null;
-
 onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    location.href = "index.html";
-    return;
-  }
+  if (!user) return location.href = "index.html";
 
   const snap = await getDoc(doc(db, "users", user.uid));
   const role = snap.exists() ? snap.data().role : "user";
 
-  if ((ADMIN_UID && user.uid === ADMIN_UID) || role === "admin") {
-    console.log("Admin access granted");
-  } else {
-    alert("❌ Access denied (Admin only)");
+  if (role !== "admin") {
+    alert("Access denied");
     location.href = "dashboard.html";
   }
 });
 
-/* ================= WALLET ================= */
-window.updateWallet = async () => {
-  const balance = document.getElementById("balanceInput").value;
+/* ================= MONITOR ================= */
+function log(msg) {
+  const box = document.getElementById("monitor");
+  if (!box) return;
 
-  await setDoc(doc(db, "wallet", "main"), {
-    balance: Number(balance),
-    updatedAt: Date.now()
-  });
+  const time = new Date().toLocaleTimeString();
+  box.innerHTML += `[${time}] ${msg}<br>`;
+  box.scrollTop = box.scrollHeight;
+}
 
-  alert("Wallet updated!");
-};
-
-/* ================= EARNINGS ================= */
-window.addEarning = async () => {
-  const source = document.getElementById("source").value;
-  const amount = document.getElementById("amount").value;
-
-  await addDoc(collection(db, "earningsLog"), {
-    source,
-    amount: Number(amount),
-    date: Date.now()
-  });
-
-  alert("Earning added!");
-};
-
-/* ================= BLOG CREATE (CLEAN FIX) ================= */
+/* ================= BLOG ================= */
 window.createBlog = async () => {
-  const title = document.getElementById("blogTitle").value;
-  const content = document.getElementById("blogContent").value;
-  const image = document.getElementById("blogImage").value;
+  const title = blogTitle.value;
+  const content = blogContent.value;
+  const image = blogImage.value;
 
-  if (!title || !content) {
-    alert("Fill title and content");
-    return;
+  if (!title || !content) return alert("Fill fields");
+
+  const res = await fetch("https://mxm-backend.onrender.com/blog/create", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ title, content, image })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    alert("Blog posted ✅");
+
+    // 🔥 FIX: CLEAR FORM
+    blogTitle.value = "";
+    blogContent.value = "";
+    blogImage.value = "";
+
+    log("Blog created: " + title);
   }
+};
 
-  try {
-    const res = await fetch("https://mxm-backend.onrender.com/blog/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        title: title.trim(),
-        content: content.trim(),
-        image: image || ""
-      })
+/* ================= AD REQUESTS ================= */
+function loadAdRequests() {
+  const box = document.getElementById("upgradeList");
+
+  onSnapshot(collection(db, "adRequests"), (snap) => {
+    box.innerHTML = "";
+
+    snap.forEach(d => {
+      const ad = d.data();
+
+      box.innerHTML += `
+        <div class="item">
+          ${ad.title} (${ad.duration})<br>
+          Status: ${ad.status}
+        </div>
+      `;
     });
 
-    const data = await res.json();
-
-    if (data.success) {
-      alert("Blog published successfully ✅");
-    } else {
-      alert("Blog failed to publish ❌");
-    }
-
-  } catch (err) {
-    console.error(err);
-    alert("Server error");
-  }
-};
+    document.getElementById("statRequests").innerText = snap.size;
+  });
+}
 
 /* ================= USERS ================= */
 function loadUsers() {
   const box = document.getElementById("usersList");
-  if (!box) return;
 
   onSnapshot(collection(db, "onlineUsers"), (snap) => {
     box.innerHTML = "";
@@ -113,28 +91,17 @@ function loadUsers() {
       const u = d.data();
 
       box.innerHTML += `
-        <div class="item">
-          <b>${u.email || u.username || "user"}</b>
-          <button onclick="banUser('${u.uid}')">Ban</button>
-        </div>
+        <div class="item">${u.email || "user"}</div>
       `;
     });
+
+    document.getElementById("statUsers").innerText = snap.size;
   });
 }
-
-/* ================= BAN USER ================= */
-window.banUser = async (uid) => {
-  await updateDoc(doc(db, "users", uid), {
-    banned: true
-  });
-
-  alert("User banned ❌");
-};
 
 /* ================= POSTS ================= */
 function loadPosts() {
   const box = document.getElementById("postsList");
-  if (!box) return;
 
   onSnapshot(query(collection(db, "posts"), orderBy("time")), (snap) => {
     box.innerHTML = "";
@@ -144,8 +111,7 @@ function loadPosts() {
 
       box.innerHTML += `
         <div class="item">
-          <b>${p.user}</b>
-          <p>${p.text}</p>
+          ${p.text}
           <button onclick="deletePost('${d.id}')">Delete</button>
         </div>
       `;
@@ -153,12 +119,11 @@ function loadPosts() {
   });
 }
 
-/* ================= DELETE POST ================= */
 window.deletePost = async (id) => {
   await deleteDoc(doc(db, "posts", id));
+  log("Post deleted");
 };
 
-/* ================= CLEAR POSTS ================= */
 window.clearAllPosts = async () => {
   const snap = await getDocs(collection(db, "posts"));
   const batch = writeBatch(db);
@@ -166,9 +131,24 @@ window.clearAllPosts = async () => {
   snap.forEach(d => batch.delete(d.ref));
 
   await batch.commit();
-  alert("All posts deleted");
+  log("All posts cleared");
+};
+
+/* ================= ANALYTICS ================= */
+window.loadStats = async () => {
+  const blogs = await getDocs(collection(db, "blogs"));
+  const ads = await getDocs(collection(db, "ads"));
+
+  let clicks = 0;
+  ads.forEach(d => clicks += d.data().clicks || 0);
+
+  document.getElementById("statViews").innerText = blogs.size;
+  document.getElementById("statClicks").innerText = clicks;
+
+  log("Stats refreshed");
 };
 
 /* ================= INIT ================= */
 loadUsers();
 loadPosts();
+loadAdRequests();
