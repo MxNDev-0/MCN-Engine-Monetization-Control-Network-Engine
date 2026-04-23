@@ -1,47 +1,155 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>About MCN Engine</title>
+  <title>MCN Engine V16 - Admin Control Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="ui-theme.css">
+
+  <style>
+    body {
+      background: #0b132b;
+      color: #fff;
+      font-family: Arial;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: #1c2541;
+      padding: 12px;
+      border-radius: 10px;
+      box-sizing: border-box;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 8px;
+      border: none;
+      background: #0b132b;
+      color: white;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      background: #5bc0be;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      margin-top: 5px;
+    }
+
+    .danger {
+      background: red;
+      color: white;
+    }
+
+    .list-box {
+      max-height: 220px;
+      overflow-y: auto;
+      background: #0b132b;
+      border-radius: 8px;
+      padding: 6px;
+    }
+
+    .item {
+      padding: 8px;
+      margin-bottom: 6px;
+      background: #16213e;
+      border-radius: 8px;
+    }
+
+    /* 🔥 MONITOR FIX */
+    .monitor {
+      background: #000;
+      color: #00ff66;
+      height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      padding: 10px;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="navbar">
-  <h2 class="logo">About MCN Engine</h2>
-</div>
+<h2>👑 MCN Admin Panel V16</h2>
 
-<div class="container">
+<div class="grid">
 
+  <!-- MONITOR -->
   <div class="card">
-    <h3>About MCN Engine</h3>
+    <h3>🖥 Live Monitor</h3>
+    <div id="monitor" class="monitor"></div>
+  </div>
 
-    <p>
-      MCN Engine (Monetization Control Network) is a digital platform designed to help users explore and understand online earning opportunities.
-    </p>
+  <!-- BLOG -->
+  <div class="card">
+    <h3>📝 Create Blog</h3>
+    <input id="blogTitle" placeholder="Blog Title">
+    <textarea id="blogContent" placeholder="Blog Content"></textarea>
+    <input id="blogImage" placeholder="Image URL (optional)">
+    <button onclick="createBlog()">Publish Blog</button>
+  </div>
 
-    <p>
-      The system combines crypto tools, CPA marketing, referral systems, and educational content into one unified dashboard where users can discover different ways to earn online.
-    </p>
+  <!-- USERS -->
+  <div class="card">
+    <h3>👥 Users</h3>
+    <div id="usersList" class="list-box"></div>
+  </div>
 
-    <p>
-      MCN Engine focuses on providing structured access to tools, guides, and resources that simplify the process for beginners and experienced users alike.
-    </p>
+  <!-- AD REQUESTS -->
+  <div class="card">
+    <h3>📢 Ad Payment Requests</h3>
+    <div id="upgradeList" class="list-box"></div>
+  </div>
 
-    <p>
-      Please note that MCN Engine does not guarantee earnings. Results depend on user effort, consistency, and external market conditions.
-    </p>
+  <!-- POSTS -->
+  <div class="card">
+    <h3>💬 Posts Control</h3>
+    <button class="danger" onclick="clearAllPosts()">Clear All Posts</button>
+    <div id="postsList" class="list-box"></div>
+  </div>
 
-    <p>
-      The platform continues to evolve with new features, automation systems, and monetization tools designed to improve user experience and growth potential.
-    </p>
+  <!-- ANALYTICS -->
+  <div class="card">
+    <h3>📊 Analytics</h3>
+
+    <div class="item">Users: <b id="statUsers">0</b></div>
+    <div class="item">Blog Posts: <b id="statViews">0</b></div>
+    <div class="item">Ad Clicks: <b id="statClicks">0</b></div>
+    <div class="item">Ad Requests: <b id="statRequests">0</b></div>
+
+    <button onclick="loadStats()">Refresh</button>
   </div>
 
 </div>
 
-<!-- FLOAT BACK BUTTON -->
-<button class="back-float" onclick="history.back()">←</button>
+<script type="module" src="admin.js"></script>
 
 </body>
 </html>
