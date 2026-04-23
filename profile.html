@@ -122,6 +122,20 @@
       border-radius: 10px;
       cursor: pointer;
     }
+
+    /* 🔥 NEW: SMALL PROFILE MONITOR */
+    .mini-monitor {
+      background: #000;
+      color: #00ff88;
+      font-family: monospace;
+      font-size: 12px;
+      height: 120px;
+      overflow-y: auto;
+      padding: 8px;
+      border-radius: 10px;
+      margin: 10px;
+      border: 1px solid #5bc0be;
+    }
   </style>
 </head>
 
@@ -153,6 +167,11 @@
   <div class="icon-box" onclick="openFriends()">👤 Friends</div>
 </div>
 
+<!-- 🔥 MINI LIVE MONITOR (NEW) -->
+<div class="mini-monitor" id="profileMonitor">
+  [SYSTEM] Profile monitor initialized...
+</div>
+
 <!-- POPUPS -->
 <div id="requestsPopup" class="popup">
   <h4>Friend Requests</h4>
@@ -166,20 +185,7 @@
   <button onclick="closePopup('friendsPopup')">Close</button>
 </div>
 
-<!-- CREATE POST -->
-<div class="card">
-  <h4>Create Post</h4>
-  <textarea id="postInput"></textarea>
-  <div style="display:flex;justify-content:flex-end;margin-top:10px;">
-  <button onclick="createPost()">Post</button>
-</div>
-</div>
-
-<!-- POSTS -->
-<div class="card">
-  <h4>My Posts</h4>
-  <div id="myPosts"></div>
-</div>
+<!-- CREATE POST REMOVED (as requested) -->
 
 <script type="module" src="profile.js"></script>
 
