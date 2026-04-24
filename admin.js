@@ -7,6 +7,38 @@ import {
   query, orderBy, getDocs, writeBatch, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* ================= EMAILJS (SAFE LOAD) ================= */
+const script = document.createElement("script");
+script.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js";
+document.head.appendChild(script);
+
+script.onload = () => {
+  emailjs.init("X26w77fp9rDGN2et7");
+  log("📧 EmailJS ready");
+};
+
+/* ================= EMAIL FUNCTION ================= */
+function sendEmail(message) {
+  if (typeof emailjs === "undefined") {
+    log("⚠️ EmailJS not loaded");
+    return;
+  }
+
+  emailjs.send("service_faxlkup", "template_0f9tfzw", {
+    name: "MCN Engine",
+    email: "mcnengine@gmail.com",
+    message: message,
+    time: new Date().toLocaleString()
+  })
+  .then(() => {
+    log("📩 Email sent");
+  })
+  .catch(err => {
+    console.error(err);
+    log("❌ Email failed");
+  });
+}
+
 /* ================= ADMIN GUARD ================= */
 onAuthStateChanged(auth, async (user) => {
   if (!user) return location.href = "index.html";
@@ -51,12 +83,14 @@ window.createBlog = async () => {
   if (data.success) {
     alert("Blog posted ✅");
 
-    // CLEAR FORM FIX
     blogTitle.value = "";
     blogContent.value = "";
     blogImage.value = "";
 
     log("Blog created: " + title);
+
+    // ✅ SAFE EMAIL TRIGGER
+    sendEmail("New blog created: " + title);
   }
 };
 
@@ -137,7 +171,7 @@ window.clearAllPosts = async () => {
   log("All posts cleared");
 };
 
-/* ================= SUGGESTIONS PANEL (NEW REPLACEMENT) ================= */
+/* ================= SUGGESTIONS ================= */
 function loadSuggestions() {
   const box = document.getElementById("suggestionsBox");
   if (!box) return;
@@ -176,3 +210,5 @@ loadUsers();
 loadPosts();
 loadAdRequests();
 loadSuggestions();
+
+log("🚀 System ready");
