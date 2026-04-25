@@ -203,32 +203,36 @@
   © MCN Engine
 </div>
 
-<!-- SCRIPT -->
 <script type="module">
 
-/* MENU */
+/* ================= MENU (SAFE TOGGLE) ================= */
 window.toggleMenu = function () {
   const menu = document.getElementById("menu");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
+  if (!menu) return;
+
+  menu.style.display = (menu.style.display === "block") ? "none" : "block";
 };
 
-/* LOGIN */
+/* ================= LOGIN MODAL ================= */
 window.openLogin = function () {
-  document.getElementById("loginModal").style.display = "flex";
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.style.display = "flex";
 };
 
 window.closeLogin = function () {
-  document.getElementById("loginModal").style.display = "none";
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.style.display = "none";
 };
 
-/* OPEN POST — FIXED PATH */
+/* ================= BLOG ROUTING FIX (CRITICAL 404 FIX) ================= */
 window.openPost = function (id) {
-  window.location.href = "/blog/post.html?id=" + id;
+  // IMPORTANT: safe relative path for /blog folder setup
+  window.location.href = "./blog/post.html?id=" + id;
 };
 
-/* CATEGORY COLOR */
-function getCategoryColor(cat){
-  switch(cat){
+/* ================= CATEGORY SYSTEM ================= */
+function getCategoryColor(cat) {
+  switch (cat) {
     case "Crypto": return "#5bc0be";
     case "News": return "#ffcc00";
     case "Guide": return "#00ff88";
@@ -237,10 +241,12 @@ function getCategoryColor(cat){
   }
 }
 
-/* LOAD POSTS */
-async function loadFeed(){
+/* ================= LOAD BLOG POSTS ================= */
+async function loadFeed() {
   const feed = document.getElementById("feed");
   const featuredBox = document.getElementById("featuredPost");
+
+  if (!feed) return;
 
   try {
     const res = await fetch("https://mxm-backend.onrender.com/blog/list");
@@ -249,21 +255,23 @@ async function loadFeed(){
     feed.innerHTML = "";
 
     if (!posts || posts.length === 0) {
-      feed.innerHTML = "<div class='post'>No posts found</div>";
+      feed.innerHTML = `<div class="post">No posts found</div>`;
       return;
     }
 
-    /* FEATURED */
-    const featured = posts.find(p => p.featured) || posts[0];
+    /* ================= FEATURED ================= */
+    const featured = posts.find(p => p.featured === true) || posts[0];
 
-    featuredBox.innerHTML = `
-      <div class="post" onclick="openPost('${featured.id}')" style="border:2px solid #5bc0be">
-        <h3>🔥 Featured</h3>
-        <h4>${featured.title}</h4>
-      </div>
-    `;
+    if (featuredBox && featured) {
+      featuredBox.innerHTML = `
+        <div class="post" onclick="openPost('${featured.id}')" style="border:2px solid #5bc0be">
+          <h3>🔥 Featured</h3>
+          <h4>${featured.title}</h4>
+        </div>
+      `;
+    }
 
-    /* FEED */
+    /* ================= FEED ================= */
     posts.forEach(p => {
       feed.innerHTML += `
         <div class="post" onclick="openPost('${p.id}')">
@@ -273,16 +281,18 @@ async function loadFeed(){
           </small>
 
           <h4>${p.title}</h4>
-          <p>${(p.content || "").slice(0,100)}...</p>
+          <p>${(p.content || "").slice(0, 100)}...</p>
         </div>
       `;
     });
 
   } catch (err) {
-    feed.innerHTML = "<div class='post'>Failed to load posts</div>";
+    console.error(err);
+    feed.innerHTML = `<div class="post">Failed to load posts</div>`;
   }
 }
 
+/* INIT */
 loadFeed();
 
 </script>
