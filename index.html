@@ -12,7 +12,7 @@
       margin: 0;
     }
 
-    /* ================= HEADER ================= */
+    /* HEADER */
     .header {
       display: flex;
       justify-content: space-between;
@@ -51,7 +51,7 @@
       font-weight: bold;
     }
 
-    /* ================= MENU ================= */
+    /* MENU */
     #menu {
       display: none;
       background: #1c2541;
@@ -64,12 +64,12 @@
       cursor: pointer;
     }
 
-    /* ================= FEATURED ================= */
+    /* FEATURED */
     .featured {
       padding: 15px;
     }
 
-    /* ================= FEED ================= */
+    /* FEED */
     .feed {
       padding: 15px;
     }
@@ -80,14 +80,14 @@
       border-radius: 10px;
       margin-bottom: 12px;
       cursor: pointer;
+      transition: 0.2s;
     }
 
     .post:hover {
       transform: scale(1.02);
-      transition: 0.2s;
     }
 
-    /* ================= LOGIN ================= */
+    /* LOGIN */
     .login-modal {
       display: none;
       position: fixed;
@@ -135,7 +135,7 @@
       color: #5bc0be;
     }
 
-    /* ================= FOOTER ================= */
+    /* FOOTER */
     .footer {
       text-align: center;
       padding: 20px;
@@ -153,7 +153,7 @@
 
 <body>
 
-<!-- ================= HEADER ================= -->
+<!-- HEADER -->
 <div class="header">
   <div class="left">
     <div class="menu-btn" onclick="toggleMenu()">☰</div>
@@ -163,7 +163,7 @@
   <div class="profile-btn" onclick="openLogin()">👤</div>
 </div>
 
-<!-- ================= MENU ================= -->
+<!-- MENU -->
 <div id="menu">
   <div>Home</div>
   <div>Trending</div>
@@ -171,15 +171,13 @@
   <div>Settings</div>
 </div>
 
-<!-- ================= FEATURED ================= -->
+<!-- FEATURED -->
 <div class="featured" id="featuredPost"></div>
 
-<!-- ================= BLOG FEED ================= -->
-<div class="feed" id="feed">
-  <div class="post">Loading posts...</div>
-</div>
+<!-- FEED -->
+<div class="feed" id="feed">Loading posts...</div>
 
-<!-- ================= LOGIN POPUP ================= -->
+<!-- LOGIN -->
 <div class="login-modal" id="loginModal">
   <div class="center-box">
     <h3>Login / Register</h3>
@@ -194,7 +192,7 @@
   </div>
 </div>
 
-<!-- ================= FOOTER (LEGAL RESTORED) ================= -->
+<!-- FOOTER -->
 <div class="footer">
   <a href="about.html">About</a> |
   <a href="faq.html">FAQ</a> |
@@ -205,30 +203,41 @@
   © MCN Engine
 </div>
 
-<!-- ================= SCRIPT ================= -->
+<!-- SCRIPT -->
 <script type="module">
 
 /* MENU */
-window.toggleMenu = function(){
+window.toggleMenu = function () {
   const menu = document.getElementById("menu");
   menu.style.display = menu.style.display === "block" ? "none" : "block";
-}
+};
 
 /* LOGIN */
-window.openLogin = function(){
+window.openLogin = function () {
   document.getElementById("loginModal").style.display = "flex";
-}
+};
 
-window.closeLogin = function(){
+window.closeLogin = function () {
   document.getElementById("loginModal").style.display = "none";
-}
+};
 
-/* OPEN POST — FIXED PATH (IMPORTANT) */
-window.openPost = function(id){
+/* OPEN POST — FIXED PATH */
+window.openPost = function (id) {
   window.location.href = "/blog/post.html?id=" + id;
+};
+
+/* CATEGORY COLOR */
+function getCategoryColor(cat){
+  switch(cat){
+    case "Crypto": return "#5bc0be";
+    case "News": return "#ffcc00";
+    case "Guide": return "#00ff88";
+    case "Update": return "#ff6b6b";
+    default: return "#aaa";
+  }
 }
 
-/* LOAD POSTS FROM BACKEND */
+/* LOAD POSTS */
 async function loadFeed(){
   const feed = document.getElementById("feed");
   const featuredBox = document.getElementById("featuredPost");
@@ -245,13 +254,12 @@ async function loadFeed(){
     }
 
     /* FEATURED */
-    const featured = posts[0];
+    const featured = posts.find(p => p.featured) || posts[0];
 
     featuredBox.innerHTML = `
       <div class="post" onclick="openPost('${featured.id}')" style="border:2px solid #5bc0be">
         <h3>🔥 Featured</h3>
         <h4>${featured.title}</h4>
-        ${featured.image ? `<img src="${featured.image}" style="width:100%;border-radius:10px;margin-top:10px">` : ""}
       </div>
     `;
 
@@ -259,6 +267,11 @@ async function loadFeed(){
     posts.forEach(p => {
       feed.innerHTML += `
         <div class="post" onclick="openPost('${p.id}')">
+
+          <small style="color:${getCategoryColor(p.category)}">
+            ${p.category || "General"}
+          </small>
+
           <h4>${p.title}</h4>
           <p>${(p.content || "").slice(0,100)}...</p>
         </div>
