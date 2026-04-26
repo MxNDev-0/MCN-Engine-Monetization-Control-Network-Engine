@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase.js";
-import { app } from "./firebase.js"; // ✅ IMPORTANT (use same app)
+import { app } from "./firebase.js";
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -9,7 +9,7 @@ import {
   query, orderBy, getDocs, writeBatch, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* ================= EMAILJS (SAFE LOAD) ================= */
+/* ================= EMAILJS ================= */
 const script = document.createElement("script");
 script.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js";
 document.head.appendChild(script);
@@ -19,7 +19,7 @@ script.onload = () => {
   log("📧 EmailJS ready");
 };
 
-/* ================= FIREBASE PUSH (FIXED) ================= */
+/* ================= PUSH ================= */
 import {
   getMessaging,
   getToken,
@@ -28,63 +28,35 @@ import {
 
 const messaging = getMessaging(app);
 
-/* ================= REQUEST PERMISSION ================= */
-async function enablePush() {
-  try {
-    const permission = await Notification.requestPermission();
+/* ================= BROADCAST SYSTEM (NEW) ================= */
+window.sendBroadcast = async () => {
+  const title = document.getElementById("broadcastTitle").value;
+  const message = document.getElementById("broadcastMessage").value;
 
-    if (permission === "granted") {
-      const token = await getToken(messaging, {
-        vapidKey: "BMtRVhjhwqYJ9Gn5Imp5ZuqdeY_N4lX9mUiGg9uJoHl3-kH2b5vXTG6cp1zAtAxZe3eOLviglmOklScCIBWFIm4"
-      });
-
-      log("🔔 Push enabled");
-
-      // ✅ SAVE TOKEN TO FIRESTORE
-      await setDoc(doc(db, "pushTokens", auth.currentUser.uid), {
-        token: token,
-        time: Date.now()
-      });
-
-      log("📱 Token saved");
-
-    } else {
-      log("❌ Notification denied");
-    }
-  } catch (err) {
-    console.error(err);
-    log("❌ Push error");
-  }
-}
-
-/* ================= LISTEN FOR PUSH ================= */
-onMessage(messaging, (payload) => {
-  log("📩 Push received: " + payload.notification.title);
-
-  new Notification(payload.notification.title, {
-    body: payload.notification.body
-  });
-});
-
-/* ================= EMAIL FUNCTION ================= */
-function sendEmail(message) {
-  if (typeof emailjs === "undefined") {
-    log("⚠️ EmailJS not loaded");
+  if (!title || !message) {
+    log("⚠️ Fill broadcast fields");
     return;
   }
 
-  emailjs.send("service_faxlkup", "template_0f9tfzw", {
-    message: message,
-    time: new Date().toLocaleString()
-  })
-  .then(() => {
-    log("📩 Email sent");
-  })
-  .catch(err => {
+  try {
+    await addDoc(collection(db, "broadcasts"), {
+      title,
+      message,
+      createdAt: Date.now(),
+      createdBy: auth.currentUser.uid,
+      active: true
+    });
+
+    log("🔔 Broadcast sent");
+
+    document.getElementById("broadcastTitle").value = "";
+    document.getElementById("broadcastMessage").value = "";
+
+  } catch (err) {
     console.error(err);
-    log("❌ Email failed");
-  });
-}
+    log("❌ Broadcast failed");
+  }
+};
 
 /* ================= ADMIN GUARD ================= */
 onAuthStateChanged(auth, async (user) => {
@@ -98,9 +70,6 @@ onAuthStateChanged(auth, async (user) => {
     location.href = "dashboard.html";
   } else {
     log("Admin logged in");
-
-    // 🔔 ENABLE PUSH AFTER LOGIN
-    enablePush();
   }
 });
 
@@ -138,52 +107,8 @@ window.createBlog = async () => {
     blogImage.value = "";
 
     log("Blog created: " + title);
-
-    sendEmail("New blog created: " + title);
   }
 };
-
-/* ================= AD REQUESTS ================= */
-function loadAdRequests() {
-  const box = document.getElementById("upgradeList");
-
-  onSnapshot(collection(db, "adRequests"), (snap) => {
-    box.innerHTML = "";
-
-    snap.forEach(d => {
-      const ad = d.data();
-
-      box.innerHTML += `
-        <div class="item">
-          ${ad.title}<br>
-          Status: ${ad.status || "pending"}<br>
-          Created: ${ad.createdAt || "unknown"}
-        </div>
-      `;
-    });
-
-    document.getElementById("statRequests").innerText = snap.size;
-  });
-}
-
-/* ================= USERS ================= */
-function loadUsers() {
-  const box = document.getElementById("usersList");
-
-  onSnapshot(collection(db, "onlineUsers"), (snap) => {
-    box.innerHTML = "";
-
-    snap.forEach(d => {
-      const u = d.data();
-
-      box.innerHTML += `
-        <div class="item">${u.email || "user"}</div>
-      `;
-    });
-
-    document.getElementById("statUsers").innerText = snap.size;
-  });
-}
 
 /* ================= POSTS ================= */
 function loadPosts() {
@@ -220,44 +145,7 @@ window.clearAllPosts = async () => {
   log("All posts cleared");
 };
 
-/* ================= SUGGESTIONS ================= */
-function loadSuggestions() {
-  const box = document.getElementById("suggestionsBox");
-  if (!box) return;
-
-  onSnapshot(collection(db, "suggestions"), (snap) => {
-    box.innerHTML = "";
-
-    snap.forEach(d => {
-      const s = d.data();
-
-      box.innerHTML += `
-        <div class="item">
-          💡 ${s.text || "No text"}
-        </div>
-      `;
-    });
-  });
-}
-
-/* ================= ANALYTICS ================= */
-window.loadStats = async () => {
-  const blogs = await getDocs(collection(db, "blogs"));
-  const ads = await getDocs(collection(db, "ads"));
-
-  let clicks = 0;
-  ads.forEach(d => clicks += d.data().clicks || 0);
-
-  document.getElementById("statViews").innerText = blogs.size;
-  document.getElementById("statClicks").innerText = clicks;
-
-  log("Stats refreshed");
-};
-
 /* ================= INIT ================= */
-loadUsers();
 loadPosts();
-loadAdRequests();
-loadSuggestions();
 
 log("🚀 System ready");
