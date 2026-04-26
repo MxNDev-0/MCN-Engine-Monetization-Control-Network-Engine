@@ -94,33 +94,43 @@ function startSystem() {
 
 /* ================= BROADCAST ================= */
 window.sendBroadcast = async () => {
-  const title = document.getElementById("broadcastTitle");
-  const message = document.getElementById("broadcastMessage");
-
-  if (!title || !message) return;
-
-  if (!title.value || !message.value) {
-    log("⚠️ Fill broadcast fields");
-    return;
-  }
-
   try {
+    const title = document.getElementById("broadcastTitle");
+    const message = document.getElementById("broadcastMessage");
+
+    if (!title || !message) {
+      log("❌ Broadcast inputs missing");
+      return;
+    }
+
+    if (!title.value || !message.value) {
+      log("⚠️ Fill broadcast fields");
+      return;
+    }
+
+    const user = auth.currentUser;
+
+    if (!user) {
+      log("❌ Not authenticated");
+      return;
+    }
+
     await addDoc(collection(db, "broadcasts"), {
       title: title.value,
       message: message.value,
       createdAt: Date.now(),
-      createdBy: auth.currentUser.uid,
+      createdBy: user.uid,
       active: true
     });
 
-    log(`🔔 Broadcast sent: ${title.value}`);
+    log("🔔 Broadcast sent: " + title.value);
 
     title.value = "";
     message.value = "";
 
   } catch (err) {
     console.error(err);
-    log("❌ Broadcast failed");
+    log("❌ Broadcast failed: " + err.message);
   }
 };
 
