@@ -1,108 +1,59 @@
 alert("ADMIN JS LOADED");
+
 import { auth, db } from "./firebase.js";
 import { app } from "./firebase.js";
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
-  doc, setDoc, addDoc, collection,
-  onSnapshot, deleteDoc, updateDoc,
+  doc, addDoc, collection,
+  onSnapshot, deleteDoc,
   query, orderBy, getDocs, writeBatch, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* ================= MONITOR (FIXED FIRST - CRITICAL) ================= */
+/* ================= MONITOR ================= */
 function log(msg) {
   const box = document.getElementById("monitor");
-
-  if (!box) {
-    console.warn("MONITOR NOT READY:", msg);
-    return;
-  }
+  if (!box) return;
 
   const time = new Date().toLocaleTimeString();
-
   const line = document.createElement("div");
-  line.textContent = `[${time}] ${msg}`;
 
+  line.textContent = `[${time}] ${msg}`;
   box.appendChild(line);
   box.scrollTop = box.scrollHeight;
 }
 
-/* ================= EMAILJS ================= */
-const script = document.createElement("script");
-script.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js";
-document.head.appendChild(script);
-
-script.onload = () => {
-  try {
-    emailjs.init("X26w77fp9rDGN2et7");
-    console.log("EmailJS ready");
-  } catch (e) {
-    console.log("EmailJS init failed");
-  }
-};
-
-/* ================= PUSH ================= */
-import {
-  getMessaging,
-  getToken,
-  onMessage
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
-
-let messaging;
-try {
-  messaging = getMessaging(app);
-} catch (e) {
-  console.log("Messaging init skipped");
-}
-
-/* ================= SAFE MONITOR BOOT ================= */
+/* ================= INIT MONITOR ================= */
 window.addEventListener("DOMContentLoaded", () => {
   const box = document.getElementById("monitor");
 
   if (box) {
-    box.innerHTML = "🟢 Initializing MCN Engine Admin Monitor...";
+    box.innerHTML = "";
+    log("🟢 MCN Admin Monitor Online");
+    log("📡 System connected");
   }
-
-  setTimeout(() => {
-    log("🚀 System ready");
-    log("🔐 Admin panel active");
-    log("📡 Live monitor online");
-  }, 500);
 });
 
-/* ================= BROADCAST SYSTEM ================= */
+/* ================= BROADCAST ================= */
 window.sendBroadcast = async () => {
   const title = document.getElementById("broadcastTitle").value;
   const message = document.getElementById("broadcastMessage").value;
 
-  if (!title || !message) {
-    log("⚠️ Fill broadcast fields");
-    return;
-  }
+  if (!title || !message) return log("⚠️ Fill fields");
 
-  try {
-    await addDoc(collection(db, "broadcasts"), {
-      title,
-      message,
-      createdAt: Date.now(),
-      createdBy: auth.currentUser.uid,
-      active: true
-    });
+  await addDoc(collection(db, "broadcasts"), {
+    title,
+    message,
+    createdAt: Date.now(),
+    createdBy: "admin",
+    active: true
+  });
 
-    log(`🔔 Broadcast sent: ${title}`);
-    log(`📢 ${message}`);
-
-    document.getElementById("broadcastTitle").value = "";
-    document.getElementById("broadcastMessage").value = "";
-
-  } catch (err) {
-    console.error(err);
-    log("❌ Broadcast failed");
-  }
+  log("🔔 Broadcast sent");
 };
 
-/* ================= ADMIN GUARD ================= */
+/* ================= AUTH ================= */
 onAuthStateChanged(auth, async (user) => {
   if (!user) return location.href = "index.html";
 
@@ -125,23 +76,13 @@ window.createBlog = async () => {
 
   if (!title || !content) return alert("Fill fields");
 
-  const res = await fetch("https://mxm-backend.onrender.com/blog/create", {
+  await fetch("https://mxm-backend.onrender.com/blog/create", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ title, content, image })
   });
 
-  const data = await res.json();
-
-  if (data.success) {
-    alert("Blog posted ✅");
-
-    blogTitle.value = "";
-    blogContent.value = "";
-    blogImage.value = "";
-
-    log("Blog created: " + title);
-  }
+  log("Blog created: " + title);
 };
 
 /* ================= POSTS ================= */
@@ -179,18 +120,5 @@ window.clearAllPosts = async () => {
   log("All posts cleared");
 };
 
-/* ================= INIT ================= */
+/* ================= START ================= */
 loadPosts();
-
-/* ================= FINAL MONITOR BOOT (SAFE) ================= */
-setTimeout(() => {
-  const box = document.getElementById("monitor");
-
-  if (box) {
-    box.innerHTML = "";
-    log("🟢 MCN Admin Monitor Online");
-    log("📡 System connected");
-  } else {
-    console.error("❌ Monitor element still missing");
-  }
-}, 800);
