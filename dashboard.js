@@ -13,6 +13,7 @@ import {
   onSnapshot,
   serverTimestamp,
   addDoc,
+  updateDoc,
   query,
   orderBy,
   where
@@ -22,64 +23,6 @@ let user = null;
 let userData = null;
 let lastBTC = null;
 let lastETH = null;
-
-/* ================= SAFE MONITOR ================= */
-function monitorLog(msg) {
-  const box = document.getElementById("monitor");
-  if (!box) return;
-
-  const time = new Date().toLocaleTimeString();
-  const line = document.createElement("div");
-  line.textContent = `[${time}] ${msg}`;
-
-  box.appendChild(line);
-  box.scrollTop = box.scrollHeight;
-}
-
-/* ================= SAFE CHAT ================= */
-function loadChatToMonitor() {
-  try {
-    const q = query(
-      collection(db, "chats", "messages"), // ✅ FIXED
-      orderBy("timestamp", "asc")
-    );
-
-    onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach(change => {
-        if (change.type === "added") {
-          const msg = change.doc.data();
-          monitorLog(`💬 ${msg.username}: ${msg.text}`);
-        }
-      });
-    });
-
-  } catch (err) {
-    console.error("Chat error:", err);
-  }
-}
-
-/* ================= SEND MESSAGE ================= */
-window.sendMessage = async () => {
-  const input = document.getElementById("chatInput");
-  if (!input) return;
-
-  const text = input.value.trim();
-  if (!text) return;
-
-  try {
-    await addDoc(collection(db, "chats", "messages"), { // ✅ FIXED
-      text,
-      uid: user.uid,
-      username: userData?.username || "User",
-      timestamp: serverTimestamp()
-    });
-
-    input.value = "";
-
-  } catch (err) {
-    console.error("Send error:", err);
-  }
-};
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
@@ -93,8 +36,10 @@ onAuthStateChanged(auth, async (u) => {
   loadPrices();
   loadNotifications();
   loadBroadcasts();
-  loadChatToMonitor(); // ✅ SAFE
+
   startLiveSystem();
+
+  console.log("✅ Dashboard ready");
 });
 
 /* ================= USER ================= */
@@ -165,15 +110,19 @@ async function loadPrices() {
 
 function checkPriceChange(data) {
   if (lastBTC && lastETH) {
-    if (data.bitcoin.usd !== lastBTC) sendNotification("BTC price changed!");
-    if (data.ethereum.usd !== lastETH) sendNotification("ETH price changed!");
+    if (data.bitcoin.usd !== lastBTC) {
+      sendNotification("BTC price changed!");
+    }
+    if (data.ethereum.usd !== lastETH) {
+      sendNotification("ETH price changed!");
+    }
   }
 
   lastBTC = data.bitcoin.usd;
   lastETH = data.ethereum.usd;
 }
 
-/* ================= LOOP ================= */
+/* ================= LIVE LOOP ================= */
 function startLiveSystem() {
   setInterval(loadPrices, 30000);
 }
@@ -195,8 +144,12 @@ function loadNotifications() {
 
     panel.innerHTML = html;
 
-    badge.style.display = count > 0 ? "inline-block" : "none";
-    badge.innerText = count;
+    if (count > 0) {
+      badge.style.display = "inline-block";
+      badge.innerText = count;
+    } else {
+      badge.style.display = "none";
+    }
   });
 }
 
@@ -209,25 +162,62 @@ async function sendNotification(text) {
   });
 }
 
-/* ================= MENU ================= */
+/* ================= MENU (FIXED GLOBAL) ================= */
 window.toggleMenu = function () {
-  document.getElementById("menu").classList.toggle("active");
+  const menu = document.getElementById("menu");
+  if (menu) menu.classList.toggle("active");
 };
 
+/* ================= LOGOUT ================= */
 window.logout = async function () {
   await signOut(auth);
   location.href = "index.html";
 };
 
-/* ================= NAV ================= */
-window.goHome = () => location.href = "dashboard.html";
-window.goProfile = () => location.href = "profile.html";
-window.goMessages = () => location.href = "messages.html";
-window.goAdSpace = () => location.href = "ads.html";
-window.goBlog = () => location.href = "blog/index.html";
-window.goFaq = () => location.href = "faq.html";
-window.goAbout = () => location.href = "about.html";
-window.goAdmin = () => {
-  if (!userData || userData.role !== "admin") return alert("Admin only");
+/* ================= NAV (FIXED GLOBAL) ================= */
+window.goHome = function () {
+  location.href = "dashboard.html";
+};
+
+window.goProfile = function () {
+  location.href = "profile.html";
+};
+
+window.goMessages = function () {
+  location.href = "messages.html";
+};
+
+window.goAdSpace = function () {
+  location.href = "ads.html";
+};
+
+window.goBlog = function () {
+  location.href = "blog/index.html";
+};
+
+window.goFaq = function () {
+  location.href = "faq.html";
+};
+
+window.goAbout = function () {
+  location.href = "about.html";
+};
+
+window.goAdmin = function () {
+  if (!userData || userData.role !== "admin") {
+    alert("Admin only");
+    return;
+  }
   location.href = "admin.html";
 };
+
+/* ================= ADS SLIDER ================= */
+let currentAd = 0;
+
+setInterval(() => {
+  const slider = document.getElementById("adsSlider");
+  if (!slider || !slider.children.length) return;
+
+  currentAd = (currentAd + 1) % slider.children.length;
+  slider.style.transform = `translateX(-${currentAd * 100}%)`;
+}, 3000);
