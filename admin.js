@@ -215,15 +215,17 @@ function loadAdRequests() {
 /* ================= STATS ================= */
 window.loadStats = async () => {
   try {
-    const blogs = await getDocs(collection(db, "blogs"));
+    log("📊 Loading stats...");
 
-    const stat = document.getElementById("statViews");
-    if (stat) stat.innerText = blogs.size;
+    const blogsSnap = await getDocs(collection(db, "blogs"));
 
-    log("📊 Stats updated");
+    const views = document.getElementById("statViews");
+    if (views) views.innerText = blogsSnap.size;
+
+    log("📊 Stats refreshed");
 
   } catch (err) {
     console.error(err);
-    log("❌ Stats failed");
+    log("❌ Stats failed: " + err.message);
   }
 };
