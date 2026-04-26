@@ -1,129 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MCN Engine FAQ</title>
+  <title>FAQ — MCN Engine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
 
   <style>
-    body {
+    body{
       font-family: Arial;
-      background: #0b132b;
-      color: white;
-      margin: 0;
-      padding: 20px;
+      background:#0b132b;
+      color:white;
+      padding:20px;
     }
 
-    .container {
-      max-width: 700px;
-      margin: auto;
+    h1{
+      color:#5bc0be;
     }
 
-    h1 {
-      text-align: center;
-      color: #5bc0be;
+    .faq{
+      margin-bottom:20px;
     }
 
-    .faq {
-      background: #1c2541;
-      margin: 10px 0;
-      padding: 15px;
-      border-radius: 10px;
-      cursor: pointer;
+    .q{
+      font-weight:bold;
+      margin-top:10px;
     }
 
-    .answer {
-      display: none;
-      margin-top: 10px;
-      color: #d1d1d1;
-      line-height: 1.6;
-    }
-
-    .cta {
-      margin-top: 30px;
-      text-align: center;
-    }
-
-    .cta button {
-      padding: 12px 18px;
-      border: none;
-      border-radius: 25px;
-      background: #5bc0be;
-      font-weight: bold;
-      cursor: pointer;
+    .a{
+      opacity:0.8;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<h1>Frequently Asked Questions</h1>
 
-  <h1>MCN Engine FAQ</h1>
+<div class="faq">
+  <h3>Account & Login</h3>
+  <div class="q">Do I need an account?</div>
+  <div class="a">No, you can browse content without logging in.</div>
 
-  <!-- FAQ 1 -->
-  <div class="faq" onclick="toggle(this)">
-    💰 What is MCN Engine?
-    <div class="answer">
-      MCN Engine is a monetization system that combines CPA marketing, content earning, and crypto-based tools to help users understand and access online income systems.
-    </div>
-  </div>
-
-  <!-- FAQ 2 -->
-  <div class="faq" onclick="toggle(this)">
-    🚀 How do I start earning?
-    <div class="answer">
-      You can start by exploring the Earn section, completing basic actions, and upgrading to premium to unlock higher-value monetization tools and guides.
-    </div>
-  </div>
-
-  <!-- FAQ 3 -->
-  <div class="faq" onclick="toggle(this)">
-    🔒 Why are some features locked?
-    <div class="answer">
-      Some features are reserved for premium users to support system sustainability and unlock advanced earning tools, automation, and CPA systems.
-    </div>
-  </div>
-
-  <!-- FAQ 4 -->
-  <div class="faq" onclick="toggle(this)">
-    💳 Do I need to pay to use MCN Engine?
-    <div class="answer">
-      No. You can start for free. However, premium unlocks higher earning potential, better tools, and faster monetization pathways.
-    </div>
-  </div>
-
-  <!-- FAQ 5 -->
-  <div class="faq" onclick="toggle(this)">
-    📈 How much can I earn?
-    <div class="answer">
-      Earnings depend on traffic, engagement, and user activity. MCN Engine provides tools and systems, but results vary per user effort and strategy.
-    </div>
-  </div>
-
-  <!-- FAQ 6 (CONVERSION PUSH) -->
-  <div class="faq" onclick="toggle(this)">
-    🔥 Why should I upgrade to Premium?
-    <div class="answer">
-      Premium unlocks advanced monetization tools, CPA optimization features, and priority access to earning systems designed for higher conversion potential.
-    </div>
-  </div>
-
-  <div class="cta">
-    <p>Ready to start earning smarter?</p>
-    <button onclick="location.href='dashboard.html'">
-      🚀 Go to Dashboard
-    </button>
-  </div>
-
+  <div class="q">Why create an account?</div>
+  <div class="a">To access monetization, ads, and community features.</div>
 </div>
 
-<script>
-function toggle(el) {
-  const ans = el.querySelector(".answer");
-  ans.style.display = ans.style.display === "block" ? "none" : "block";
-}
-</script>
+<div class="faq">
+  <h3>Earnings & Ads</h3>
+  <div class="q">How do I earn?</div>
+  <div class="a">Through ad interactions, engagement, and platform activities.</div>
+</div>
+
+<div class="faq">
+  <h3>Security</h3>
+  <div class="q">Is my data safe?</div>
+  <div class="a">Yes. We prioritize user privacy and secure authentication systems.</div>
+</div>
+
+<div class="faq">
+  <h3>Platform Usage</h3>
+  <div class="q">Can I promote my business?</div>
+  <div class="a">Yes. MCN Engine allows users to buy ad space and promote content.</div>
+</div>
+
+<div class="faq">
+  <h3>Support</h3>
+  <div class="q">How do I contact support?</div>
+  <div class="a">Use the contact section inside your dashboard.</div>
+</div>
+
+<p><a href="index.html">← Back to Home</a></p>
 
 </body>
 </html>
