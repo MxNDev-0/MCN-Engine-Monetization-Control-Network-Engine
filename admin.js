@@ -1,5 +1,3 @@
-alert("ADMIN JS LOADED");
-
 import { auth, db } from "./firebase.js";
 import { app } from "./firebase.js";
 
