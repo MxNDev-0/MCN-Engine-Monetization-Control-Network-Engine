@@ -19,8 +19,12 @@ import {
   where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* ================= GLOBAL STATE ================= */
 let user = null;
 let userData = null;
+
+window.userData = null; // 🔥 IMPORTANT (fix menu role check)
+
 let lastBTC = null;
 let lastETH = null;
 
@@ -36,7 +40,6 @@ onAuthStateChanged(auth, async (u) => {
   loadPrices();
   loadNotifications();
   loadBroadcasts();
-
   startLiveSystem();
 
   console.log("✅ Dashboard ready");
@@ -58,7 +61,11 @@ async function ensureUser() {
 
 async function loadUser() {
   const snap = await getDoc(doc(db, "users", user.uid));
-  if (snap.exists()) userData = snap.data();
+
+  if (snap.exists()) {
+    userData = snap.data();
+    window.userData = userData; // 🔥 CRITICAL FIX
+  }
 }
 
 /* ================= BROADCAST ================= */
@@ -132,6 +139,8 @@ function loadNotifications() {
   const panel = document.getElementById("notifPanel");
   const badge = document.getElementById("notifCount");
 
+  if (!panel) return;
+
   onSnapshot(collection(db, "notifications", user.uid, "items"), (snap) => {
     let count = 0;
     let html = "";
@@ -144,11 +153,13 @@ function loadNotifications() {
 
     panel.innerHTML = html;
 
-    if (count > 0) {
-      badge.style.display = "inline-block";
-      badge.innerText = count;
-    } else {
-      badge.style.display = "none";
+    if (badge) {
+      if (count > 0) {
+        badge.style.display = "inline-block";
+        badge.innerText = count;
+      } else {
+        badge.style.display = "none";
+      }
     }
   });
 }
@@ -162,19 +173,13 @@ async function sendNotification(text) {
   });
 }
 
-/* ================= MENU (FIXED GLOBAL) ================= */
+/* ================= MENU (GLOBAL FIX) ================= */
 window.toggleMenu = function () {
   const menu = document.getElementById("menu");
   if (menu) menu.classList.toggle("active");
 };
 
-/* ================= LOGOUT ================= */
-window.logout = async function () {
-  await signOut(auth);
-  location.href = "index.html";
-};
-
-/* ================= NAV (FIXED GLOBAL) ================= */
+/* ================= NAVIGATION (GLOBAL FIX) ================= */
 window.goHome = function () {
   location.href = "dashboard.html";
 };
@@ -204,11 +209,17 @@ window.goAbout = function () {
 };
 
 window.goAdmin = function () {
-  if (!userData || userData.role !== "admin") {
+  if (!window.userData || window.userData.role !== "admin") {
     alert("Admin only");
     return;
   }
   location.href = "admin.html";
+};
+
+/* ================= LOGOUT ================= */
+window.logout = async function () {
+  await signOut(auth);
+  location.href = "index.html";
 };
 
 /* ================= ADS SLIDER ================= */
