@@ -16,9 +16,7 @@
       padding: 20px;
     }
 
-    h2 {
-      margin-bottom: 15px;
-    }
+    h2 { margin-bottom: 15px; }
 
     .grid {
       display: grid;
@@ -115,13 +113,23 @@
     <button onclick="createBlog()">Publish Blog</button>
   </div>
 
+  <!-- 🔔 BROADCAST SYSTEM (NEW) -->
+  <div class="card">
+    <h3>🔔 Broadcast System</h3>
+
+    <input id="broadcastTitle" placeholder="Broadcast Title">
+    <textarea id="broadcastMessage" placeholder="Broadcast Message"></textarea>
+
+    <button onclick="sendBroadcast()">Send Broadcast</button>
+  </div>
+
   <!-- USERS -->
   <div class="card">
     <h3>👥 Users</h3>
     <div id="usersList" class="list-box"></div>
   </div>
 
-  <!-- AD REQUESTS (PHASE 5 UPGRADED) -->
+  <!-- AD REQUESTS -->
   <div class="card">
     <h3>📢 Ad Payment Requests</h3>
     <div id="upgradeList" class="list-box"></div>
