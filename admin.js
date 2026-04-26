@@ -33,12 +33,17 @@ function log(msg) {
   const box = document.getElementById("monitor");
 
   if (!box) {
-    console.warn("Monitor not ready:", msg);
+    console.warn("MONITOR NOT READY:", msg);
     return;
   }
 
   const time = new Date().toLocaleTimeString();
-  box.innerHTML += `[${time}] ${msg}<br>`;
+
+  const line = document.createElement("div");
+  line.textContent = `[${time}] ${msg}`;
+
+  box.appendChild(line);
+
   box.scrollTop = box.scrollHeight;
 }
 
@@ -167,3 +172,15 @@ window.clearAllPosts = async () => {
 
 /* ================= INIT ================= */
 loadPosts();
+
+setTimeout(() => {
+  const box = document.getElementById("monitor");
+
+  if (box) {
+    box.innerHTML = "";
+    log("🟢 MCN Admin Monitor Online");
+    log("📡 System connected");
+  } else {
+    console.error("❌ Monitor element still missing");
+  }
+}, 800);
