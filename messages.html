@@ -1,100 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MCN Engine Messages</title>
+  <title>Messages — MCN Engine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
       font-family: Arial;
       background: #0b132b;
       color: white;
-      height: 100vh;
+    }
+
+    .navbar {
       display: flex;
-      flex-direction: column;
-    }
-
-    /* MOBILE FIRST */
-    .app {
-      display: flex;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: 100%;
-      max-width: 100%;
-      background: #1c2541;
-      overflow-y: auto;
-    }
-
-    .chat-item {
-      padding: 12px;
-      border-bottom: 1px solid #333;
-      cursor: pointer;
-    }
-
-    .chat-item:hover {
-      background: #111a33;
-    }
-
-    .chat-name {
-      font-weight: bold;
-    }
-
-    .chat-last {
-      font-size: 12px;
-      opacity: 0.7;
-    }
-
-    /* CHAT AREA */
-    .chat-area {
-      position: fixed;
-      top: 0;
-      left: 100%;
-      width: 100%;
-      height: 100%;
-      background: #0b132b;
-      display: flex;
-      flex-direction: column;
-      transition: 0.3s;
-    }
-
-    .chat-area.active {
-      left: 0;
-    }
-
-    .header {
+      justify-content: space-between;
       padding: 10px;
       background: #1c2541;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
     }
 
-    .back-btn {
-      cursor: pointer;
-      margin-right: 10px;
-    }
-
-    .messages {
-      flex: 1;
+    .chat-box {
+      height: 60vh;
       overflow-y: auto;
       padding: 10px;
     }
 
     .msg {
-      max-width: 75%;
+      margin-bottom: 10px;
       padding: 8px;
-      margin: 5px 0;
-      border-radius: 10px;
-      font-size: 14px;
+      border-radius: 8px;
+      max-width: 80%;
     }
 
     .me {
@@ -103,98 +38,58 @@
       margin-left: auto;
     }
 
-    .other {
+    .them {
       background: #1c2541;
     }
 
     .input-box {
       display: flex;
-      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
       background: #1c2541;
-      gap: 6px;
+      padding: 10px;
     }
 
     input {
       flex: 1;
       padding: 10px;
+      border-radius: 8px;
       border: none;
-      border-radius: 6px;
+      background: #0b132b;
+      color: white;
     }
 
     button {
-      padding: 10px 14px;
-      background: #5bc0be;
+      margin-left: 5px;
+      padding: 10px;
+      border-radius: 8px;
       border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .typing {
-      font-size: 12px;
-      opacity: 0.7;
-    }
-
-    /* DESKTOP MODE */
-    @media(min-width: 768px){
-      .sidebar {
-        width: 30%;
-      }
-
-      .chat-area {
-        position: relative;
-        left: 0;
-        width: 70%;
-      }
-
-      .chat-area.active {
-        left: 0;
-      }
+      background: #5bc0be;
     }
   </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="navbar">
+  <button onclick="goBack()">← Back</button>
+  <h3>Messages</h3>
+</div>
 
-  <!-- CHAT LIST -->
-  <div class="sidebar" id="chatList"></div>
+<div id="chatBox" class="chat-box"></div>
 
-  <!-- CHAT WINDOW -->
-  <div class="chat-area" id="chatArea">
-
-    <div class="header">
-      <span class="back-btn" onclick="goBack()">←</span>
-      <div id="activeUser">Select chat</div>
-      <div class="typing" id="typing"></div>
-    </div>
-
-    <div class="messages" id="messages"></div>
-
-    <div class="input-box">
-      <input id="msgInput" placeholder="Type message..." disabled>
-      <button id="sendBtn" onclick="sendMsg()" disabled>Send</button>
-    </div>
-
-  </div>
-
+<div class="input-box">
+  <input id="msgInput" placeholder="Type message...">
+  <button onclick="sendMsg()">Send</button>
 </div>
 
 <script type="module" src="messages.js"></script>
 
 <script>
 function goBack(){
-  document.getElementById("chatArea").classList.remove("active");
+  location.href = "dashboard.html";
 }
-
-/* HOOK INTO YOUR EXISTING FUNCTION */
-const originalOpenChat = window.openChat;
-
-window.openChat = function(uid){
-  if(originalOpenChat) originalOpenChat(uid);
-
-  document.getElementById("chatArea").classList.add("active");
-};
 </script>
 
 </body>
