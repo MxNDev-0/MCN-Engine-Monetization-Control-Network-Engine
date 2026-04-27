@@ -50,23 +50,18 @@ onAuthStateChanged(auth, async (u) => {
   loadFriends();
   loadNotifications();
   monitorAdRequests();
-
-  loadChat();          // ✅ FIXED
-  startCryptoMonitor(); // ✅ FIXED
+  loadChat();
+  startCryptoMonitor();
 });
 
 /* ================= CHAT SYSTEM (FIXED) ================= */
 function loadChat() {
-  const q = query(collection(db, "chats")); // ❌ removed orderBy
-
-  onSnapshot(q, (snap) => {
+  onSnapshot(collection(db, "chats"), (snap) => {
     snap.docChanges().forEach(change => {
       if (change.type === "added") {
         const m = change.doc.data();
 
-        if (!m.text) return;
-
-        log(`💬 <b>${m.username || "User"}</b>: ${m.text}`, "#5bc0be");
+        log(`💬 <b>${m.username}</b>: ${m.text}`, "#5bc0be");
       }
     });
   });
@@ -80,13 +75,13 @@ window.sendChat = async function () {
     text: input.value,
     uid: user.uid,
     username: user.email.split("@")[0],
-    createdAt: Date.now() // ✅ FIXED (no more null timestamp issue)
+    createdAt: serverTimestamp()
   });
 
   input.value = "";
 };
 
-/* ================= CRYPTO MONITOR (FIXED) ================= */
+/* ================= CRYPTO MONITOR ================= */
 let lastBTC = null;
 let lastETH = null;
 
@@ -95,15 +90,9 @@ async function fetchCrypto() {
     const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,ngn");
     const data = await res.json();
 
-    if (!data.bitcoin || !data.ethereum) {
-      log("Crypto data unavailable", "#ff4d4d");
-      return;
-    }
-
     const btc = data.bitcoin.usd;
     const eth = data.ethereum.usd;
 
-    // BTC
     if (lastBTC !== null) {
       const arrow = btc > lastBTC ? "🔺" : btc < lastBTC ? "🔻" : "⏺";
       const color = btc > lastBTC ? "#00ff88" : btc < lastBTC ? "#ff4d4d" : "#aaa";
@@ -113,7 +102,6 @@ async function fetchCrypto() {
       log(`BTC → $${btc.toLocaleString()} | ₦${data.bitcoin.ngn.toLocaleString()}`, "#ccc");
     }
 
-    // ETH
     if (lastETH !== null) {
       const arrow = eth > lastETH ? "🔺" : eth < lastETH ? "🔻" : "⏺";
       const color = eth > lastETH ? "#00ff88" : eth < lastETH ? "#ff4d4d" : "#aaa";
@@ -126,13 +114,12 @@ async function fetchCrypto() {
     lastBTC = btc;
     lastETH = eth;
 
-  } catch (e) {
+  } catch {
     log("Crypto fetch failed", "#ff4d4d");
   }
 }
 
 function startCryptoMonitor() {
-  log("Crypto monitor started");
   fetchCrypto();
   setInterval(fetchCrypto, 30000);
 }
@@ -228,7 +215,7 @@ window.sendFriendRequest = async function (toUid, toName) {
     to: toUid,
     toName,
     status: "pending",
-    createdAt: Date.now()
+    createdAt: serverTimestamp()
   });
 
   log("Friend request sent");
