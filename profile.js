@@ -10,9 +10,11 @@ import {
   addDoc,
   onSnapshot,
   query,
+  orderBy,
   updateDoc,
   doc,
   getDoc,
+  getDocs, // ✅ ADDED (SAFE)
   setDoc,
   where,
   serverTimestamp
@@ -20,13 +22,15 @@ import {
 
 let user = null;
 
-/* ================= SAFE LOG ================= */
+/* ================= MONITOR LOG ================= */
 function log(msg, color = "#fff") {
   const box = document.getElementById("monitor");
   if (!box) return;
 
+  const time = new Date().toLocaleTimeString();
+
   const line = document.createElement("div");
-  line.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  line.innerHTML = `[${time}] ${msg}`;
   line.style.color = color;
   line.style.fontSize = "13px";
 
@@ -36,74 +40,57 @@ function log(msg, color = "#fff") {
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
-  if (!u) return location.href = "index.html";
+  if (!u) location.href = "index.html";
 
   user = u;
 
   log("System booting...");
   log("User authenticated");
 
-  try {
-    await loadUsername();
-    loadFriendRequests();
-    loadFriends();
-    loadNotifications();
-    monitorAdRequests();
-
-    // FORCE START
-    loadChat();
-    startCryptoMonitor();
-
-    log("All systems running", "#00ff88");
-
-  } catch (err) {
-    console.error(err);
-    log("ERROR: " + err.message, "#ff4d4d");
-  }
+  loadUsername();
+  loadFriendRequests();
+  loadFriends();
+  loadNotifications();
+  monitorAdRequests();
+  loadChat();
+  startCryptoMonitor();
 });
 
-/* ================= CHAT ================= */
+/* ================= CHAT SYSTEM ================= */
 function loadChat() {
-  try {
-    onSnapshot(collection(db, "chats"),
-      (snap) => {
-        log("Chat listener active", "#ccc");
+  const q = query(collection(db, "chats"), orderBy("createdAt"));
 
-        snap.docChanges().forEach(change => {
-          if (change.type === "added") {
-            const m = change.doc.data();
-            log(`💬 <b>${m.username}</b>: ${m.text}`, "#5bc0be");
-          }
-        });
-      },
-      (error) => {
-        console.error(error);
-        log("Chat error: " + error.message, "#ff4d4d");
+  onSnapshot(q, (snap) => {
+    snap.docChanges().forEach(change => {
+      if (change.type === "added") {
+        const m = change.doc.data();
+
+        log(`💬 <b>${m.username}</b>: ${m.text}`, "#5bc0be");
       }
-    );
-  } catch (err) {
-    log("Chat crash", "#ff4d4d");
-  }
+    });
+  });
 }
 
 window.sendChat = async function () {
   const input = document.getElementById("chatInput");
   if (!input || !input.value.trim()) return;
 
+  const text = input.value;
+
+  // 🔥 Instant UI feedback (so it never "disappears")
+  log(`💬 <b>You</b>: ${text}`, "#5bc0be");
+
+  input.value = "";
+
   try {
     await addDoc(collection(db, "chats"), {
-      text: input.value,
+      text: text,
       uid: user.uid,
       username: user.email.split("@")[0],
       createdAt: serverTimestamp()
     });
-
-    log("Message sent", "#00ff88");
-
-    input.value = "";
-  } catch (err) {
-    console.error(err);
-    log("Send failed: " + err.message, "#ff4d4d");
+  } catch (e) {
+    log("Message failed to send", "#ff4d4d");
   }
 };
 
@@ -113,28 +100,37 @@ let lastETH = null;
 
 async function fetchCrypto() {
   try {
-    log("Fetching crypto...", "#ccc");
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,ngn"
+    );
 
-    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,ngn");
     const data = await res.json();
 
     const btc = data.bitcoin.usd;
     const eth = data.ethereum.usd;
 
+    // BTC
     if (lastBTC !== null) {
       const arrow = btc > lastBTC ? "🔺" : btc < lastBTC ? "🔻" : "⏺";
-      const color = btc > lastBTC ? "#00ff88" : "#ff4d4d";
+      const color = btc > lastBTC ? "#00ff88" : btc < lastBTC ? "#ff4d4d" : "#aaa";
 
-      log(`BTC ${arrow} $${btc.toLocaleString()} (from $${lastBTC.toLocaleString()})`, color);
+      log(
+        `BTC ${arrow} $${btc.toLocaleString()} (from $${lastBTC.toLocaleString()})`,
+        color
+      );
     } else {
       log(`BTC → $${btc.toLocaleString()} | ₦${data.bitcoin.ngn.toLocaleString()}`, "#ccc");
     }
 
+    // ETH
     if (lastETH !== null) {
       const arrow = eth > lastETH ? "🔺" : eth < lastETH ? "🔻" : "⏺";
-      const color = eth > lastETH ? "#00ff88" : "#ff4d4d";
+      const color = eth > lastETH ? "#00ff88" : eth < lastETH ? "#ff4d4d" : "#aaa";
 
-      log(`ETH ${arrow} $${eth.toLocaleString()} (from $${lastETH.toLocaleString()})`, color);
+      log(
+        `ETH ${arrow} $${eth.toLocaleString()} (from $${lastETH.toLocaleString()})`,
+        color
+      );
     } else {
       log(`ETH → $${eth.toLocaleString()} | ₦${data.ethereum.ngn.toLocaleString()}`, "#ccc");
     }
@@ -142,46 +138,63 @@ async function fetchCrypto() {
     lastBTC = btc;
     lastETH = eth;
 
-  } catch (err) {
-    console.error(err);
-    log("Crypto error: " + err.message, "#ff4d4d");
+  } catch (e) {
+    log("Crypto fetch failed", "#ff4d4d");
   }
 }
 
 function startCryptoMonitor() {
-  log("Crypto monitor started", "#ccc");
   fetchCrypto();
   setInterval(fetchCrypto, 30000);
 }
 
-/* ================= USERNAME ================= */
+/* ================= USER ================= */
 async function loadUsername() {
   const snap = await getDoc(doc(db, "users", user.uid));
   const el = document.getElementById("usernameDisplay");
 
-  if (snap.exists()) {
-    el.innerText = snap.data().username || "Not set";
+  if (snap.exists() && snap.data().username) {
+    el.innerText = snap.data().username;
+  } else {
+    el.innerText = "Not set";
   }
 }
 
-/* ================= RESET ================= */
+/* ================= UPDATE USERNAME ================= */
+window.updateUsername = async () => {
+  const input = document.getElementById("usernameInput");
+  const username = input.value.trim();
+
+  if (!username) return alert("Enter username");
+
+  await setDoc(doc(db, "users", user.uid), { username }, { merge: true });
+
+  document.getElementById("usernameDisplay").innerText = username;
+  input.value = "";
+
+  log("Username updated");
+};
+
+/* ================= RESET PASSWORD ================= */
 window.resetPassword = async () => {
   await sendPasswordResetEmail(auth, user.email);
-  log("Password reset sent");
+  alert("Reset email sent");
+
+  log("Password reset email sent");
 };
 
 /* ================= NOTIFICATIONS ================= */
 function loadNotifications() {
-  onSnapshot(collection(db, "notifications", user.uid, "items"),
-    (snap) => {
-      snap.docChanges().forEach(change => {
-        if (change.type === "added") {
-          log(change.doc.data().text, "#ccc");
-        }
-      });
-    },
-    (err) => log("Notif error: " + err.message, "#ff4d4d")
-  );
+  const ref = collection(db, "notifications", user.uid, "items");
+
+  onSnapshot(query(ref, orderBy("createdAt", "desc")), (snap) => {
+    snap.docChanges().forEach(change => {
+      if (change.type === "added") {
+        const data = change.doc.data();
+        log(data.text || "New notification", "#ccc");
+      }
+    });
+  });
 }
 
 /* ================= ADS ================= */
@@ -191,20 +204,43 @@ function monitorAdRequests() {
     where("userId", "==", user.uid)
   );
 
-  onSnapshot(q,
-    (snap) => {
-      snap.forEach(d => {
-        const ad = d.data();
+  onSnapshot(q, (snap) => {
+    let active = "No active ads";
 
-        if (ad.status === "approved") log("Ad approved", "#00ff88");
-        if (ad.status === "pending") log("Ad pending", "#ffaa00");
-        if (ad.status === "rejected") log("Ad rejected", "#ff4d4d");
-      });
-    },
-    (err) => log("Ad error: " + err.message, "#ff4d4d")
-  );
+    snap.forEach(d => {
+      const ad = d.data();
+
+      if (ad.status === "approved") {
+        active = "Active";
+        log("✅ Ad approved", "#00ff88");
+      }
+
+      if (ad.status === "rejected") {
+        log("❌ Ad rejected", "#ff4d4d");
+      }
+
+      if (ad.status === "pending") {
+        log("⏳ Ad pending", "#ffaa00");
+      }
+    });
+
+    const el = document.getElementById("adStatus");
+    if (el) el.innerText = active;
+  });
 }
 
 /* ================= FRIENDS ================= */
-function loadFriendRequests() {}
-function loadFriends() {}
+window.sendFriendRequest = async function (toUid, toName) {
+  if (!user || user.uid === toUid) return;
+
+  await addDoc(collection(db, "friendRequests"), {
+    from: user.uid,
+    fromName: user.email.split("@")[0],
+    to: toUid,
+    toName,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  log("Friend request sent");
+};
