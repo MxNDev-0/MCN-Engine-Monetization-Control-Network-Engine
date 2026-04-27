@@ -21,15 +21,17 @@ import {
 
 let user = null;
 
-/* ================= MONITOR LOG (NO CLEAR) ================= */
-function log(msg) {
+/* ================= MONITOR LOG (FIXED) ================= */
+function log(msg, color = "#fff") {
   const box = document.getElementById("monitor");
   if (!box) return;
 
   const time = new Date().toLocaleTimeString();
 
   const line = document.createElement("div");
-  line.textContent = `[${time}] ${msg}`;
+  line.innerHTML = `[${time}] ${msg}`;
+  line.style.color = color;
+  line.style.fontSize = "13px";
 
   box.appendChild(line);
   box.scrollTop = box.scrollHeight;
@@ -41,7 +43,8 @@ onAuthStateChanged(auth, async (u) => {
 
   user = u;
 
-  log("User logged in");
+  log("System booting...");
+  log("User authenticated");
 
   loadUsername();
   loadFriendRequests();
@@ -49,13 +52,25 @@ onAuthStateChanged(auth, async (u) => {
   loadNotifications();
   monitorAdRequests();
   loadChat();
-  startPriceMonitor();
+  startCryptoMonitor();
 });
 
-/* ================= CHAT FIX (NO DUPLICATE) ================= */
-window.sendChat = async () => {
+/* ================= CHAT SYSTEM (MERGED INTO MONITOR) ================= */
+function loadChat() {
+  onSnapshot(query(collection(db, "chats"), orderBy("createdAt")), (snap) => {
+    snap.docChanges().forEach(change => {
+      if (change.type === "added") {
+        const m = change.doc.data();
+
+        log(`💬 <b>${m.username}</b>: ${m.text}`, "#5bc0be");
+      }
+    });
+  });
+}
+
+window.sendChat = async function () {
   const input = document.getElementById("chatInput");
-  if (!input.value.trim()) return;
+  if (!input || !input.value.trim()) return;
 
   await addDoc(collection(db, "chats"), {
     text: input.value,
@@ -67,88 +82,150 @@ window.sendChat = async () => {
   input.value = "";
 };
 
-function loadChat() {
-  onSnapshot(collection(db, "chats"), (snap) => {
-    snap.docChanges().forEach(change => {
-      if (change.type === "added") {
-        const m = change.doc.data();
-        log(`💬 ${m.username}: ${m.text}`);
-      }
-    });
-  });
-}
-
-/* ================= PRICE MONITOR (UP/DOWN) ================= */
+/* ================= CRYPTO LIVE MONITOR ================= */
 let lastBTC = null;
 let lastETH = null;
 
-async function startPriceMonitor() {
-  setInterval(async () => {
-    try {
-      const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd");
-      const data = await res.json();
+async function fetchCrypto() {
+  try {
+    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,ngn");
+    const data = await res.json();
 
-      const btc = data.bitcoin.usd;
-      const eth = data.ethereum.usd;
+    const btc = data.bitcoin.usd;
+    const eth = data.ethereum.usd;
 
-      if (lastBTC !== null) {
-        const arrow = btc > lastBTC ? "🔼" : "🔽";
-        log(`BTC ${arrow} $${lastBTC} → $${btc}`);
-      }
+    // BTC
+    if (lastBTC !== null) {
+      const arrow = btc > lastBTC ? "🔺" : btc < lastBTC ? "🔻" : "⏺";
+      const color = btc > lastBTC ? "#00ff88" : btc < lastBTC ? "#ff4d4d" : "#aaa";
 
-      if (lastETH !== null) {
-        const arrow = eth > lastETH ? "🔼" : "🔽";
-        log(`ETH ${arrow} $${lastETH} → $${eth}`);
-      }
-
-      lastBTC = btc;
-      lastETH = eth;
-
-    } catch {
-      log("Price fetch failed");
+      log(
+        `BTC ${arrow} $${btc.toLocaleString()} (from $${lastBTC.toLocaleString()})`,
+        color
+      );
+    } else {
+      log(`BTC → $${btc.toLocaleString()} | ₦${data.bitcoin.ngn.toLocaleString()}`, "#ccc");
     }
-  }, 15000);
+
+    // ETH
+    if (lastETH !== null) {
+      const arrow = eth > lastETH ? "🔺" : eth < lastETH ? "🔻" : "⏺";
+      const color = eth > lastETH ? "#00ff88" : eth < lastETH ? "#ff4d4d" : "#aaa";
+
+      log(
+        `ETH ${arrow} $${eth.toLocaleString()} (from $${lastETH.toLocaleString()})`,
+        color
+      );
+    } else {
+      log(`ETH → $${eth.toLocaleString()} | ₦${data.ethereum.ngn.toLocaleString()}`, "#ccc");
+    }
+
+    lastBTC = btc;
+    lastETH = eth;
+
+  } catch (e) {
+    log("Crypto fetch failed", "#ff4d4d");
+  }
 }
 
-/* ================= REST (UNCHANGED CORE) ================= */
+function startCryptoMonitor() {
+  fetchCrypto();
+  setInterval(fetchCrypto, 30000);
+}
+
+/* ================= USERNAME ================= */
 async function loadUsername() {
   const snap = await getDoc(doc(db, "users", user.uid));
-  document.getElementById("usernameDisplay").innerText =
-    snap.exists() ? snap.data().username : "Not set";
+  const el = document.getElementById("usernameDisplay");
+
+  if (snap.exists() && snap.data().username) {
+    el.innerText = snap.data().username;
+  } else {
+    el.innerText = "Not set";
+  }
 }
 
+/* ================= UPDATE USERNAME ================= */
 window.updateUsername = async () => {
   const input = document.getElementById("usernameInput");
-  if (!input.value) return;
+  const username = input.value.trim();
 
-  await setDoc(doc(db, "users", user.uid), { username: input.value }, { merge: true });
+  if (!username) return alert("Enter username");
+
+  await setDoc(doc(db, "users", user.uid), { username }, { merge: true });
+
+  document.getElementById("usernameDisplay").innerText = username;
+  input.value = "";
+
   log("Username updated");
 };
 
+/* ================= RESET PASSWORD ================= */
 window.resetPassword = async () => {
   await sendPasswordResetEmail(auth, user.email);
-  log("Password reset sent");
+  alert("Reset email sent");
+
+  log("Password reset email sent");
 };
 
+/* ================= NOTIFICATIONS ================= */
 function loadNotifications() {
-  onSnapshot(collection(db, "notifications", user.uid, "items"), (snap) => {
+  const ref = collection(db, "notifications", user.uid, "items");
+
+  onSnapshot(query(ref, orderBy("createdAt", "desc")), (snap) => {
     snap.docChanges().forEach(change => {
       if (change.type === "added") {
-        log(change.doc.data().text);
+        const data = change.doc.data();
+        log(data.text || "New notification", "#ccc");
       }
     });
   });
 }
 
+/* ================= AD MONITOR ================= */
 function monitorAdRequests() {
-  onSnapshot(query(collection(db, "adRequests"), where("userId", "==", user.uid)), (snap) => {
+  const q = query(
+    collection(db, "adRequests"),
+    where("userId", "==", user.uid)
+  );
+
+  onSnapshot(q, (snap) => {
+    let active = "No active ads";
+
     snap.forEach(d => {
       const ad = d.data();
-      if (ad.status === "approved") log("Ad approved");
-      if (ad.status === "rejected") log("Ad rejected");
+
+      if (ad.status === "approved") {
+        active = "Active";
+        log("✅ Ad approved", "#00ff88");
+      }
+
+      if (ad.status === "rejected") {
+        log("❌ Ad rejected", "#ff4d4d");
+      }
+
+      if (ad.status === "pending") {
+        log("⏳ Ad pending", "#ffaa00");
+      }
     });
+
+    const el = document.getElementById("adStatus");
+    if (el) el.innerText = active;
   });
 }
 
-function loadFriendRequests() {}
-function loadFriends() {}
+/* ================= FRIEND SYSTEM ================= */
+window.sendFriendRequest = async function (toUid, toName) {
+  if (!user || user.uid === toUid) return;
+
+  await addDoc(collection(db, "friendRequests"), {
+    from: user.uid,
+    fromName: user.email.split("@")[0],
+    to: toUid,
+    toName,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  log("Friend request sent");
+};
