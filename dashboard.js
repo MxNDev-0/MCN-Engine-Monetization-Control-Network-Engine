@@ -81,8 +81,8 @@ function loadBroadcasts() {
   onSnapshot(q, (snapshot) => {
     box.innerHTML = "";
 
-    snapshot.forEach(doc => {
-      const d = doc.data();
+    snapshot.forEach(docSnap => {
+      const d = docSnap.data();
 
       box.innerHTML += `
         <div class="item">
@@ -107,7 +107,6 @@ async function loadPrices() {
       BTC: $${data.bitcoin.usd}<br>
       ETH: $${data.ethereum.usd}
     `;
-
   } catch {
     box.innerText = "Failed to load prices";
   }
@@ -133,16 +132,18 @@ function loadNotifications() {
   });
 }
 
-/* ================= CHAT SYSTEM ================= */
+/* ================= CHAT SYSTEM (NEW UNIFIED EVENTS) ================= */
 window.sendChat = async () => {
   const input = document.getElementById("chatInput");
   if (!input || !input.value.trim()) return;
 
   try {
-    await addDoc(collection(db, "chats"), {
+    await addDoc(collection(db, "events"), {
+      type: "chat",
       text: input.value,
       uid: user.uid,
       username: userData?.username || user.email,
+      role: userData?.role || "user",
       createdAt: serverTimestamp()
     });
 
@@ -156,22 +157,27 @@ function loadChat() {
   const box = document.getElementById("chatBox");
   if (!box) return;
 
-  onSnapshot(collection(db, "chats"), (snap) => {
-    box.innerHTML = "";
+  onSnapshot(
+    query(collection(db, "events"), orderBy("createdAt", "asc")),
+    (snap) => {
+      box.innerHTML = "";
 
-    snap.forEach(doc => {
-      const m = doc.data();
+      snap.forEach(docSnap => {
+        const m = docSnap.data();
 
-      box.innerHTML += `
-        <div class="item">
-          <b>${m.username}</b><br>
-          ${m.text}
-        </div>
-      `;
-    });
+        if (m.type !== "chat") return;
 
-    box.scrollTop = box.scrollHeight;
-  });
+        box.innerHTML += `
+          <div class="item">
+            <b>${m.username}</b><br>
+            ${m.text}
+          </div>
+        `;
+      });
+
+      box.scrollTop = box.scrollHeight;
+    }
+  );
 }
 
 /* ================= MENU FIX ================= */
@@ -184,7 +190,7 @@ window.logout = async function () {
   location.href = "index.html";
 };
 
-/* ================= NAVIGATION FIX ================= */
+/* ================= NAVIGATION ================= */
 window.goHome = () => location.href = "dashboard.html";
 window.goProfile = () => location.href = "profile.html";
 window.goMessages = () => location.href = "messages.html";
@@ -192,6 +198,7 @@ window.goAdSpace = () => location.href = "ads.html";
 window.goBlog = () => location.href = "blog/index.html";
 window.goFaq = () => location.href = "faq.html";
 window.goAbout = () => location.href = "about.html";
+
 window.goAdmin = () => {
   if (!window.userData || window.userData.role !== "admin") {
     alert("Admin only");
