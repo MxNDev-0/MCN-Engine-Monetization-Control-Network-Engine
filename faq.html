@@ -1,74 +1,295 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>FAQ — MCN Engine</title>
+  <title>MCN Engine V15 — Monetization Control Network</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body{
+    body {
+      background: #0b132b;
+      color: #fff;
       font-family: Arial;
-      background:#0b132b;
-      color:white;
-      padding:20px;
+      margin: 0;
     }
 
-    h1{
-      color:#5bc0be;
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: #1c2541;
     }
 
-    .faq{
-      margin-bottom:20px;
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .q{
-      font-weight:bold;
-      margin-top:10px;
+    .menu-btn {
+      font-size: 22px;
+      cursor: pointer;
     }
 
-    .a{
-      opacity:0.8;
+    .logo {
+      font-size: 18px;
+      font-weight: bold;
+      color: #5bc0be;
+    }
+
+    .profile-btn {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: #5bc0be;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* MENU */
+    #menu {
+      display: none;
+      background: #1c2541;
+      padding: 10px;
+    }
+
+    #menu div {
+      padding: 10px;
+      border-bottom: 1px solid #333;
+      cursor: pointer;
+    }
+
+    /* BLOG */
+    .featured {
+      padding: 15px;
+    }
+
+    .feed {
+      padding: 15px;
+    }
+
+    .post {
+      background: #1c2541;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .post:hover {
+      transform: scale(1.02);
+    }
+
+    /* LOGIN */
+    .login-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .center-box {
+      background: #1c2541;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 350px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 8px;
+      border: none;
+      background: #0b132b;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 8px;
+      background: #5bc0be;
+      color: #000;
+      border: none;
+      font-weight: bold;
+    }
+
+    .secondary-btn {
+      background: transparent;
+      border: 1px solid #5bc0be;
+      color: #5bc0be;
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #aaa;
+      margin-top: 40px;
+    }
+
+    .footer a {
+      color: #5bc0be;
+      text-decoration: none;
     }
   </style>
 </head>
 
 <body>
 
-<h1>Frequently Asked Questions</h1>
+<!-- HEADER -->
+<div class="header">
+  <div class="left">
+    <div class="menu-btn" onclick="toggleMenu()">☰</div>
+    <div class="logo">MCN Engine</div>
+  </div>
 
-<div class="faq">
-  <h3>Account & Login</h3>
-  <div class="q">Do I need an account?</div>
-  <div class="a">No, you can browse content without logging in.</div>
-
-  <div class="q">Why create an account?</div>
-  <div class="a">To access monetization, ads, and community features.</div>
+  <div class="profile-btn" onclick="openLogin()">👤</div>
 </div>
 
-<div class="faq">
-  <h3>Earnings & Ads</h3>
-  <div class="q">How do I earn?</div>
-  <div class="a">Through ad interactions, engagement, and platform activities.</div>
+<!-- MENU -->
+<div id="menu">
+  <div onclick="goHome()">Home</div>
+  <div onclick="goTrending()">Trending</div>
+  <div onclick="goDashboard()">Dashboard</div>
+  <div onclick="goSettings()">Settings</div>
 </div>
 
-<div class="faq">
-  <h3>Security</h3>
-  <div class="q">Is my data safe?</div>
-  <div class="a">Yes. We prioritize user privacy and secure authentication systems.</div>
+<!-- FEATURED -->
+<div class="featured" id="featuredPost"></div>
+
+<!-- FEED -->
+<div class="feed" id="feed">Loading posts...</div>
+
+<!-- LOGIN -->
+<div class="login-modal" id="loginModal">
+  <div class="center-box">
+    <h3>Login / Register</h3>
+
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="signup()">Create Account</button>
+    <button class="secondary-btn" onclick="login()">Login</button>
+
+    <button onclick="closeLogin()">Close</button>
+  </div>
 </div>
 
-<div class="faq">
-  <h3>Platform Usage</h3>
-  <div class="q">Can I promote my business?</div>
-  <div class="a">Yes. MCN Engine allows users to buy ad space and promote content.</div>
+<!-- FOOTER -->
+<div class="footer">
+  <a href="about.html">About</a> |
+  <a href="faq.html">FAQ</a> |
+  <a href="privacy.html">Privacy</a> |
+  <a href="terms.html">Terms</a> |
+  <a href="copyright.html">Copyright</a> |
+  <a href="anti-spam.html">Anti-Spam</a> |
+  <a href="ads-policy.html">Ads Policy</a>
+  <br><br>
+  © MCN Engine • Build. Earn. Scale.
 </div>
+<script type="module">
 
-<div class="faq">
-  <h3>Support</h3>
-  <div class="q">How do I contact support?</div>
-  <div class="a">Use the contact section inside your dashboard.</div>
-</div>
+/* ================= MENU TOGGLE ================= */
+window.toggleMenu = function () {
+  const menu = document.getElementById("menu");
+  menu.style.display = (menu.style.display === "block") ? "none" : "block";
+};
 
-<p><a href="index.html">← Back to Home</a></p>
+/* ================= LOGIN MODAL ================= */
+window.openLogin = function () {
+  document.getElementById("loginModal").style.display = "flex";
+};
+
+window.closeLogin = function () {
+  document.getElementById("loginModal").style.display = "none";
+};
+
+/* ================= BLOG ROUTE FIX ================= */
+window.openPost = function (id) {
+  window.location.href = "./blog/post.html?id=" + id;
+};
+
+/* ================= CATEGORY COLORS ================= */
+function getCategoryColor(cat) {
+  switch (cat) {
+    case "Crypto": return "#5bc0be";
+    case "News": return "#ffcc00";
+    case "Guide": return "#00ff88";
+    case "Update": return "#ff6b6b";
+    default: return "#aaa";
+  }
+}
+
+/* ================= LOAD BLOG ================= */
+async function loadFeed() {
+  const feed = document.getElementById("feed");
+  const featuredBox = document.getElementById("featuredPost");
+
+  const res = await fetch("https://mxm-backend.onrender.com/blog/list");
+  const posts = await res.json();
+
+  feed.innerHTML = "";
+
+  const featured = posts.find(p => p.featured) || posts[0];
+
+  featuredBox.innerHTML = `
+    <div class="post" onclick="openPost('${featured.id}')" style="border:2px solid #5bc0be">
+      <h3>🔥 Featured</h3>
+      <h4>${featured.title}</h4>
+    </div>
+  `;
+
+  posts.forEach(p => {
+    feed.innerHTML += `
+      <div class="post" onclick="openPost('${p.id}')">
+        <small style="color:${getCategoryColor(p.category)}">
+          ${p.category || "General"}
+        </small>
+        <h4>${p.title}</h4>
+        <p>${(p.content || "").slice(0,100)}...</p>
+      </div>
+    `;
+  });
+}
+
+loadFeed();
+
+/* ================= MENU FUNCTIONS (FULL FIX INTEGRATED) ================= */
+window.goHome = function () {
+  location.href = "index.html";
+};
+
+window.goTrending = function () {
+  document.getElementById("featuredPost")?.scrollIntoView({ behavior: "smooth" });
+};
+
+window.goDashboard = function () {
+  location.href = "dashboard.html";
+};
+
+window.goSettings = function () {
+  alert("Settings page coming soon");
+};
+
+</script>
+
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
