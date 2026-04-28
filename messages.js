@@ -23,7 +23,7 @@ onAuthStateChanged(auth, (u) => {
   user = u;
 
   // 🔥 chat with admin
-  const adminId = "ai-saas-business-ecfab.firebaseapp.com"; // ⚠️ REPLACE THIS
+  const adminId = "pmXooqSVxdO53xiCugrqDijR6iI3"; // ⚠️ REPLACE THIS
 
   chatId = [user.uid, adminId].sort().join("_");
 
