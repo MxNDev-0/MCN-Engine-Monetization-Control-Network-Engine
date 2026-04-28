@@ -18,12 +18,15 @@ let chatId = null;
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, (u) => {
-  if (!u) return location.href = "index.html";
+  if (!u) {
+    location.href = "index.html";
+    return;
+  }
 
   user = u;
 
-  // 🔥 chat with admin
-  const adminId = "pmXooqSVxdO53xiCugrqDijR6iI3"; // ⚠️ REPLACE THIS
+  // 🔥 ADMIN UID (already correct)
+  const adminId = "pmXooqSVxdO53xiCugrqDijR6iI3";
 
   chatId = [user.uid, adminId].sort().join("_");
 
@@ -58,14 +61,40 @@ function loadMessages() {
 
 /* ================= SEND ================= */
 window.sendMsg = async function () {
-  const input = document.getElementById("msgInput");
-  if (!input.value.trim()) return;
+  try {
+    const input = document.getElementById("msgInput");
 
-  await addDoc(collection(db, "dms", chatId, "messages"), {
-    text: input.value,
-    from: user.uid,
-    createdAt: serverTimestamp()
-  });
+    if (!input.value.trim()) return;
 
-  input.value = "";
+    // 🚫 prevent sending before auth/chat ready
+    if (!user || !chatId) {
+      console.log("Chat not ready yet");
+      return;
+    }
+
+    await addDoc(collection(db, "dms", chatId, "messages"), {
+      text: input.value.trim(),
+      from: user.uid,
+      createdAt: serverTimestamp()
+    });
+
+    input.value = "";
+
+  } catch (err) {
+    console.error("Send error:", err);
+    alert("Message failed to send");
+  }
 };
+
+/* ================= ENTER TO SEND ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("msgInput");
+
+  if (input) {
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendMsg();
+      }
+    });
+  }
+});
