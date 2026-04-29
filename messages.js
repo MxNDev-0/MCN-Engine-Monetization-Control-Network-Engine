@@ -13,13 +13,15 @@ import {
   serverTimestamp,
   getDocs,
   updateDoc,
-  doc
+  doc,
+  setDoc,
+  where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
 let chatId = null;
 let currentChatUser = null;
-let unsubscribeMessages = null; // 🔥 FIX: prevent duplicate listeners
+let unsubscribeMessages = null;
 
 const adminId = "pmXooqSVxdO53xiCugrqDijR6iI3";
 
@@ -49,7 +51,6 @@ function openChat(otherUserId) {
 function loadMessages() {
   const box = document.getElementById("chatBox");
 
-  // 🔥 FIX: stop old listener (THIS caused duplicate messages)
   if (unsubscribeMessages) unsubscribeMessages();
 
   const q = query(
@@ -63,7 +64,7 @@ function loadMessages() {
     snap.forEach(async (docSnap) => {
       const m = docSnap.data();
 
-      // 🔥 mark as read
+      // mark as read
       if (m.to === user.uid && m.read === false) {
         try {
           await updateDoc(doc(db, "dms", chatId, "messages", docSnap.id), {
@@ -72,7 +73,6 @@ function loadMessages() {
         } catch {}
       }
 
-      // 🔥 render message
       const div = document.createElement("div");
       div.className = "msg " + (m.from === user.uid ? "me" : "them");
       div.textContent = m.text;
@@ -80,7 +80,6 @@ function loadMessages() {
       box.appendChild(div);
     });
 
-    // smooth scroll (no reload)
     box.scrollTop = box.scrollHeight;
   });
 }
@@ -95,6 +94,7 @@ window.sendMsg = async function () {
 
     const text = input.value.trim();
 
+    // 🔥 SAVE MESSAGE
     await addDoc(collection(db, "dms", chatId, "messages"), {
       text,
       from: user.uid,
@@ -102,6 +102,11 @@ window.sendMsg = async function () {
       read: false,
       createdAt: serverTimestamp()
     });
+
+    // 🔥 ENSURE CHAT EXISTS (IMPORTANT FIX)
+    await setDoc(doc(db, "dms", chatId), {
+      participants: [user.uid, currentChatUser]
+    }, { merge: true });
 
     // 🔥 ADMIN EVENT (NO MESSAGE CONTENT)
     await addDoc(collection(db, "events"), {
@@ -130,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-/* ================= INBOX SYSTEM ================= */
+/* ================= INBOX SYSTEM (FIXED) ================= */
 async function loadInbox() {
   const inbox = document.getElementById("inboxList");
   if (!inbox) return;
@@ -138,17 +143,22 @@ async function loadInbox() {
   inbox.innerHTML = "Loading...";
 
   try {
-    const snapshot = await getDocs(collection(db, "dms"));
+    // 🔥 ONLY LOAD USER CHATS (THIS FIXES YOUR ERROR)
+    const q = query(
+      collection(db, "dms"),
+      where("participants", "array-contains", user.uid)
+    );
+
+    const snapshot = await getDocs(q);
 
     inbox.innerHTML = "";
 
     snapshot.forEach(docSnap => {
-      const id = docSnap.id;
+      const data = docSnap.data();
 
-      if (!id.includes(user.uid)) return;
+      if (!data.participants) return;
 
-      const parts = id.split("_");
-      const otherUser = parts[0] === user.uid ? parts[1] : parts[0];
+      const otherUser = data.participants.find(uid => uid !== user.uid);
 
       const div = document.createElement("div");
       div.className = "inbox-item";
