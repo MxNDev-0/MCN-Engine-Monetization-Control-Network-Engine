@@ -244,3 +244,36 @@ window.sendFriendRequest = async function (toUid, toName) {
 
   log("Friend request sent");
 };
+
+function loadDMCount() {
+  const el = document.getElementById("msgCount");
+  if (!el) return;
+
+  onAuthStateChanged(auth, (u) => {
+    if (!u) return;
+
+    onSnapshot(collection(db, "dms"), (snap) => {
+      let count = 0;
+
+      snap.forEach(docSnap => {
+        const chatId = docSnap.id;
+
+        if (!chatId.includes(u.uid)) return;
+
+        const messagesRef = collection(db, "dms", chatId, "messages");
+
+        onSnapshot(messagesRef, (msgSnap) => {
+          msgSnap.forEach(m => {
+            const data = m.data();
+
+            if (data.to === u.uid && data.read === false) {
+              count++;
+            }
+          });
+
+          el.innerText = count;
+        });
+      });
+    });
+  });
+}
