@@ -13,9 +13,7 @@ import {
   serverTimestamp,
   getDocs,
   updateDoc,
-  doc,
-  setDoc,
-  where
+  doc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
@@ -34,7 +32,16 @@ onAuthStateChanged(auth, async (u) => {
 
   user = u;
 
-  openChat(adminId);
+  // 🔥 FIX: open user from URL if exists
+  const params = new URLSearchParams(window.location.search);
+  const uidFromUrl = params.get("uid");
+
+  if (uidFromUrl) {
+    openChat(uidFromUrl);
+  } else {
+    openChat(adminId);
+  }
+
   loadInbox();
 });
 
@@ -51,6 +58,7 @@ function openChat(otherUserId) {
 function loadMessages() {
   const box = document.getElementById("chatBox");
 
+  // 🔥 CRITICAL FIX: stop old listener (prevents duplicates)
   if (unsubscribeMessages) unsubscribeMessages();
 
   const q = query(
@@ -64,15 +72,18 @@ function loadMessages() {
     snap.forEach(async (docSnap) => {
       const m = docSnap.data();
 
-      // mark as read
+      // 🔥 mark as read
       if (m.to === user.uid && m.read === false) {
         try {
           await updateDoc(doc(db, "dms", chatId, "messages", docSnap.id), {
             read: true
           });
-        } catch {}
+        } catch (e) {
+          console.log("read update failed");
+        }
       }
 
+      // 🔥 render message
       const div = document.createElement("div");
       div.className = "msg " + (m.from === user.uid ? "me" : "them");
       div.textContent = m.text;
@@ -80,6 +91,7 @@ function loadMessages() {
       box.appendChild(div);
     });
 
+    // 🔥 smooth scroll (NO page reload)
     box.scrollTop = box.scrollHeight;
   });
 }
@@ -94,7 +106,6 @@ window.sendMsg = async function () {
 
     const text = input.value.trim();
 
-    // 🔥 SAVE MESSAGE
     await addDoc(collection(db, "dms", chatId, "messages"), {
       text,
       from: user.uid,
@@ -102,11 +113,6 @@ window.sendMsg = async function () {
       read: false,
       createdAt: serverTimestamp()
     });
-
-    // 🔥 ENSURE CHAT EXISTS (IMPORTANT FIX)
-    await setDoc(doc(db, "dms", chatId), {
-      participants: [user.uid, currentChatUser]
-    }, { merge: true });
 
     // 🔥 ADMIN EVENT (NO MESSAGE CONTENT)
     await addDoc(collection(db, "events"), {
@@ -135,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-/* ================= INBOX SYSTEM (FIXED) ================= */
+/* ================= INBOX SYSTEM ================= */
 async function loadInbox() {
   const inbox = document.getElementById("inboxList");
   if (!inbox) return;
@@ -143,22 +149,24 @@ async function loadInbox() {
   inbox.innerHTML = "Loading...";
 
   try {
-    // 🔥 ONLY LOAD USER CHATS (THIS FIXES YOUR ERROR)
-    const q = query(
-      collection(db, "dms"),
-      where("participants", "array-contains", user.uid)
-    );
+    const snapshot = await getDocs(collection(db, "dms"));
 
-    const snapshot = await getDocs(q);
+    // 🔥 FIX: handle empty safely
+    if (snapshot.empty) {
+      inbox.innerHTML = "<div style='padding:10px;'>No conversations yet</div>";
+      return;
+    }
 
     inbox.innerHTML = "";
 
     snapshot.forEach(docSnap => {
-      const data = docSnap.data();
+      const id = docSnap.id;
 
-      if (!data.participants) return;
+      // only show user-related chats
+      if (!id.includes(user.uid)) return;
 
-      const otherUser = data.participants.find(uid => uid !== user.uid);
+      const parts = id.split("_");
+      const otherUser = parts[0] === user.uid ? parts[1] : parts[0];
 
       const div = document.createElement("div");
       div.className = "inbox-item";
@@ -168,10 +176,6 @@ async function loadInbox() {
 
       inbox.appendChild(div);
     });
-
-    if (inbox.innerHTML === "") {
-      inbox.innerHTML = "<div style='padding:10px;'>No conversations yet</div>";
-    }
 
   } catch (err) {
     console.error("Inbox error:", err);
