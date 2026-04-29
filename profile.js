@@ -17,13 +17,12 @@ import {
   setDoc,
   where,
   updateDoc,
-  deleteDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let user = null;
 
-/* ================= MONITOR LOG ================= */
+/* ================= LOG ================= */
 function log(msg, color = "#fff") {
   const box = document.getElementById("monitor");
   if (!box) return;
@@ -40,45 +39,54 @@ function log(msg, color = "#fff") {
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (u) => {
-  if (!u) location.href = "index.html";
+  if (!u) return location.href = "index.html";
 
   user = u;
 
   log("System booting...");
   log("User authenticated");
 
-  loadUsername();
-  loadNotifications();
-  monitorAdRequests();
-  loadChat();
-  startCryptoMonitor();
+  ensureUserExists(); // 🔥 IMPORTANT FIX
 
-  // 🔥 FRIEND SYSTEM
-  loadAllUsers();
+  loadOnlineUsers();
   loadFriendRequests();
   loadFriends();
+  loadChat();
 });
 
-/* ================= LOAD ALL USERS ================= */
-function loadAllUsers() {
-  const box = document.getElementById("friendRequestsBox");
+/* ================= ENSURE USER ================= */
+async function ensureUserExists() {
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      username: user.email.split("@")[0],
+      createdAt: serverTimestamp()
+    });
+  }
+}
+
+/* ================= ONLINE USERS ================= */
+function loadOnlineUsers() {
+  const box = document.getElementById("onlineUsers");
   if (!box) return;
 
   onSnapshot(collection(db, "users"), (snap) => {
-    box.innerHTML = "<h4>👥 Users</h4>";
+    box.innerHTML = "";
 
     snap.forEach(docSnap => {
-      const u = docSnap.data();
+      const data = docSnap.data();
       const uid = docSnap.id;
 
       if (uid === user.uid) return;
 
       const div = document.createElement("div");
-      div.style.marginBottom = "8px";
+      div.className = "item";
 
       div.innerHTML = `
-        <b>${u.username || "User"}</b>
-        <button onclick="sendFriendRequest('${uid}','${u.username || "User"}')">Add</button>
+        🟢 <b>${data.username || "User"}</b>
+        <button onclick="sendFriendRequest('${uid}','${data.username}')">Add</button>
         <button onclick="startDM('${uid}')">Message</button>
       `;
 
@@ -87,15 +95,12 @@ function loadAllUsers() {
   });
 }
 
-/* ================= SEND REQUEST ================= */
-window.sendFriendRequest = async function (toUid, toName) {
-  if (toUid === user.uid) return;
-
+/* ================= FRIEND REQUEST ================= */
+window.sendFriendRequest = async (toUid, name) => {
   await addDoc(collection(db, "friendRequests"), {
     from: user.uid,
     fromName: user.email.split("@")[0],
     to: toUid,
-    toName,
     status: "pending",
     createdAt: serverTimestamp()
   });
@@ -115,6 +120,8 @@ function loadFriendRequests() {
   );
 
   onSnapshot(q, (snap) => {
+    box.innerHTML = "";
+
     snap.forEach(docSnap => {
       const r = docSnap.data();
 
@@ -132,9 +139,7 @@ function loadFriendRequests() {
 }
 
 /* ================= ACCEPT ================= */
-window.acceptRequest = async (id, fromUid, fromName) => {
-
-  // add to friends (both users)
+window.acceptRequest = async (id, fromUid, name) => {
   await addDoc(collection(db, "friends"), {
     user1: user.uid,
     user2: fromUid,
@@ -145,7 +150,7 @@ window.acceptRequest = async (id, fromUid, fromName) => {
     status: "accepted"
   });
 
-  log(`You are now friends with ${fromName}`);
+  log("Friend added: " + name);
 };
 
 /* ================= REJECT ================= */
@@ -154,7 +159,7 @@ window.rejectRequest = async (id) => {
     status: "rejected"
   });
 
-  log("Friend request rejected");
+  log("Request rejected");
 };
 
 /* ================= LOAD FRIENDS ================= */
@@ -175,8 +180,8 @@ function loadFriends() {
 
       if (!friendId) continue;
 
-      const userSnap = await getDoc(doc(db, "users", friendId));
-      const name = userSnap.exists() ? userSnap.data().username : "User";
+      const snapUser = await getDoc(doc(db, "users", friendId));
+      const name = snapUser.exists() ? snapUser.data().username : "User";
 
       const div = document.createElement("div");
 
@@ -203,67 +208,46 @@ function loadChat() {
     snap.docChanges().forEach(change => {
       if (change.type === "added") {
         const m = change.doc.data();
+
         log(`💬 <b>${m.username}</b>: ${m.text}`, "#5bc0be");
       }
     });
   });
 }
 
-/* ================= CRYPTO ================= */
-function startCryptoMonitor() {
-  setInterval(async () => {
-    try {
-      const res = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-      );
-      const data = await res.json();
-      log(`BTC → $${data.bitcoin.usd}`, "#ccc");
-    } catch {}
-  }, 30000);
-}
+window.sendChat = async function () {
+  const input = document.getElementById("chatInput");
+  if (!input.value.trim()) return;
 
-/* ================= USER ================= */
-async function loadUsername() {
-  const snap = await getDoc(doc(db, "users", user.uid));
-  const el = document.getElementById("usernameDisplay");
+  const text = input.value;
 
-  if (snap.exists()) {
-    el.innerText = snap.data().username || "User";
-  }
-}
+  log(`💬 <b>You</b>: ${text}`, "#5bc0be");
+
+  input.value = "";
+
+  await addDoc(collection(db, "chats"), {
+    text,
+    uid: user.uid,
+    username: user.email.split("@")[0],
+    createdAt: serverTimestamp()
+  });
+};
+
+/* ================= UI BUTTON FIX ================= */
+window.openRequests = function () {
+  document.getElementById("requestsPopup").style.display = "block";
+};
+
+window.openFriends = function () {
+  document.getElementById("friendsPopup").style.display = "block";
+};
+
+window.closePopup = function (id) {
+  document.getElementById(id).style.display = "none";
+};
 
 /* ================= RESET PASSWORD ================= */
 window.resetPassword = async () => {
   await sendPasswordResetEmail(auth, user.email);
-  alert("Reset email sent");
+  alert("Reset email sent (check spam)");
 };
-
-/* ================= NOTIFICATIONS ================= */
-function loadNotifications() {
-  const ref = collection(db, "notifications", user.uid, "items");
-
-  onSnapshot(query(ref, orderBy("createdAt", "desc")), (snap) => {
-    snap.docChanges().forEach(change => {
-      if (change.type === "added") {
-        log("🔔 New notification", "#ccc");
-      }
-    });
-  });
-}
-
-/* ================= ADS ================= */
-function monitorAdRequests() {
-  const q = query(
-    collection(db, "adRequests"),
-    where("userId", "==", user.uid)
-  );
-
-  onSnapshot(q, (snap) => {
-    snap.forEach(d => {
-      const ad = d.data();
-
-      if (ad.status === "approved") log("Ad approved", "#00ff88");
-      if (ad.status === "rejected") log("Ad rejected", "#ff4d4d");
-    });
-  });
-}
