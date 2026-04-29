@@ -55,7 +55,6 @@ onAuthStateChanged(auth, async (u) => {
   loadChat();
   startCryptoMonitor();
 
-  // 🔥 INJECTED: DM COUNT SYSTEM
   loadDMCount();
 });
 
@@ -67,7 +66,6 @@ function loadChat() {
     snap.docChanges().forEach(change => {
       if (change.type === "added") {
         const m = change.doc.data();
-
         log(`💬 <b>${m.username}</b>: ${m.text}`, "#5bc0be");
       }
     });
@@ -96,9 +94,11 @@ window.sendChat = async function () {
   }
 };
 
-/* ================= 🔥 DM COUNT SYSTEM (INJECTED FULL) ================= */
+/* ================= 🔥 FIXED DM COUNT SYSTEM ================= */
 function loadDMCount() {
   const el = document.getElementById("msgCount");
+  const badge = document.getElementById("msgBadge");
+
   if (!el) return;
 
   const unreadMap = new Map();
@@ -119,7 +119,6 @@ function loadDMCount() {
         msgSnap.forEach(m => {
           const data = m.data();
 
-          // only messages sent TO user and not read
           if (data.to === user.uid && data.read === false) {
             unread++;
           }
@@ -141,29 +140,22 @@ function loadDMCount() {
       total += val;
     });
 
-    // 🔥 MAIN PROFILE BADGE UPDATE
     el.innerText = total;
 
-    // 🔥 OPTIONAL: visual alert effect
     if (total > 0) {
       el.style.color = "#ff4d4d";
       el.style.fontWeight = "bold";
+
+      if (badge) badge.innerHTML = "🔴 NEW";
     } else {
       el.style.color = "#fff";
       el.style.fontWeight = "normal";
+
+      if (badge) badge.innerHTML = "";
     }
   }
 }
 
-const badge = document.getElementById("msgBadge");
-
-if (badge) {
-  if (total > 0) {
-    badge.innerHTML = "🔴 NEW";
-  } else {
-    badge.innerHTML = "";
-  }
-}
 /* ================= CRYPTO ================= */
 let lastBTC = null;
 let lastETH = null;
@@ -179,29 +171,8 @@ async function fetchCrypto() {
     const btc = data.bitcoin.usd;
     const eth = data.ethereum.usd;
 
-    if (lastBTC !== null) {
-      const arrow = btc > lastBTC ? "🔺" : btc < lastBTC ? "🔻" : "⏺";
-      const color = btc > lastBTC ? "#00ff88" : btc < lastBTC ? "#ff4d4d" : "#aaa";
-
-      log(
-        `BTC ${arrow} $${btc.toLocaleString()} (from $${lastBTC.toLocaleString()})`,
-        color
-      );
-    } else {
-      log(`BTC → $${btc.toLocaleString()} | ₦${data.bitcoin.ngn.toLocaleString()}`, "#ccc");
-    }
-
-    if (lastETH !== null) {
-      const arrow = eth > lastETH ? "🔺" : eth < lastETH ? "🔻" : "⏺";
-      const color = eth > lastETH ? "#00ff88" : eth < lastETH ? "#ff4d4d" : "#aaa";
-
-      log(
-        `ETH ${arrow} $${eth.toLocaleString()} (from $${lastETH.toLocaleString()})`,
-        color
-      );
-    } else {
-      log(`ETH → $${eth.toLocaleString()} | ₦${data.ethereum.ngn.toLocaleString()}`, "#ccc");
-    }
+    log(`BTC → $${btc.toLocaleString()} | ₦${data.bitcoin.ngn.toLocaleString()}`, "#ccc");
+    log(`ETH → $${eth.toLocaleString()} | ₦${data.ethereum.ngn.toLocaleString()}`, "#ccc");
 
     lastBTC = btc;
     lastETH = eth;
