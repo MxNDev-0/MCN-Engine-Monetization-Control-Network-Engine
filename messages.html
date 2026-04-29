@@ -1,135 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Messages — MCN Engine</title>
+  <title>Messages</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #0b132b;
-      color: white;
-    }
-
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      padding: 10px;
-      background: #1c2541;
-    }
-
-    .navbar h3 {
-      margin: 0;
-    }
-
-    .back-btn {
-      position: absolute;
-      left: 10px;
-      padding: 5px 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: none;
-      background: #5bc0be;
-    }
-
-    /* 🔥 INBOX STYLE (INJECTED) */
-    .inbox-list {
-      max-height: 120px;
-      overflow-y: auto;
-      border-bottom: 1px solid #333;
-    }
-
-    .inbox-item {
-      padding: 8px;
-      cursor: pointer;
-      border-bottom: 1px solid #222;
-    }
-
-    .inbox-item:hover {
-      background: #111;
-    }
-
-    .chat-box {
-      height: 60vh;
-      overflow-y: auto;
-      padding: 10px;
-      padding-bottom: 80px;
-    }
-
-    .msg {
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 8px;
-      max-width: 80%;
-      word-wrap: break-word;
-    }
-
-    .me {
-      background: #5bc0be;
-      color: black;
-      margin-left: auto;
-    }
-
-    .them {
-      background: #1c2541;
-    }
-
-    .input-box {
-      display: flex;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: #1c2541;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-
-    input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #0b132b;
-      color: white;
-    }
-
-    .send-btn {
-      margin-left: 5px;
-      padding: 10px 15px;
-      border-radius: 8px;
-      border: none;
-      background: #5bc0be;
-      flex: none;
-    }
+    body { margin:0; font-family:Arial; background:#0b132b; color:#fff; }
+    .navbar { padding:10px; background:#1c2541; text-align:center; }
+    .inbox { padding:10px; }
+    .item { padding:10px; background:#1c2541; margin-bottom:6px; border-radius:8px; cursor:pointer; }
+    .chat-box { height:60vh; overflow-y:auto; padding:10px; }
+    .msg { margin:5px 0; padding:8px; border-radius:8px; }
+    .me { background:#5bc0be; color:#000; margin-left:auto; }
+    .them { background:#1c2541; }
+    .input { position:fixed; bottom:0; width:100%; display:flex; padding:10px; background:#1c2541; }
+    input { flex:1; padding:10px; }
+    button { padding:10px; }
   </style>
 </head>
 
 <body>
 
 <div class="navbar">
-  <button class="back-btn" onclick="goBack()">←</button>
+  <button onclick="goBack()">← Back</button>
   <h3>Messages</h3>
 </div>
 
-<!-- 🔥 INBOX INJECTION (HERE) -->
-<div id="inboxList" class="inbox-list"></div>
+<div id="inboxList" class="inbox"></div>
 
 <div id="chatBox" class="chat-box"></div>
 
-<div class="input-box">
-  <input id="msgInput" placeholder="Type message...">
-  <button class="send-btn" onclick="sendMsg()">Send</button>
+<div class="input">
+  <input id="msgInput">
+  <button onclick="sendMsg()">Send</button>
 </div>
 
 <script type="module" src="messages.js"></script>
 
 <script>
-function goBack(){
-  location.href = "dashboard.html";
-}
+function goBack(){ location.href="dashboard.html"; }
 </script>
 
 </body>
