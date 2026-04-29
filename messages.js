@@ -54,19 +54,20 @@ function loadMessages() {
   onSnapshot(q, (snap) => {
     box.innerHTML = "";
 
-    snap.forEach(doc => {
-      const m = doc.data();
+    snap.forEach(async (docSnap) => {
+  const m = docSnap.data();
 
-      const div = document.createElement("div");
-      div.className = "msg " + (m.from === user.uid ? "me" : "them");
-      div.textContent = m.text;
-
-      box.appendChild(div);
-    });
-
-    box.scrollTop = box.scrollHeight;
-  });
-}
+  // if message is for current user → mark read
+  if (m.to === user.uid && m.read === false) {
+    try {
+      await updateDoc(doc(db, "dms", chatId, "messages", docSnap.id), {
+        read: true
+      });
+    } catch (e) {
+      console.log("read update failed");
+    }
+  }
+});
 
 /* ================= SEND MESSAGE ================= */
 window.sendMsg = async function () {
