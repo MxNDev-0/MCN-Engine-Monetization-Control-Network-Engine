@@ -155,6 +155,15 @@ function loadDMCount() {
   }
 }
 
+const badge = document.getElementById("msgBadge");
+
+if (badge) {
+  if (total > 0) {
+    badge.innerHTML = "🔴 NEW";
+  } else {
+    badge.innerHTML = "";
+  }
+}
 /* ================= CRYPTO ================= */
 let lastBTC = null;
 let lastETH = null;
