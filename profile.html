@@ -85,22 +85,6 @@
       border-radius: 12px;
     }
 
-    /* 🔥 INJECTED: LIST BOX (REQUIRED FOR USERS TO SHOW) */
-    .list-box {
-      max-height: 200px;
-      overflow-y: auto;
-      background: #0b132b;
-      border-radius: 8px;
-      padding: 6px;
-    }
-
-    .item {
-      padding: 8px;
-      margin-bottom: 6px;
-      background: #16213e;
-      border-radius: 8px;
-    }
-
     .chat-row {
       display: flex;
       gap: 6px;
@@ -132,6 +116,63 @@
       padding: 12px;
       border-radius: 12px;
     }
+
+    /* 🔥 ONLINE USERS LIST FIX */
+    #onlineUsers {
+      margin: 10px;
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #16213e;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      background: #00ff88;
+      border-radius: 50%;
+    }
+
+    .user-name {
+      font-size: 14px;
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .small-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #5bc0be;
+      color: #000;
+    }
+
+    .small-btn:first-child {
+      background: transparent;
+      color: #5bc0be;
+      border: 1px solid #5bc0be;
+    }
+
+    .small-btn:last-child {
+      background: #5bc0be;
+    }
   </style>
 </head>
 
@@ -157,22 +198,22 @@
   <button onclick="openFriends()">👤 Friends</button>
 </div>
 
-<!-- MONITOR -->
 <div id="monitor" class="monitor">
   [SYSTEM] Profile monitor started...
 </div>
 
-<!-- CHAT -->
 <div class="chat-row">
   <input id="chatInput" placeholder="Type message...">
   <button onclick="sendChat()">Send</button>
 </div>
 
-<!-- 🔥 REPLACED USER PANEL WITH ONLINE USERS -->
-<div class="card">
-  <h4>🟢 Online Users</h4>
-  <div id="onlineUsers" class="list-box"></div>
+<div class="profile-header">
+  <div class="avatar"></div>
+  <div class="username">Online Users</div>
 </div>
+
+<!-- 🔥 ONLINE USERS SECTION -->
+<div id="onlineUsers"></div>
 
 <div id="requestsPopup" class="popup">
   <h4>Friend Requests</h4>
