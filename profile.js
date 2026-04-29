@@ -14,7 +14,7 @@ import {
   updateDoc,
   doc,
   getDoc,
-  getDocs, // ✅ ADDED (SAFE)
+  getDocs,
   setDoc,
   where,
   serverTimestamp
@@ -54,6 +54,9 @@ onAuthStateChanged(auth, async (u) => {
   monitorAdRequests();
   loadChat();
   startCryptoMonitor();
+
+  // 🔥 INJECTED: DM COUNT SYSTEM
+  loadDMCount();
 });
 
 /* ================= CHAT SYSTEM ================= */
@@ -77,7 +80,6 @@ window.sendChat = async function () {
 
   const text = input.value;
 
-  // 🔥 Instant UI feedback (so it never "disappears")
   log(`💬 <b>You</b>: ${text}`, "#5bc0be");
 
   input.value = "";
@@ -94,6 +96,36 @@ window.sendChat = async function () {
   }
 };
 
+/* ================= 🔥 DM COUNT SYSTEM (INJECTED FULL) ================= */
+function loadDMCount() {
+  const el = document.getElementById("msgCount");
+  if (!el) return;
+
+  onSnapshot(collection(db, "dms"), (snap) => {
+    let count = 0;
+
+    snap.forEach(docSnap => {
+      const chatId = docSnap.id;
+
+      if (!chatId.includes(user.uid)) return;
+
+      const messagesRef = collection(db, "dms", chatId, "messages");
+
+      onSnapshot(messagesRef, (msgSnap) => {
+        msgSnap.forEach(m => {
+          const data = m.data();
+
+          if (data.to === user.uid && data.read === false) {
+            count++;
+          }
+        });
+
+        el.innerText = count;
+      });
+    });
+  });
+}
+
 /* ================= CRYPTO ================= */
 let lastBTC = null;
 let lastETH = null;
@@ -109,7 +141,6 @@ async function fetchCrypto() {
     const btc = data.bitcoin.usd;
     const eth = data.ethereum.usd;
 
-    // BTC
     if (lastBTC !== null) {
       const arrow = btc > lastBTC ? "🔺" : btc < lastBTC ? "🔻" : "⏺";
       const color = btc > lastBTC ? "#00ff88" : btc < lastBTC ? "#ff4d4d" : "#aaa";
@@ -122,7 +153,6 @@ async function fetchCrypto() {
       log(`BTC → $${btc.toLocaleString()} | ₦${data.bitcoin.ngn.toLocaleString()}`, "#ccc");
     }
 
-    // ETH
     if (lastETH !== null) {
       const arrow = eth > lastETH ? "🔺" : eth < lastETH ? "🔻" : "⏺";
       const color = eth > lastETH ? "#00ff88" : eth < lastETH ? "#ff4d4d" : "#aaa";
@@ -244,36 +274,3 @@ window.sendFriendRequest = async function (toUid, toName) {
 
   log("Friend request sent");
 };
-
-function loadDMCount() {
-  const el = document.getElementById("msgCount");
-  if (!el) return;
-
-  onAuthStateChanged(auth, (u) => {
-    if (!u) return;
-
-    onSnapshot(collection(db, "dms"), (snap) => {
-      let count = 0;
-
-      snap.forEach(docSnap => {
-        const chatId = docSnap.id;
-
-        if (!chatId.includes(u.uid)) return;
-
-        const messagesRef = collection(db, "dms", chatId, "messages");
-
-        onSnapshot(messagesRef, (msgSnap) => {
-          msgSnap.forEach(m => {
-            const data = m.data();
-
-            if (data.to === u.uid && data.read === false) {
-              count++;
-            }
-          });
-
-          el.innerText = count;
-        });
-      });
-    });
-  });
-}
