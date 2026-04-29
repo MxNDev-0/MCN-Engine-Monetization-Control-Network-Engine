@@ -38,11 +38,10 @@
       border-radius: 10px;
     }
 
-    /* ✅ MONITOR (NO DESIGN CHANGE, ONLY IMPROVEMENTS) */
     .monitor {
       background: #000;
-      color: #fff; /* changed from green */
-      font-size: 13px; /* slightly reduced */
+      color: #fff;
+      font-size: 13px;
       height: 120px;
       overflow-y: auto;
       font-family: monospace;
@@ -61,7 +60,6 @@
       animation: glow 2s infinite alternate;
     }
 
-    /* ✅ ALIVE EFFECT */
     @keyframes glow {
       from { box-shadow: 0 0 5px #5bc0be; }
       to { box-shadow: 0 0 15px #5bc0be; }
@@ -87,7 +85,22 @@
       border-radius: 12px;
     }
 
-    /* ✅ CHAT INPUT FIX */
+    /* 🔥 INJECTED: LIST BOX (REQUIRED FOR USERS TO SHOW) */
+    .list-box {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #0b132b;
+      border-radius: 8px;
+      padding: 6px;
+    }
+
+    .item {
+      padding: 8px;
+      margin-bottom: 6px;
+      background: #16213e;
+      border-radius: 8px;
+    }
+
     .chat-row {
       display: flex;
       gap: 6px;
@@ -102,7 +115,7 @@
     }
 
     .chat-row button {
-      width: 80px; /* pushed to right */
+      width: 80px;
       border-radius: 8px;
       border: none;
       background: #5bc0be;
@@ -149,15 +162,16 @@
   [SYSTEM] Profile monitor started...
 </div>
 
-<!-- ✅ CHAT INPUT FIXED POSITION -->
+<!-- CHAT -->
 <div class="chat-row">
   <input id="chatInput" placeholder="Type message...">
   <button onclick="sendChat()">Send</button>
 </div>
 
-<div class="profile-header">
-  <div class="avatar"></div>
-  <div class="username">User Panel</div>
+<!-- 🔥 REPLACED USER PANEL WITH ONLINE USERS -->
+<div class="card">
+  <h4>🟢 Online Users</h4>
+  <div id="onlineUsers" class="list-box"></div>
 </div>
 
 <div id="requestsPopup" class="popup">
@@ -176,11 +190,10 @@
   <h4>📊 Activity Overview</h4>
   <p>Ad Status: <b id="adStatus">No active ads</b></p>
   <p>
-  Messages: 
-  <b id="msgCount">0</b>
-  <span id="msgBadge" style="margin-left:6px;"></span>
-</p>
-
+    Messages:
+    <b id="msgCount">0</b>
+    <span id="msgBadge" style="margin-left:6px;"></span>
+  </p>
 </div>
 
 <script type="module" src="profile.js"></script>
