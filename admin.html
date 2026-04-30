@@ -4,9 +4,6 @@
   <title>MCN Engine V16 - Admin Control Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="ui-theme.css">
-
   <style>
     body {
       background: #0b132b;
@@ -79,14 +76,16 @@
       border-radius: 8px;
     }
 
+    /* 🔥 MODERN MONITOR */
     .monitor {
-      background: #000;
-      color: #00ff66;
-      height: 200px;
+      background: linear-gradient(145deg, #05070f, #0a0f1f);
+      color: #00ff88;
+      height: 220px;
       overflow-y: auto;
       font-family: monospace;
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
+      border: 1px solid #1c2541;
     }
   </style>
 </head>
@@ -97,11 +96,13 @@
 
 <div class="grid">
 
+  <!-- MONITOR -->
   <div class="card">
     <h3>🖥 Live Monitor</h3>
     <div id="monitor" class="monitor"></div>
   </div>
 
+  <!-- BLOG -->
   <div class="card">
     <h3>📝 Create Blog</h3>
     <input id="blogTitle" placeholder="Blog Title">
@@ -110,6 +111,7 @@
     <button onclick="createBlog()">Publish Blog</button>
   </div>
 
+  <!-- BROADCAST (RESTORED) -->
   <div class="card">
     <h3>🔔 Broadcast System</h3>
     <input id="broadcastTitle" placeholder="Broadcast Title">
@@ -117,28 +119,32 @@
     <button onclick="sendBroadcast()">Send Broadcast</button>
   </div>
 
+  <!-- USERS -->
   <div class="card">
-    <h3>👥 Users</h3>
+    <h3>👥 Users Online</h3>
     <div id="usersList" class="list-box"></div>
   </div>
 
+  <!-- ADS -->
   <div class="card">
     <h3>📢 Ad Payment Requests</h3>
     <div id="upgradeList" class="list-box"></div>
   </div>
 
+  <!-- POSTS -->
   <div class="card">
-    <h3>💬 Posts Manager</h3>
-    <button class="danger" onclick="clearAllPosts()">Clear All</button>
+    <h3>💬 Post Manager</h3>
     <div id="postsList" class="list-box"></div>
 
     <h3>✏️ Edit Post</h3>
-    <input id="editPostId" placeholder="Post ID">
-    <input id="editPostTitle" placeholder="New Title">
-    <textarea id="editPostContent" placeholder="New Content"></textarea>
+    <input id="editPostId" placeholder="Click post to auto-fill" readonly>
+    <input id="editPostTitle" placeholder="Title">
+    <textarea id="editPostContent" placeholder="Content"></textarea>
+
     <button onclick="updatePost()">Update Post</button>
   </div>
 
+  <!-- ANALYTICS -->
   <div class="card">
     <h3>📊 Analytics</h3>
 
@@ -148,6 +154,13 @@
     <div class="item">Ad Requests: <b id="statRequests">0</b></div>
 
     <button onclick="loadStats()">Refresh</button>
+  </div>
+
+  <!-- REJECTED ADS -->
+  <div class="card">
+    <h3>❌ Rejected Ads</h3>
+    <div id="rejectedList" class="list-box"></div>
+    <button class="danger" onclick="clearRejected()">Clear Rejected</button>
   </div>
 
 </div>
