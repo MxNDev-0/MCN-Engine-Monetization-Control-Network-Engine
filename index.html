@@ -19,7 +19,6 @@
       margin: 0;
     }
 
-    /* HEADER */
     .header {
       display: flex;
       justify-content: space-between;
@@ -58,7 +57,6 @@
       font-weight: bold;
     }
 
-    /* MENU */
     #menu {
       display: none;
       background: #1c2541;
@@ -71,7 +69,6 @@
       cursor: pointer;
     }
 
-    /* BLOG (UPDATED UI ONLY) */
     .featured {
       padding: 15px;
     }
@@ -107,7 +104,6 @@
       color: #ccc;
     }
 
-    /* LOGIN */
     .login-modal {
       display: none;
       position: fixed;
@@ -155,7 +151,6 @@
       color: #5bc0be;
     }
 
-    /* FOOTER */
     .footer {
       text-align: center;
       padding: 20px;
@@ -173,7 +168,6 @@
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="left">
     <div class="menu-btn" onclick="toggleMenu()">☰</div>
@@ -183,7 +177,6 @@
   <div class="profile-btn" onclick="openLogin()">👤</div>
 </div>
 
-<!-- MENU -->
 <div id="menu">
   <div onclick="goHome()">Home</div>
   <div onclick="goTrending()">Trending</div>
@@ -191,13 +184,9 @@
   <div onclick="contact()">Contact</div>
 </div>
 
-<!-- FEATURED -->
 <div class="featured" id="featuredPost"></div>
-
-<!-- FEED -->
 <div class="feed" id="feed">Loading posts...</div>
 
-<!-- LOGIN -->
 <div class="login-modal" id="loginModal">
   <div class="center-box">
     <h3>Login / Register</h3>
@@ -207,12 +196,10 @@
 
     <button onclick="signup()">Create Account</button>
     <button class="secondary-btn" onclick="login()">Login</button>
-
     <button onclick="closeLogin()">Close</button>
   </div>
 </div>
 
-<!-- FOOTER -->
 <div class="footer">
   <a href="about.html">About</a> |
   <a href="faq.html">FAQ</a> |
