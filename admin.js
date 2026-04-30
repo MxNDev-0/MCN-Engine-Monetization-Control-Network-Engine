@@ -144,7 +144,6 @@ window.replyToUser = async (uid, username) => {
     createdAt: serverTimestamp()
   });
 
-  // 🔔 Notify user
   await addDoc(collection(db, "notifications", uid, "items"), {
     text: `📩 Admin replied to you`,
     createdAt: serverTimestamp()
@@ -175,21 +174,26 @@ function loadPosts() {
     box.innerHTML = "";
 
     snap.forEach(d => {
+      const data = d.data();
+
       box.innerHTML += `
         <div class="item">
-          ${d.data().text}
+          ${data.text}
           <button onclick="deletePost('${d.id}')">Delete</button>
+          <button onclick="fillEditPost('${d.id}', \`${data.text}\`, \`${data.text}\`)">Edit</button>
         </div>
       `;
     });
   });
 }
 
+/* ================= DELETE POST ================= */
 window.deletePost = async (id) => {
   await deleteDoc(doc(db, "posts", id));
   log("Post deleted");
 };
 
+/* ================= CLEAR ALL POSTS ================= */
 window.clearAllPosts = async () => {
   const snap = await getDocs(collection(db, "posts"));
   const batch = writeBatch(db);
@@ -198,6 +202,27 @@ window.clearAllPosts = async () => {
 
   await batch.commit();
   log("All posts cleared");
+};
+
+/* ================= EDIT POST ================= */
+window.fillEditPost = (id, text) => {
+  document.getElementById("editPostId").value = id;
+  document.getElementById("editPostContent").value = text;
+};
+
+window.updatePost = async () => {
+  const id = document.getElementById("editPostId").value;
+  const content = document.getElementById("editPostContent").value;
+
+  if (!id) return alert("Select a post first");
+
+  await fetch(`https://mxm-backend.onrender.com/blog/update/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content })
+  });
+
+  log("Post updated");
 };
 
 /* ================= ADS ================= */
