@@ -32,13 +32,7 @@ function log(msg) {
 /* ================= BOOT ================= */
 window.addEventListener("DOMContentLoaded", () => {
   const box = document.getElementById("monitor");
-
   if (box) box.innerHTML = "🟢 Admin Monitor Initializing...";
-
-  setTimeout(() => {
-    log("System ready");
-    log("Monitor online");
-  }, 500);
 });
 
 /* ================= AUTH ================= */
@@ -48,17 +42,12 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) return location.href = "index.html";
 
   const snap = await getDoc(doc(db, "users", user.uid));
-  const role = snap.exists() ? snap.data().role : "user";
-
-  if (role !== "admin") {
+  if (!snap.exists() || snap.data().role !== "admin") {
     alert("Access denied");
-    location.href = "dashboard.html";
-    return;
+    return location.href = "dashboard.html";
   }
 
   adminUser = user;
-
-  log("Admin verified");
   startSystem();
 });
 
@@ -67,39 +56,13 @@ function startSystem() {
   loadUsers();
   loadPosts();
   loadAdRequests();
+  loadRejected();
   loadEventMonitor();
-  bridgeChatsToEvents();
-}
-
-/* ================= CHAT → EVENTS ================= */
-function bridgeChatsToEvents() {
-  onSnapshot(collection(db, "chats"), (snap) => {
-    snap.docChanges().forEach(async (change) => {
-      if (change.type === "added") {
-        const m = change.doc.data();
-
-        if (m._eventCreated) return;
-
-        await addDoc(collection(db, "events"), {
-          type: "chat",
-          text: m.text,
-          uid: m.uid,
-          username: m.username,
-          createdAt: m.createdAt || serverTimestamp()
-        });
-
-        try {
-          await change.doc.ref.update({ _eventCreated: true });
-        } catch {}
-      }
-    });
-  });
 }
 
 /* ================= MONITOR ================= */
 function loadEventMonitor() {
   const box = document.getElementById("monitor");
-  if (!box) return;
 
   onSnapshot(query(collection(db, "events"), orderBy("createdAt", "asc")), (snap) => {
     box.innerHTML = "";
@@ -109,53 +72,116 @@ function loadEventMonitor() {
 
       if (e.type === "chat") {
         box.innerHTML += `
-          <div style="padding:6px;border-bottom:1px solid #222;">
-            💬 <b onclick="openUser('${e.uid}')">${e.username}</b>: ${e.text}
-            <button onclick="replyToUser('${e.uid}', '${e.username}')">↩</button>
-          </div>
-        `;
-      }
-
-      if (e.type === "log") {
-        box.innerHTML += `
-          <div style="color:#00ff66;">
-            [LOG] ${e.text}
+          <div>
+            💬 <b>${e.username}</b>: ${e.text}
+            <button class="mini-btn" onclick="replyToUser('${e.uid}','${e.username}')">➤</button>
           </div>
         `;
       }
     });
-
-    box.scrollTop = box.scrollHeight;
   });
 }
 
-/* ================= 🔥 DM SYSTEM ================= */
-window.replyToUser = async (uid, username) => {
-  const message = prompt(`Reply to ${username}`);
+/* ================= POSTS ================= */
+function loadPosts() {
+  const box = document.getElementById("postsList");
 
-  if (!message || !message.trim()) return;
+  onSnapshot(collection(db, "posts"), (snap) => {
+    box.innerHTML = "";
 
-  const chatId = [adminUser.uid, uid].sort().join("_");
+    snap.forEach(d => {
+      const data = d.data();
 
-  await addDoc(collection(db, "dms", chatId, "messages"), {
-    text: message,
-    from: adminUser.uid,
-    to: uid,
-    createdAt: serverTimestamp()
+      box.innerHTML += `
+        <div class="item" onclick="selectPost('${d.id}', \`${data.text}\`)">
+          ${data.text}
+          <button class="danger" onclick="event.stopPropagation(); deletePost('${d.id}')">Delete</button>
+        </div>
+      `;
+    });
   });
+}
 
-  await addDoc(collection(db, "notifications", uid, "items"), {
-    text: `📩 Admin replied to you`,
-    createdAt: serverTimestamp()
+window.selectPost = (id, text) => {
+  editPostId.value = id;
+  editPostContent.value = text;
+};
+
+window.deletePost = async (id) => {
+  await deleteDoc(doc(db, "posts", id));
+};
+
+window.updatePost = async () => {
+  const id = editPostId.value;
+  const content = editPostContent.value;
+
+  await fetch(`https://mxm-backend.onrender.com/blog/update/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content })
   });
+};
 
-  log(`DM sent to ${username}`);
+/* ================= ADS ================= */
+function loadAdRequests() {
+  const box = document.getElementById("upgradeList");
+
+  onSnapshot(collection(db, "adRequests"), (snap) => {
+    box.innerHTML = "";
+
+    snap.forEach(d => {
+      const data = d.data();
+
+      box.innerHTML += `
+        <div class="item">
+          ${data.title}
+          <button onclick="acceptAd('${d.id}')">Accept</button>
+          <button onclick="rejectAd('${d.id}', '${data.title}')">Reject</button>
+        </div>
+      `;
+    });
+  });
+}
+
+window.acceptAd = async (id) => {
+  await deleteDoc(doc(db, "adRequests", id));
+};
+
+window.rejectAd = async (id, title) => {
+  await addDoc(collection(db, "adRejected"), { title });
+  await deleteDoc(doc(db, "adRequests", id));
+};
+
+window.clearAdRequests = async () => {
+  const snap = await getDocs(collection(db, "adRequests"));
+  const batch = writeBatch(db);
+  snap.forEach(d => batch.delete(d.ref));
+  await batch.commit();
+};
+
+/* ================= REJECTED ================= */
+function loadRejected() {
+  const box = document.getElementById("rejectedList");
+
+  onSnapshot(collection(db, "adRejected"), (snap) => {
+    box.innerHTML = "";
+
+    snap.forEach(d => {
+      box.innerHTML += `<div class="item">❌ ${d.data().title}</div>`;
+    });
+  });
+}
+
+window.clearRejected = async () => {
+  const snap = await getDocs(collection(db, "adRejected"));
+  const batch = writeBatch(db);
+  snap.forEach(d => batch.delete(d.ref));
+  await batch.commit();
 };
 
 /* ================= USERS ================= */
 function loadUsers() {
   const box = document.getElementById("usersList");
-  if (!box) return;
 
   onSnapshot(collection(db, "onlineUsers"), (snap) => {
     box.innerHTML = "";
@@ -165,85 +191,15 @@ function loadUsers() {
   });
 }
 
-/* ================= POSTS ================= */
-function loadPosts() {
-  const box = document.getElementById("postsList");
-  if (!box) return;
+/* ================= DM ================= */
+window.replyToUser = async (uid, username) => {
+  const msg = prompt("Reply to " + username);
+  if (!msg) return;
 
-  onSnapshot(query(collection(db, "posts"), orderBy("time")), (snap) => {
-    box.innerHTML = "";
-
-    snap.forEach(d => {
-      const data = d.data();
-
-      box.innerHTML += `
-        <div class="item">
-          ${data.text}
-          <button onclick="deletePost('${d.id}')">Delete</button>
-          <button onclick="fillEditPost('${d.id}', \`${data.text}\`, \`${data.text}\`)">Edit</button>
-        </div>
-      `;
-    });
+  await addDoc(collection(db, "dms"), {
+    text: msg,
+    to: uid,
+    from: adminUser.uid,
+    createdAt: serverTimestamp()
   });
-}
-
-/* ================= DELETE POST ================= */
-window.deletePost = async (id) => {
-  await deleteDoc(doc(db, "posts", id));
-  log("Post deleted");
-};
-
-/* ================= CLEAR ALL POSTS ================= */
-window.clearAllPosts = async () => {
-  const snap = await getDocs(collection(db, "posts"));
-  const batch = writeBatch(db);
-
-  snap.forEach(d => batch.delete(d.ref));
-
-  await batch.commit();
-  log("All posts cleared");
-};
-
-/* ================= EDIT POST ================= */
-window.fillEditPost = (id, text) => {
-  document.getElementById("editPostId").value = id;
-  document.getElementById("editPostContent").value = text;
-};
-
-window.updatePost = async () => {
-  const id = document.getElementById("editPostId").value;
-  const content = document.getElementById("editPostContent").value;
-
-  if (!id) return alert("Select a post first");
-
-  await fetch(`https://mxm-backend.onrender.com/blog/update/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content })
-  });
-
-  log("Post updated");
-};
-
-/* ================= ADS ================= */
-function loadAdRequests() {
-  const box = document.getElementById("upgradeList");
-  if (!box) return;
-
-  onSnapshot(collection(db, "adRequests"), (snap) => {
-    box.innerHTML = "";
-
-    snap.forEach(d => {
-      box.innerHTML += `
-        <div class="item">
-          ${d.data().title}
-        </div>
-      `;
-    });
-  });
-}
-
-/* ================= PROFILE ================= */
-window.openUser = (uid) => {
-  alert("Profile system coming next: " + uid);
 };
