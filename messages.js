@@ -176,3 +176,31 @@ async function loadInbox() {
     inbox.innerHTML = "Failed to load inbox";
   }
 }
+
+import { deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* DELETE CHAT */
+window.deleteChat = async function () {
+  if (!chatId) return;
+
+  const confirmDelete = confirm("Delete this chat?");
+  if (!confirmDelete) return;
+
+  try {
+    const snap = await getDocs(collection(db, "dms", chatId, "messages"));
+
+    const deletes = [];
+    snap.forEach(docSnap => {
+      deletes.push(deleteDoc(doc(db, "dms", chatId, "messages", docSnap.id)));
+    });
+
+    await Promise.all(deletes);
+
+    alert("Chat deleted");
+    location.reload();
+
+  } catch (e) {
+    console.error(e);
+    alert("Delete failed");
+  }
+};
