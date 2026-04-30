@@ -8,23 +8,22 @@
     body { margin:0; font-family:Arial; background:#0b132b; color:#fff; }
 
     .navbar {
-      padding:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
       background:#1c2541;
-      text-align:center;
+      padding:12px;
     }
 
-    .inbox {
-      padding:10px;
-      max-height:150px;
-      overflow-y:auto;
+    .back-btn {
+      position:absolute;
+      left:10px;
     }
 
-    .item {
-      padding:10px;
-      background:#1c2541;
-      margin-bottom:6px;
-      border-radius:8px;
-      cursor:pointer;
+    .menu-btn {
+      position:absolute;
+      right:10px;
     }
 
     .chat-box {
@@ -33,22 +32,9 @@
       padding:10px;
     }
 
-    .msg {
-      margin:5px 0;
-      padding:8px;
-      border-radius:8px;
-      max-width:70%;
-    }
-
-    .me {
-      background:#5bc0be;
-      color:#000;
-      margin-left:auto;
-    }
-
-    .them {
-      background:#1c2541;
-    }
+    .msg { padding:8px; margin:5px 0; border-radius:8px; }
+    .me { background:#5bc0be; color:#000; margin-left:auto; }
+    .them { background:#1c2541; }
 
     .input {
       position:fixed;
@@ -57,33 +43,28 @@
       display:flex;
       padding:10px;
       background:#1c2541;
-      gap:5px;
     }
 
-    input {
-      flex:1;
-      padding:10px;
-    }
-
-    button {
-      padding:10px;
-    }
+    input { flex:1; padding:10px; }
   </style>
 </head>
 
 <body>
 
 <div class="navbar">
-  <button onclick="goBack()">← Back</button>
+  <button class="back-btn" onclick="goBack()">←</button>
   <h3>Messages</h3>
+  <button class="menu-btn" onclick="toggleMenu()">⋮</button>
 </div>
 
-<div id="inboxList" class="inbox"></div>
+<div id="menu" style="display:none; padding:10px;">
+  <button onclick="deleteChat()">Delete Chat</button>
+</div>
 
 <div id="chatBox" class="chat-box"></div>
 
 <div class="input">
-  <input id="msgInput" placeholder="Type message...">
+  <input id="msgInput">
   <button onclick="sendMsg()">Send</button>
 </div>
 
@@ -91,6 +72,10 @@
 
 <script>
 function goBack(){ location.href="dashboard.html"; }
+function toggleMenu(){
+  const m = document.getElementById("menu");
+  m.style.display = m.style.display === "none" ? "block" : "none";
+}
 </script>
 
 </body>
