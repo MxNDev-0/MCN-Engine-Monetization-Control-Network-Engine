@@ -125,14 +125,22 @@ function loadNotifications() {
     let html = "";
 
     snap.forEach(d => {
-      html += `<div>🔔 ${d.data().text}</div>`;
+      html += `<div style="padding:8px;border-bottom:1px solid #222;">🔔 ${d.data().text}</div>`;
     });
 
     panel.innerHTML = html;
   });
 }
 
-/* ================= CHAT SYSTEM (NEW UNIFIED EVENTS) ================= */
+/* 🔥 TOGGLE NOTIFICATION PANEL (NEW) */
+window.toggleNotif = function () {
+  const panel = document.getElementById("notifPanel");
+  if (!panel) return;
+
+  panel.classList.toggle("active");
+};
+
+/* ================= CHAT SYSTEM ================= */
 window.sendChat = async () => {
   const input = document.getElementById("chatInput");
   if (!input || !input.value.trim()) return;
@@ -180,7 +188,7 @@ function loadChat() {
   );
 }
 
-/* ================= MENU FIX ================= */
+/* ================= MENU ================= */
 window.toggleMenu = function () {
   document.getElementById("menu")?.classList.toggle("active");
 };
@@ -205,6 +213,11 @@ window.goAdmin = () => {
     return;
   }
   location.href = "admin.html";
+};
+
+/* ================= 💰 DONATE (NEW) ================= */
+window.donate = function () {
+  window.open("https://paystack.com/pay/mcnengine-support", "_blank");
 };
 
 /* ================= ADS ================= */
