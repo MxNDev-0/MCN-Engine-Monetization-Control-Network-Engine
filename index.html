@@ -71,26 +71,40 @@
       cursor: pointer;
     }
 
-    /* BLOG */
+    /* BLOG (UPDATED UI ONLY) */
     .featured {
       padding: 15px;
     }
 
     .feed {
       padding: 15px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
     }
 
     .post {
-      background: #1c2541;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 12px;
+      background: linear-gradient(145deg, #1c2541, #141b2e);
+      padding: 14px;
+      border-radius: 12px;
       cursor: pointer;
-      transition: 0.2s;
+      transition: 0.25s;
+      border: 1px solid transparent;
     }
 
     .post:hover {
-      transform: scale(1.02);
+      transform: translateY(-4px);
+      border: 1px solid #5bc0be;
+    }
+
+    .post h4 {
+      margin: 8px 0;
+      font-size: 15px;
+    }
+
+    .post p {
+      font-size: 13px;
+      color: #ccc;
     }
 
     /* LOGIN */
@@ -249,23 +263,33 @@ async function loadFeed() {
 
   feed.innerHTML = "";
 
-  const featured = posts.find(p => p.featured) || posts[0];
+  if (!posts || posts.length === 0) {
+    feed.innerHTML = "<p>No posts yet</p>";
+    return;
+  }
+
+  const sorted = posts.sort((a, b) => {
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  });
+
+  const featured = sorted.find(p => p.featured) || sorted[0];
 
   featuredBox.innerHTML = `
     <div class="post" onclick="openPost('${featured.id}')" style="border:2px solid #5bc0be">
       <h3>🔥 Featured</h3>
       <h4>${featured.title}</h4>
+      <p>${(featured.content || "").slice(0,120)}...</p>
     </div>
   `;
 
-  posts.forEach(p => {
+  sorted.forEach(p => {
     feed.innerHTML += `
       <div class="post" onclick="openPost('${p.id}')">
         <small style="color:${getCategoryColor(p.category)}">
           ${p.category || "General"}
         </small>
         <h4>${p.title}</h4>
-        <p>${(p.content || "").slice(0,100)}...</p>
+        <p>${(p.content || "").slice(0,90)}...</p>
       </div>
     `;
   });
@@ -286,7 +310,7 @@ window.goDashboard = function () {
 };
 
 window.goSettings = function () {
-  alert("Settings page coming soon");
+  location.href = "settings.html";
 };
 
 </script>
