@@ -4,6 +4,13 @@
   <title>MCN Engine V15 — Monetization Control Network</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- 🔥 SEO META (INJECTED) -->
+  <meta name="description" content="Discover websites, apps, and online opportunities with MCN Engine. Learn, explore, and grow online in one place.">
+
+  <meta property="og:title" content="MCN Engine — Discover. Learn. Explore.">
+  <meta property="og:description" content="Find websites, tools, and online opportunities easily.">
+  <meta property="og:type" content="website">
+
   <style>
     body {
       background: #0b132b;
@@ -203,15 +210,14 @@
   <br><br>
   © MCN Engine • Discover. Learn. Explore.
 </div>
+
 <script type="module">
 
-/* ================= MENU TOGGLE ================= */
 window.toggleMenu = function () {
   const menu = document.getElementById("menu");
   menu.style.display = (menu.style.display === "block") ? "none" : "block";
 };
 
-/* ================= LOGIN MODAL ================= */
 window.openLogin = function () {
   document.getElementById("loginModal").style.display = "flex";
 };
@@ -220,12 +226,10 @@ window.closeLogin = function () {
   document.getElementById("loginModal").style.display = "none";
 };
 
-/* ================= BLOG ROUTE FIX ================= */
 window.openPost = function (id) {
   window.location.href = "./blog/post.html?id=" + id;
 };
 
-/* ================= CATEGORY COLORS ================= */
 function getCategoryColor(cat) {
   switch (cat) {
     case "Crypto": return "#5bc0be";
@@ -236,7 +240,6 @@ function getCategoryColor(cat) {
   }
 }
 
-/* ================= LOAD BLOG ================= */
 async function loadFeed() {
   const feed = document.getElementById("feed");
   const featuredBox = document.getElementById("featuredPost");
@@ -270,7 +273,6 @@ async function loadFeed() {
 
 loadFeed();
 
-/* ================= MENU FUNCTIONS (FULL FIX INTEGRATED) ================= */
 window.goHome = function () {
   location.href = "index.html";
 };
