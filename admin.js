@@ -26,6 +26,45 @@ function log(msg, type = "ok") {
   box.scrollTop = box.scrollHeight;
 }
 
+/* ================= AUTH ================= */
+onAuthStateChanged(auth, async (user) => {
+  try {
+    if (!user) {
+      location.href = "index.html";
+      return;
+    }
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+
+    if (!snap.exists()) {
+      alert("User not found");
+      location.href = "index.html";
+      return;
+    }
+
+    const data = snap.data();
+
+    if (data.role !== "admin") {
+      alert("Access denied");
+      location.href = "index.html";
+      return;
+    }
+
+    log("Admin online");
+
+    startAIMonitor();
+
+    loadPosts();
+    loadUsers();
+    loadAds();
+    loadRejectedAds();
+
+  } catch (err) {
+    console.error("AUTH ERROR:", err);
+    log("Auth error: " + err.message, "error");
+  }
+});
+
 /* ================= AI MONITOR ================= */
 function startAIMonitor() {
   const q = query(collection(db, "events"), orderBy("createdAt", "desc"));
@@ -37,109 +76,132 @@ function startAIMonitor() {
       const e = change.doc.data();
       log(`Event: ${e.type}`, "ai");
     });
+  }, (err) => {
+    log("Event monitor error: " + err.message, "error");
   });
 }
 
-/* ================= AUTH ================= */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    location.href = "index.html";
-    return;
-  }
-
-  const snap = await getDoc(doc(db, "users", user.uid));
-
-  if (!snap.exists()) {
-    alert("User not found");
-    return;
-  }
-
-  if (snap.data().role !== "admin") {
-    alert("Access denied");
-    location.href = "index.html";
-    return;
-  }
-
-  log("Admin online");
-
-  startAIMonitor();
-  loadPosts();
-  loadUsers();
-  loadAds();
-  loadRejectedAds();
-});
-
 /* ================= BLOG ================= */
 window.createBlog = async () => {
-  const title = blogTitle.value;
-  const content = blogContent.value;
-  const image = blogImage.value;
+  try {
+    const title = document.getElementById("blogTitle").value;
+    const content = document.getElementById("blogContent").value;
+    const image = document.getElementById("blogImage").value;
 
-  const ref = await addDoc(collection(db, "posts"), {
-    title,
-    content,
-    image,
-    createdAt: serverTimestamp()
-  });
+    if (!title || !content) {
+      alert("Title and content required");
+      return;
+    }
 
-  log("Blog created: " + ref.id);
+    const ref = await addDoc(collection(db, "posts"), {
+      title,
+      content,
+      image,
+      createdAt: serverTimestamp()
+    });
+
+    log("Blog created: " + ref.id);
+
+  } catch (err) {
+    log("Create blog error: " + err.message, "error");
+  }
 };
 
-/* ================= POSTS ================= */
+/* ================= POSTS (FIXED CORE ISSUE) ================= */
 function loadPosts() {
   const box = document.getElementById("postsList");
 
-  onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snap) => {
+  if (!box) {
+    console.error("postsList not found in HTML");
+    return;
+  }
+
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+
+  onSnapshot(q, (snap) => {
     box.innerHTML = "";
+
+    if (snap.empty) {
+      box.innerHTML = `<div class="item">No posts found</div>`;
+      return;
+    }
 
     snap.forEach(d => {
       const p = d.data();
 
+      const safeTitle = encodeURIComponent(p.title || "");
+      const safeContent = encodeURIComponent(p.content || "");
+
       box.innerHTML += `
         <div class="item">
-          <b>${p.title}</b><br>
+          <b>${p.title || "Untitled"}</b><br>
 
           <button class="small-btn"
-            onclick="fillEdit('${d.id}', \`${encodeURIComponent(p.title)}\`, \`${encodeURIComponent(p.content)}\`)">
+            onclick="fillEdit('${d.id}', '${safeTitle}', '${safeContent}')">
             Edit
           </button>
 
-          <button class="small-btn" onclick="deletePost('${d.id}')">Delete</button>
+          <button class="small-btn"
+            onclick="deletePost('${d.id}')">
+            Delete
+          </button>
         </div>
       `;
     });
+
+  }, (err) => {
+    console.error("POST LOAD ERROR:", err);
+    log("Posts error: " + err.message, "error");
+    box.innerHTML = `<div class="item">Failed to load posts</div>`;
   });
 }
 
-/* FIXED EDIT HANDLER (NO BREAKS) */
+/* ================= SAFE EDIT FIX ================= */
 window.fillEdit = (id, title, content) => {
-  editPostId.value = id;
-  editPostTitle.value = decodeURIComponent(title);
-  editPostContent.value = decodeURIComponent(content);
+  try {
+    document.getElementById("editPostId").value = id;
+    document.getElementById("editPostTitle").value = decodeURIComponent(title);
+    document.getElementById("editPostContent").value = decodeURIComponent(content);
+  } catch (err) {
+    log("Edit fill error", "error");
+  }
 };
 
 window.updatePost = async () => {
-  const id = editPostId.value;
+  try {
+    const id = document.getElementById("editPostId").value;
 
-  await updateDoc(doc(db, "posts", id), {
-    title: editPostTitle.value,
-    content: editPostContent.value
-  });
+    if (!id) return alert("No post selected");
 
-  log("Post updated");
+    await updateDoc(doc(db, "posts", id), {
+      title: document.getElementById("editPostTitle").value,
+      content: document.getElementById("editPostContent").value
+    });
+
+    log("Post updated");
+
+  } catch (err) {
+    log("Update error: " + err.message, "error");
+  }
 };
 
 window.deletePost = async (id) => {
-  await deleteDoc(doc(db, "posts", id));
-  log("Post deleted", "warn");
+  try {
+    await deleteDoc(doc(db, "posts", id));
+    log("Post deleted", "warn");
+  } catch (err) {
+    log("Delete error: " + err.message, "error");
+  }
 };
 
 /* ================= USERS ================= */
 function loadUsers() {
   const box = document.getElementById("usersList");
+  if (!box) return;
 
   onSnapshot(collection(db, "onlineUsers"), snap => {
     box.innerHTML = "";
+
     snap.forEach(u => {
       box.innerHTML += `<div class="item">${u.data().email}</div>`;
     });
@@ -149,6 +211,7 @@ function loadUsers() {
 /* ================= ADS ================= */
 function loadAds() {
   const box = document.getElementById("upgradeList");
+  if (!box) return;
 
   onSnapshot(collection(db, "adRequests"), snap => {
     box.innerHTML = "";
@@ -179,6 +242,7 @@ window.rejectAd = async (id) => {
 
 function loadRejectedAds() {
   const box = document.getElementById("rejectedList");
+  if (!box) return;
 
   onSnapshot(collection(db, "adRequests"), snap => {
     box.innerHTML = "";
@@ -201,40 +265,4 @@ window.clearRejected = async () => {
 
   await batch.commit();
   log("Rejected ads cleared");
-};
-
-/* ================= 🤖 AI BLOG GENERATOR (FIXED) ================= */
-window.generateAI = async () => {
-  const topic = aiTopic.value;
-  if (!topic) return alert("Enter a topic");
-
-  log("AI generating: " + topic, "ai");
-
-  // simple placeholder (you can later connect OpenAI / backend)
-  const fakeArticle = `# ${topic}\n\nThis is an AI-generated draft about ${topic}.`;
-
-  blogTitle.value = topic;
-  blogContent.value = fakeArticle;
-
-  log("AI draft ready", "ai");
-};
-
-/* ================= ⏱ SCHEDULER (FIXED BASIC VERSION) ================= */
-window.schedulePost = async () => {
-  const title = scheduleTitle.value;
-  const content = scheduleContent.value;
-  const time = scheduleTime.value;
-
-  if (!title || !content || !time) {
-    return alert("Fill all fields");
-  }
-
-  await addDoc(collection(db, "scheduledPosts"), {
-    title,
-    content,
-    publishAt: new Date(time).getTime(),
-    createdAt: serverTimestamp()
-  });
-
-  log("Post scheduled ⏱");
 };
