@@ -97,7 +97,8 @@ window.createBlog = async () => {
       title,
       content,
       image,
-      createdAt: serverTimestamp()
+      createdAt: new Date(),              // ✅ FIXED
+      serverTime: serverTimestamp()       // ✅ ADDED
     });
 
     log("Blog created: " + ref.id);
@@ -107,7 +108,7 @@ window.createBlog = async () => {
   }
 };
 
-/* ================= POSTS (FIXED CORE ISSUE) ================= */
+/* ================= POSTS (FIXED) ================= */
 function loadPosts() {
   const box = document.getElementById("postsList");
 
@@ -116,7 +117,7 @@ function loadPosts() {
     return;
   }
 
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  const q = query(collection(db, "posts")); // ✅ FIXED
 
   onSnapshot(q, (snap) => {
     box.innerHTML = "";
@@ -126,9 +127,19 @@ function loadPosts() {
       return;
     }
 
-    snap.forEach(d => {
-      const p = d.data();
+    const docs = [];
 
+    snap.forEach(d => {
+      docs.push({ id: d.id, ...d.data() });
+    });
+
+    docs.sort((a, b) => {
+      const aTime = a.createdAt?.seconds || 0;
+      const bTime = b.createdAt?.seconds || 0;
+      return bTime - aTime;
+    });
+
+    docs.forEach(p => {
       const safeTitle = encodeURIComponent(p.title || "");
       const safeContent = encodeURIComponent(p.content || "");
 
@@ -137,12 +148,12 @@ function loadPosts() {
           <b>${p.title || "Untitled"}</b><br>
 
           <button class="small-btn"
-            onclick="fillEdit('${d.id}', '${safeTitle}', '${safeContent}')">
+            onclick="fillEdit('${p.id}', '${safeTitle}', '${safeContent}')">
             Edit
           </button>
 
           <button class="small-btn"
-            onclick="deletePost('${d.id}')">
+            onclick="deletePost('${p.id}')">
             Delete
           </button>
         </div>
@@ -156,7 +167,7 @@ function loadPosts() {
   });
 }
 
-/* ================= SAFE EDIT FIX ================= */
+/* ================= EDIT ================= */
 window.fillEdit = (id, title, content) => {
   try {
     document.getElementById("editPostId").value = id;
@@ -170,7 +181,6 @@ window.fillEdit = (id, title, content) => {
 window.updatePost = async () => {
   try {
     const id = document.getElementById("editPostId").value;
-
     if (!id) return alert("No post selected");
 
     await updateDoc(doc(db, "posts", id), {
@@ -201,7 +211,6 @@ function loadUsers() {
 
   onSnapshot(collection(db, "onlineUsers"), snap => {
     box.innerHTML = "";
-
     snap.forEach(u => {
       box.innerHTML += `<div class="item">${u.data().email}</div>`;
     });
@@ -215,7 +224,6 @@ function loadAds() {
 
   onSnapshot(collection(db, "adRequests"), snap => {
     box.innerHTML = "";
-
     snap.forEach(d => {
       const ad = d.data();
 
@@ -240,13 +248,13 @@ window.rejectAd = async (id) => {
   log("Ad rejected", "warn");
 };
 
+/* ================= REJECTED ================= */
 function loadRejectedAds() {
   const box = document.getElementById("rejectedList");
   if (!box) return;
 
   onSnapshot(collection(db, "adRequests"), snap => {
     box.innerHTML = "";
-
     snap.forEach(d => {
       if (d.data().status === "rejected") {
         box.innerHTML += `<div class="item">❌ ${d.data().title}</div>`;
