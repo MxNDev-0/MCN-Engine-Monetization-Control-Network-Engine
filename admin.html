@@ -96,20 +96,17 @@
 
 <div class="grid">
 
-  <!-- MONITOR -->
   <div class="card">
     <h3>🖥 System Monitor</h3>
     <div id="monitor" class="monitor"></div>
   </div>
 
-  <!-- 🤖 AI BLOG GENERATOR -->
   <div class="card">
     <h3>🤖 AI Blog Writer</h3>
     <input id="aiTopic" placeholder="Enter topic (e.g Crypto trends 2026)">
     <button onclick="generateAI()">Generate Article</button>
   </div>
 
-  <!-- ⏱ AI SCHEDULER -->
   <div class="card">
     <h3>⏱ Auto Scheduler</h3>
     <input id="scheduleTitle" placeholder="Blog Title">
@@ -118,7 +115,6 @@
     <button onclick="schedulePost()">Schedule Post</button>
   </div>
 
-  <!-- BLOG -->
   <div class="card">
     <h3>📝 Create Blog</h3>
     <input id="blogTitle" placeholder="Blog Title">
@@ -127,7 +123,6 @@
     <button onclick="createBlog()">Publish Blog</button>
   </div>
 
-  <!-- BROADCAST -->
   <div class="card">
     <h3>🔔 Broadcast</h3>
     <input id="broadcastTitle" placeholder="Title">
@@ -135,32 +130,28 @@
     <button onclick="sendBroadcast()">Send</button>
   </div>
 
-  <!-- USERS -->
   <div class="card">
     <h3>👥 Users</h3>
     <div id="usersList" class="list-box"></div>
   </div>
 
-  <!-- ADS -->
   <div class="card">
     <h3>📢 Ad Requests</h3>
     <div id="upgradeList" class="list-box"></div>
   </div>
 
-  <!-- POSTS -->
   <div class="card">
     <h3>💬 Post Manager</h3>
     <div id="postsList" class="list-box"></div>
 
     <h3>✏️ Edit Post</h3>
-    <input id="editPostId" readonly>
-    <input id="editPostTitle">
-    <textarea id="editPostContent"></textarea>
+    <input id="editPostId" readonly placeholder="Post ID">
+    <input id="editPostTitle" placeholder="Edit title">
+    <textarea id="editPostContent" placeholder="Edit content"></textarea>
 
     <button onclick="updatePost()">Update Post</button>
   </div>
 
-  <!-- REJECTED ADS -->
   <div class="card">
     <h3>❌ Rejected Ads</h3>
     <div id="rejectedList" class="list-box"></div>
