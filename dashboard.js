@@ -116,7 +116,7 @@ function startLiveSystem() {
   setInterval(loadPrices, 30000);
 }
 
-/* ================= NOTIFICATIONS ================= */
+/* ================= NOTIFICATIONS (FIXED CLICK) ================= */
 function loadNotifications() {
   const panel = document.getElementById("notifPanel");
   if (!panel) return;
@@ -125,14 +125,33 @@ function loadNotifications() {
     let html = "";
 
     snap.forEach(d => {
-      html += `<div style="padding:8px;border-bottom:1px solid #222;">🔔 ${d.data().text}</div>`;
+      const data = d.data();
+
+      html += `
+        <div 
+          onclick="openNotification('${data.url || ""}')"
+          style="padding:10px;border-bottom:1px solid #222;cursor:pointer;">
+          
+          🔔 ${data.text}
+        </div>
+      `;
     });
 
     panel.innerHTML = html;
   });
 }
 
-/* 🔥 TOGGLE NOTIFICATION PANEL (NEW) */
+/* 🔥 CLICK HANDLER */
+window.openNotification = function (url) {
+  if (!url) {
+    alert("No link attached to this notification");
+    return;
+  }
+
+  window.location.href = url;
+};
+
+/* 🔥 TOGGLE NOTIFICATION PANEL */
 window.toggleNotif = function () {
   const panel = document.getElementById("notifPanel");
   if (!panel) return;
@@ -207,6 +226,11 @@ window.goBlog = () => location.href = "blog/index.html";
 window.goFaq = () => location.href = "faq.html";
 window.goAbout = () => location.href = "about.html";
 
+/* 🔥 NEW: CONTACT BUTTON */
+window.contact = function () {
+  window.location.href = "mailto:contact@mcnengine.com";
+};
+
 window.goAdmin = () => {
   if (!window.userData || window.userData.role !== "admin") {
     alert("Admin only");
@@ -215,7 +239,7 @@ window.goAdmin = () => {
   location.href = "admin.html";
 };
 
-/* ================= 💰 DONATE (NEW) ================= */
+/* ================= 💰 DONATE ================= */
 window.donate = function () {
   window.open("https://paystack.com/pay/mcnengine-support", "_blank");
 };
