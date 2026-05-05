@@ -11,6 +11,12 @@
   <meta property="og:description" content="Find websites, tools, and online opportunities easily.">
   <meta property="og:type" content="website">
 
+  <!-- ✅ PWA META -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5bc0be">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
   <style>
     body {
       background: #0b132b;
@@ -156,7 +162,6 @@
       text-decoration: none;
     }
 
-    /* 🍪 COOKIE BANNER */
     .cookie-banner {
       position: fixed;
       bottom: 0;
@@ -200,7 +205,6 @@
 <div class="featured" id="featuredPost"></div>
 <div class="feed" id="feed">Loading posts...</div>
 
-<!-- 🍪 COOKIE BANNER -->
 <div id="cookieBanner" class="cookie-banner">
   <span>
     We use cookies to improve your experience. By using this site, you agree to our 
@@ -212,10 +216,8 @@
 <div class="login-modal" id="loginModal">
   <div class="center-box">
     <h3>Login / Register</h3>
-
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Password">
-
     <button onclick="signup()">Create Account</button>
     <button class="secondary-btn" onclick="login()">Login</button>
     <button onclick="closeLogin()">Close</button>
@@ -330,6 +332,43 @@ window.contact = () => window.location.href = "mailto:contact@mcnengine.com";
 </script>
 
 <script type="module" src="app.js"></script>
+
+<!-- ✅ PWA SCRIPT -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js');
+  });
+}
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  let btn = document.createElement("button");
+  btn.innerText = "📲 Install App";
+  btn.style.position = "fixed";
+  btn.style.bottom = "80px";
+  btn.style.right = "20px";
+  btn.style.zIndex = "9999";
+  btn.style.padding = "10px";
+  btn.style.borderRadius = "8px";
+  btn.style.background = "#5bc0be";
+  btn.style.border = "none";
+  btn.style.fontWeight = "bold";
+
+  btn.onclick = async () => {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    btn.remove();
+  };
+
+  document.body.appendChild(btn);
+});
+</script>
 
 </body>
 </html>
