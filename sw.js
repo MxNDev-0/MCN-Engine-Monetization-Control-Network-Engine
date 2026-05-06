@@ -1,4 +1,4 @@
-const CACHE_NAME = "mcn-engine-v3";
+const CACHE_NAME = "mcn-engine-v4";
 
 const STATIC_ASSETS = [
   "./",
@@ -6,6 +6,7 @@ const STATIC_ASSETS = [
   "./offline.html",
   "./dashboard.html",
   "./manifest.json",
+  "./assets/logo.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
