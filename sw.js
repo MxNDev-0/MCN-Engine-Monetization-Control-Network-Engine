@@ -3,6 +3,7 @@ const CACHE_NAME = "mcn-engine-v3";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
+  "./offline.html",
   "./dashboard.html",
   "./manifest.json",
   "./icons/icon-192.png",
@@ -12,8 +13,12 @@ const STATIC_ASSETS = [
 // INSTALL
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(STATIC_ASSETS);
+    caches.open(CACHE_NAME).then(async cache => {
+      try {
+        await cache.addAll(STATIC_ASSETS);
+      } catch (err) {
+        console.log("Cache install failed:", err);
+      }
     })
   );
 });
@@ -48,7 +53,7 @@ self.addEventListener("fetch", event => {
         })
         .catch(() => {
           if (event.request.destination === "document") {
-            return caches.match("./index.html");
+            return caches.match("./offline.html") || caches.match("./index.html");
           }
         });
     })
