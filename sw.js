@@ -1,12 +1,12 @@
 const CACHE_NAME = "mcn-engine-v3";
 
 const STATIC_ASSETS = [
-  "/",
-  "/index.html",
-  "/dashboard.html",
-  "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png"
+  "./",
+  "./index.html",
+  "./dashboard.html",
+  "./manifest.json",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png"
 ];
 
 // INSTALL
@@ -33,7 +33,7 @@ self.addEventListener("activate", event => {
   );
 });
 
-// FETCH (offline-first strategy)
+// FETCH (offline-first)
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(cached => {
@@ -47,9 +47,8 @@ self.addEventListener("fetch", event => {
           });
         })
         .catch(() => {
-          // fallback if offline
           if (event.request.destination === "document") {
-            return caches.match("/index.html");
+            return caches.match("./index.html");
           }
         });
     })
