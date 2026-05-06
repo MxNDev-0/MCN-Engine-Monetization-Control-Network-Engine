@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MCN Engine — Offline</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0b132b;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .box {
+      max-width: 400px;
+      background: #1c2541;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #333;
+    }
+
+    img {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: #5bc0be;
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 14px;
+      color: #ccc;
+      line-height: 1.4;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background: #5bc0be;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <img src="icons/icon-192.png">
+  <h1>You're Offline</h1>
+  <p>
+    MCN Engine needs an internet connection to load latest content.
+    Please check your network and try again.
+  </p>
+
+  <button onclick="location.reload()">Retry</button>
+</div>
+
+</body>
+</html>
